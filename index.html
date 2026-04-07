@@ -1,47 +1,46 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OPS Takip Sistemi</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
+:root{
   --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --surface3:#2a2f45;
   --border:#2e3348; --border2:#3a4060;
   --accent:#4f8ef7; --accent2:#7c3aed;
   --green:#22c55e; --orange:#f59e0b; --red:#ef4444; --cyan:#06b6d4;
   --text:#e8eaf6; --text2:#8b90a7; --text3:#4f546b;
   --faz1:#4f8ef7; --faz2:#a855f7; --faz3:#f59e0b;
-  --r:12px; --r-sm:8px; --r-xs:6px;
-  --shadow:0 8px 32px rgba(0,0,0,.4);
+  --r:12px; --r-sm:8px; --r-xs:6px; --shadow:0 8px 32px rgba(0,0,0,.4);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,142,247,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,.03) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+#app{position:relative;z-index:1}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 28px;background:rgba(26,29,39,.97);border-bottom:1px solid var(--border);backdrop-filter:blur(16px);position:sticky;top:0;z-index:100}
 .brand{display:flex;align-items:center;gap:11px}
 .brand-logo{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:#fff;letter-spacing:-1px;flex-shrink:0}
 .brand-title{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.4px}
 .brand-sub{font-size:11px;color:var(--text3);margin-top:1px}
 .topbar-nav{display:flex;gap:3px}
-.nav-btn{padding:8px 15px;border-radius:var(--r-sm);border:none;background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;white-space:nowrap}
+.nav-btn{padding:8px 15px;border-radius:var(--r-sm);border:none;background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;white-space:nowrap}
 .nav-btn:hover{background:var(--surface2);color:var(--text)}
 .nav-btn.active{background:var(--accent);color:#fff}
 .personnel-chip{display:flex;align-items:center;gap:8px;padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:50px;cursor:pointer;transition:all .2s;font-size:13px;color:var(--text);white-space:nowrap}
 .personnel-chip:hover{border-color:var(--accent)}
 .p-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
-#app{position:relative;z-index:1}
 .page{display:none;padding:28px;max-width:1440px;margin:0 auto}
 .page.active{display:block}
 .page-header{margin-bottom:26px}
 .page-title{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;margin-bottom:3px}
 .page-sub{font-size:14px;color:var(--text2)}
-.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:20px;overflow:hidden}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:20px;overflow:visible}
 .section-head{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .section-title{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.6px;color:var(--text)}
-.section-body{padding:20px}
+.section-body{padding:20px;overflow:visible}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:22px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 20px 16px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
 .stat-card:hover{transform:translateY(-2px);border-color:var(--border2)}
@@ -50,17 +49,16 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
 .stat-value{font-family:'Space Mono',monospace;font-size:30px;font-weight:700}
 .stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
-.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px}
-.form-group{display:flex;flex-direction:column;gap:6px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px;align-items:start}
+.form-group{display:flex;flex-direction:column;gap:6px;position:relative;z-index:2}
 .form-group.full{grid-column:1/-1}
 label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.9px}
 input,select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;outline:none;transition:border-color .18s,box-shadow .18s;width:100%}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,.13)}
-input::placeholder{color:var(--text3)}
-select option{background:var(--surface2)}
 textarea{resize:vertical;min-height:80px}
-.sd-wrap{position:relative}
-.sd-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);max-height:230px;overflow-y:auto;z-index:300;display:none;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+select option{background:var(--surface2)}
+.sd-wrap{position:relative;z-index:40}
+.sd-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);max-height:260px;overflow-y:auto;z-index:9999;display:none;box-shadow:0 12px 32px rgba(0,0,0,.5)}
 .sd-list.open{display:block}
 .sd-item{padding:10px 13px;cursor:pointer;font-size:13px;transition:background .12s;border-bottom:1px solid rgba(255,255,255,.03)}
 .sd-item:last-child{border-bottom:none}
@@ -78,7 +76,7 @@ textarea{resize:vertical;min-height:80px}
 .adet-btn{padding:10px 14px;background:transparent;border:none;color:var(--text2);font-size:18px;cursor:pointer;transition:background .12s;line-height:1;flex-shrink:0}
 .adet-btn:hover{background:rgba(255,255,255,.06);color:var(--text)}
 .adet-num{background:transparent;border:none;text-align:center;width:56px;font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--text);outline:none}
-.btn{padding:10px 20px;border-radius:var(--r-sm);border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn{padding:10px 20px;border-radius:var(--r-sm);border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:#3d7de8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,142,247,.35)}
 .btn-success{background:var(--green);color:#fff}
@@ -93,8 +91,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 th{padding:10px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);white-space:nowrap}
 td{padding:12px 13px;border-bottom:1px solid rgba(255,255,255,.035);vertical-align:middle}
 tr:hover td{background:rgba(255,255,255,.018)}
-tr:last-child td{border-bottom:none}
-tr.tr-late td{background:rgba(239,68,68,.04)}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:50px;font-size:11px;font-weight:700;font-family:'Space Mono',monospace;white-space:nowrap}
 .b-f1{background:rgba(79,142,247,.14);color:var(--faz1);border:1px solid rgba(79,142,247,.28)}
 .b-f2{background:rgba(168,85,247,.14);color:var(--faz2);border:1px solid rgba(168,85,247,.28)}
@@ -120,20 +116,6 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
 .sc-stat-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px}
 .school-detail{display:none;border-top:1px solid var(--border);background:var(--bg)}
 .school-detail.open{display:block}
-.city-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:22px}
-.csum-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .18s}
-.csum-card:hover{border-color:var(--border2)}
-.csum-bg{position:absolute;right:-8px;bottom:-12px;font-family:'Space Mono',monospace;font-size:44px;font-weight:700;opacity:.05;color:var(--accent);pointer-events:none;white-space:nowrap}
-.csum-city{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;margin-bottom:12px}
-.csum-row{display:flex;align-items:center;gap:9px;margin-bottom:7px}
-.csum-label{font-size:11px;color:var(--text2);width:34px;flex-shrink:0;font-family:'Space Mono',monospace}
-.csum-track{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
-.csum-fill{height:100%;border-radius:3px;transition:width .6s}
-.csum-val{font-size:11px;font-family:'Space Mono',monospace;color:var(--text2);width:26px;text-align:right}
-.csum-nums{display:flex;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
-.csum-num{text-align:center;flex:1}
-.csum-num-v{font-family:'Space Mono',monospace;font-size:18px;font-weight:700}
-.csum-num-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px}
 .timeline{display:flex;flex-direction:column}
 .tl-item{display:flex;gap:13px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 .tl-item:last-child{border-bottom:none}
@@ -148,26 +130,11 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
 .modal-close{position:absolute;top:15px;right:15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-xs);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:17px;transition:all .18s;line-height:1}
 .modal-close:hover{background:var(--red);color:#fff;border-color:var(--red)}
 .toast-wrap{position:fixed;bottom:22px;right:22px;z-index:1000;display:flex;flex-direction:column;gap:7px}
-.toast{padding:12px 17px;border-radius:10px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow);animation:toastIn .3s ease;max-width:320px}
+.toast{padding:12px 17px;border-radius:10px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow);animation:toastIn .25s ease;max-width:340px}
 .t-ok{background:#0f2318;border:1px solid var(--green);color:var(--green)}
 .t-err{background:#1f0f0f;border:1px solid var(--red);color:var(--red)}
 .t-info{background:#0f1a2d;border:1px solid var(--accent);color:var(--accent)}
 @keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
-.loader-ov{display:none;position:fixed;inset:0;background:rgba(15,17,23,.82);z-index:900;align-items:center;justify-content:center;flex-direction:column;gap:14px;backdrop-filter:blur(5px)}
-.loader-ov.on{display:flex}
-.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
-.spin-sm{width:16px;height:16px;border-width:2px;border-top-color:#fff}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loader-txt{font-family:'Space Mono',monospace;font-size:13px;color:var(--text2)}
-.p-list{display:flex;flex-direction:column;gap:7px;max-height:260px;overflow-y:auto;margin-bottom:15px}
-.p-item{padding:11px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:10px;font-size:14px}
-.p-item:hover{border-color:var(--accent)}
-.p-item.sel{border-color:var(--accent);background:rgba(79,142,247,.1)}
-.p-item-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
-.add-row{display:flex;gap:8px}
-.srch-wrap{position:relative;margin-bottom:18px}
-.srch-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
-.srch-inp{padding-left:40px!important}
 .empty{text-align:center;padding:44px 20px;color:var(--text3)}
 .empty-ico{font-size:38px;margin-bottom:11px}
 .empty-t{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:5px}
@@ -176,45 +143,25 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
 .cfg-ico{font-size:28px;flex-shrink:0}
 .cfg-title{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;margin-bottom:3px}
 .cfg-sub{font-size:13px;color:var(--text2)}
-.prog-wrap{background:var(--surface2);border-radius:4px;height:6px;overflow:hidden}
-.prog-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.loader-ov{display:none;position:fixed;inset:0;background:rgba(15,17,23,.6);z-index:900;align-items:center;justify-content:center;flex-direction:column;gap:14px;backdrop-filter:blur(4px)}
+.loader-ov.on{display:flex}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.spin-sm{width:16px;height:16px;border-width:2px;border-top-color:#fff}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-txt{font-family:'Space Mono',monospace;font-size:13px;color:var(--text2)}
+.mobile-nav{display:none}
 @media(max-width:768px){
   .topbar{padding:11px 15px}.topbar-nav{display:none}.page{padding:14px;padding-bottom:90px}
   .stats-grid{grid-template-columns:repeat(2,1fr)}.sc-stats{display:none}
-  .brand-sub{display:none}.city-summary-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}
+  .brand-sub{display:none}.form-grid{grid-template-columns:1fr}
   .personnel-chip span:last-child{display:none}
   #topName{display:none}
-}
-/* MOBİL ALT NAVİGASYON */
-.mobile-nav{display:none}
-@media(max-width:768px){
-  .mobile-nav{
-    display:flex;position:fixed;bottom:0;left:0;right:0;
-    background:rgba(26,29,39,.98);border-top:1px solid var(--border);
-    backdrop-filter:blur(16px);z-index:200;padding:8px 4px;
-    padding-bottom:calc(8px + env(safe-area-inset-bottom));
-  }
-  .mob-btn{
-    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-    padding:6px 2px;border:none;background:transparent;color:var(--text3);
-    font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;
-    cursor:pointer;transition:all .18s;border-radius:var(--r-sm);
-    -webkit-tap-highlight-color:transparent;
-  }
+  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:rgba(26,29,39,.98);border-top:1px solid var(--border);backdrop-filter:blur(16px);z-index:200;padding:8px 4px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+  .mob-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border:none;background:transparent;color:var(--text3);font-size:10px;font-weight:600;cursor:pointer;transition:all .18s;border-radius:var(--r-sm)}
   .mob-btn .mob-ico{font-size:20px;line-height:1;transition:transform .18s}
-  .mob-btn:active .mob-ico{transform:scale(.88)}
   .mob-btn.active{color:var(--accent)}
-  .mob-btn.active .mob-ico{filter:drop-shadow(0 0 6px rgba(79,142,247,.5))}
   .mob-btn.mob-add{color:#fff}
-  .mob-btn.mob-add .mob-ico{
-    width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));
-    border-radius:14px;display:flex;align-items:center;justify-content:center;
-    font-size:22px;box-shadow:0 4px 16px rgba(79,142,247,.45);
-    margin-top:-12px;
-  }
-  .mob-btn.mob-add.active .mob-ico{
-    box-shadow:0 4px 20px rgba(79,142,247,.7);
-  }
+  .mob-btn.mob-add .mob-ico{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(79,142,247,.45);margin-top:-12px}
 }
 </style>
 </head>
@@ -227,11 +174,11 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
     <div><div class="brand-title">OPS TAKİP</div><div class="brand-sub">Akıllı Tahta Servis Sistemi</div></div>
   </div>
   <nav class="topbar-nav">
-    <button class="nav-btn active" onclick="showPage('dashboard')">📊 Dashboard</button>
-    <button class="nav-btn" onclick="showPage('kayit')">➕ Yeni Kayıt</button>
-    <button class="nav-btn" onclick="showPage('okullar')">🏫 Okullar</button>
-    <button class="nav-btn" onclick="showPage('kayitlar')">📋 Kayıtlar</button>
-    <button class="nav-btn" onclick="showPage('ayarlar')">⚙️ Ayarlar</button>
+    <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard')">📊 Dashboard</button>
+    <button class="nav-btn" data-page="kayit" onclick="showPage('kayit')">➕ Yeni Kayıt</button>
+    <button class="nav-btn" data-page="okullar" onclick="showPage('okullar')">🏫 Okullar</button>
+    <button class="nav-btn" data-page="kayitlar" onclick="showPage('kayitlar')">📋 Kayıtlar</button>
+    <button class="nav-btn" data-page="ayarlar" onclick="showPage('ayarlar')">⚙️ Ayarlar</button>
   </nav>
   <div class="personnel-chip" onclick="openPersonnelModal()">
     <div class="p-avatar" id="topAvatar">?</div>
@@ -240,7 +187,6 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div id="page-dashboard" class="page active">
   <div class="page-header"><div class="page-title">// DASHBOARD</div><div class="page-sub" id="dashDate">—</div></div>
   <div class="stats-grid">
@@ -248,35 +194,15 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
     <div class="stat-card sc-green"><div class="stat-label">Bugün Alınan</div><div class="stat-value" id="s-bugun">—</div><div class="stat-sub" id="s-bugun-sub">adet ops</div></div>
     <div class="stat-card sc-blue"><div class="stat-label">Toplam Kayıt</div><div class="stat-value" id="s-toplam">—</div><div class="stat-sub">Tüm zamanlar</div></div>
     <div class="stat-card sc-red"><div class="stat-label">Geciken (7+ gün)</div><div class="stat-value" id="s-geciken">—</div><div class="stat-sub">Acil dikkat</div></div>
-    <div class="stat-card sc-purple"><div class="stat-label">Kayıtlı Okul</div><div class="stat-value" id="s-okul">—</div><div class="stat-sub">4 şehir</div></div>
+    <div class="stat-card sc-purple"><div class="stat-label">Kayıtlı Okul</div><div class="stat-value" id="s-okul">—</div><div class="stat-sub">5 şehir bölgesi</div></div>
     <div class="stat-card sc-cyan"><div class="stat-label">Bugün Kayıt</div><div class="stat-value" id="s-bugunkayit">—</div><div class="stat-sub">İşlem sayısı</div></div>
   </div>
   <div class="section">
-    <div class="section-head"><div class="section-title">📍 ŞEHİR BAZINDA DURUM</div><button class="btn btn-secondary btn-sm" onclick="loadDashboard()"><span id="dashRefreshIcon">↻</span> Yenile</button></div>
-    <div class="section-body"><div class="city-summary-grid" id="citySummaryGrid"><div class="empty"><div class="spinner"></div></div></div></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-    <div class="section">
-      <div class="section-head"><div class="section-title">🕐 BUGÜNÜN AKTİVİTESİ</div></div>
-      <div class="section-body" id="todayActivity"><div class="empty"><div class="empty-ico">🌙</div><div class="empty-s">Bugün kayıt yok</div></div></div>
-    </div>
-    <div class="section">
-      <div class="section-head"><div class="section-title">🚨 GECİKEN SERVİSLER</div></div>
-      <div class="section-body" id="lateServices"><div class="empty"><div class="empty-ico">✅</div><div class="empty-t">Harika!</div><div class="empty-s">Geciken servis yok</div></div></div>
-    </div>
-  </div>
-  <div class="section" style="margin-top:18px">
-    <div class="section-head"><div class="section-title">👤 PERSONEL İSTATİSTİKLERİ</div></div>
-    <div class="section-body">
-      <div class="table-wrap"><table>
-        <thead><tr><th>Personel</th><th>Alınan Kayıt</th><th>Teslim</th><th>Bekleyen</th><th>Teslim Oranı</th></tr></thead>
-        <tbody id="personnelStatsTbl"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3)">Veri bekleniyor...</td></tr></tbody>
-      </table></div>
-    </div>
+    <div class="section-head"><div class="section-title">📍 ŞEHİR BAZINDA DURUM</div><button class="btn btn-secondary btn-sm" onclick="loadDashboard(true)">↻ Yenile</button></div>
+    <div class="section-body"><div id="citySummaryGrid"></div></div>
   </div>
 </div>
 
-<!-- YENİ KAYIT -->
 <div id="page-kayit" class="page">
   <div class="page-header"><div class="page-title">// YENİ OPS KAYDI</div><div class="page-sub">Okuldan alınan ops cihazlarını sisteme ekle</div></div>
   <div class="section">
@@ -284,15 +210,17 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
     <div class="section-body">
       <div class="form-grid">
         <div class="form-group">
+          <label>Personel *</label>
+          <div class="sd-wrap">
+            <input type="text" id="inp-personel" placeholder="Adınızı seçin..." autocomplete="off" oninput="sdFilter('personel')" onfocus="sdOpen('personel')" onblur="sdBlur('personel')">
+            <div class="sd-list" id="sd-personel"></div>
+          </div>
+        </div>
+        <div class="form-group">
           <label>Şehir *</label>
           <div class="sd-wrap">
             <input type="text" id="inp-sehir" placeholder="Şehir seçin..." autocomplete="off" oninput="sdFilter('sehir')" onfocus="sdOpen('sehir')" onblur="sdBlur('sehir')">
-            <div class="sd-list" id="sd-sehir">
-              <div class="sd-item" onclick="sdPick('sehir','İstanbul')">İstanbul</div>
-              <div class="sd-item" onclick="sdPick('sehir','Kocaeli')">Kocaeli</div>
-              <div class="sd-item" onclick="sdPick('sehir','Yalova')">Yalova</div>
-              <div class="sd-item" onclick="sdPick('sehir','Bursa')">Bursa</div>
-            </div>
+            <div class="sd-list" id="sd-sehir"></div>
           </div>
         </div>
         <div class="form-group">
@@ -321,13 +249,6 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
     <div class="section-body">
       <div class="form-grid">
         <div class="form-group">
-          <label>Personel *</label>
-          <div class="sd-wrap">
-            <input type="text" id="inp-kayit-personel" placeholder="Adınızı seçin..." autocomplete="off" oninput="sdFilter('kayit-p')" onfocus="sdOpen('kayit-p')" onblur="sdBlur('kayit-p')">
-            <div class="sd-list" id="sd-kayit-p"></div>
-          </div>
-        </div>
-        <div class="form-group">
           <label>Faz *</label>
           <div class="faz-toggle">
             <button class="faz-btn" id="faz1" onclick="pickFaz(1)">FAZ 1</button>
@@ -344,44 +265,29 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
           </div>
         </div>
         <div class="form-group full">
-          <label>Not (isteğe bağlı)</label>
+          <label>Not</label>
           <textarea id="inp-not" placeholder="Cihaz durumu, seri no, özel bilgi..."></textarea>
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" id="kayitBtn" onclick="submitKayit()"><span id="kayitBtnTxt">💾 Kayıt Oluştur</span></button>
+        <button class="btn btn-primary" id="kayitBtn" onclick="submitKayit()">💾 Kayıt Oluştur</button>
         <button class="btn btn-secondary" onclick="resetKayitForm()">✕ Temizle</button>
-        <span id="kayitStatus" style="font-size:13px;color:var(--text2)"></span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- OKULLAR -->
 <div id="page-okullar" class="page">
-  <div class="page-header"><div class="page-title">// OKULLAR</div><div class="page-sub">Şehir ve ilçeye göre okulları gör, okul sayfasını aç</div></div>
-  <div class="city-tabs" id="okulCityTabs">
-    <div class="city-tab active" data-city="all" onclick="setOkulCity(this,'all')">Tümü</div>
-    <div class="city-tab" data-city="İstanbul" onclick="setOkulCity(this,'İstanbul')">İstanbul</div>
-    <div class="city-tab" data-city="Kocaeli" onclick="setOkulCity(this,'Kocaeli')">Kocaeli</div>
-    <div class="city-tab" data-city="Yalova" onclick="setOkulCity(this,'Yalova')">Yalova</div>
-    <div class="city-tab" data-city="Bursa" onclick="setOkulCity(this,'Bursa')">Bursa</div>
-  </div>
-  <div class="srch-wrap"><span class="srch-ico">🔍</span><input type="text" class="srch-inp" id="okulSearch" placeholder="Okul adı veya ilçe ara..." oninput="renderOkullar()"></div>
-  <div id="okullarList"><div class="empty"><div class="spinner"></div></div></div>
+  <div class="page-header"><div class="page-title">// OKULLAR</div><div class="page-sub">Şehir ve ilçeye göre okullar</div></div>
+  <div class="city-tabs" id="okulCityTabs"></div>
+  <div style="position:relative;margin-bottom:18px"><input type="text" id="okulSearch" placeholder="Okul adı veya ilçe ara..." oninput="renderOkullar()"></div>
+  <div id="okullarList"><div class="empty"><div class="empty-s">Yükleniyor...</div></div></div>
 </div>
 
-<!-- KAYITLAR -->
 <div id="page-kayitlar" class="page">
   <div class="page-header"><div class="page-title">// TÜM KAYITLAR</div><div class="page-sub">Ops alım ve teslim geçmişi</div></div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center">
-    <div class="city-tabs" style="margin-bottom:0" id="recCityTabs">
-      <div class="city-tab active" onclick="setRecCity(this,'all')">Tümü</div>
-      <div class="city-tab" onclick="setRecCity(this,'İstanbul')">İstanbul</div>
-      <div class="city-tab" onclick="setRecCity(this,'Kocaeli')">Kocaeli</div>
-      <div class="city-tab" onclick="setRecCity(this,'Yalova')">Yalova</div>
-      <div class="city-tab" onclick="setRecCity(this,'Bursa')">Bursa</div>
-    </div>
+    <div class="city-tabs" style="margin-bottom:0" id="recCityTabs"></div>
     <select id="recDurumFilter" onchange="renderKayitlar()" style="width:auto;padding:7px 13px;font-size:13px">
       <option value="all">Tüm Durumlar</option>
       <option value="bekliyor">Bekliyor</option>
@@ -392,38 +298,22 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
       <option value="all">Tüm Fazlar</option>
       <option value="1">Faz 1</option><option value="2">Faz 2</option><option value="3">Faz 3</option>
     </select>
-    <div style="flex:1;min-width:180px;position:relative">
-      <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text3)">🔍</span>
-      <input type="text" style="padding-left:40px;width:100%" id="recSearch" placeholder="Okul ara..." oninput="renderKayitlar()">
-    </div>
-    <button class="btn btn-secondary btn-sm" onclick="loadKayitlar()">↻ Yenile</button>
+    <div style="flex:1;min-width:180px"><input type="text" id="recSearch" placeholder="Okul ara..." oninput="renderKayitlar()"></div>
+    <button class="btn btn-secondary btn-sm" onclick="loadRecords(true)">↻ Yenile</button>
   </div>
-  <div class="section">
-    <div class="section-body" style="padding:0">
-      <div class="table-wrap"><table>
-        <thead><tr><th>Okul</th><th>Şehir / İlçe</th><th>Faz</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead>
-        <tbody id="kayitlarTbl"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Yükleniyor...</td></tr></tbody>
-      </table></div>
-    </div>
-  </div>
+  <div class="section"><div class="section-body" style="padding:0"><div class="table-wrap"><table>
+    <thead><tr><th>Okul</th><th>Şehir / İlçe</th><th>Faz</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead>
+    <tbody id="kayitlarTbl"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Yükleniyor...</td></tr></tbody>
+  </table></div></div></div>
 </div>
 
-<!-- AYARLAR -->
 <div id="page-ayarlar" class="page">
   <div class="page-header"><div class="page-title">// AYARLAR</div><div class="page-sub">Sistem yapılandırması</div></div>
-  <div class="cfg-banner">
-    <div class="cfg-ico">🔗</div>
-    <div><div class="cfg-title">GOOGLE APPS SCRIPT BAĞLANTISI</div><div class="cfg-sub">Web App URL'ini aşağıya girerek sistemi Google Sheets'e bağlayın</div></div>
-  </div>
+  <div class="cfg-banner"><div class="cfg-ico">🔗</div><div><div class="cfg-title">GOOGLE APPS SCRIPT BAĞLANTISI</div><div class="cfg-sub">Web App URL gir</div></div></div>
   <div class="section">
     <div class="section-head"><div class="section-title">⚙️ BAĞLANTI AYARLARI</div></div>
     <div class="section-body">
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Google Apps Script Web App URL *</label>
-          <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/AKfy.../exec">
-        </div>
-      </div>
+      <div class="form-grid"><div class="form-group full"><label>Google Apps Script Web App URL *</label><input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/AKfy.../exec"></div></div>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="saveConfig()">💾 Kaydet</button>
         <button class="btn btn-secondary" onclick="testConnection()">🔌 Bağlantıyı Test Et</button>
@@ -435,47 +325,22 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
     <div class="section-head"><div class="section-title">👤 PERSONEL YÖNETİMİ</div></div>
     <div class="section-body">
       <div id="personnelMgmtList" style="display:flex;flex-direction:column;gap:7px;margin-bottom:15px"></div>
-      <div class="add-row">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
         <input type="text" id="newPersonnelInp" placeholder="Yeni personel adı..." style="max-width:280px" onkeydown="if(event.key==='Enter')addNewPersonnel()">
         <button class="btn btn-primary btn-sm" onclick="addNewPersonnel()">+ Ekle</button>
       </div>
     </div>
   </div>
-  <div class="section">
-    <div class="section-head"><div class="section-title">ℹ️ SİSTEM BİLGİSİ</div></div>
-    <div class="section-body">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px">
-          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Versiyon</div>
-          <div style="font-family:'Space Mono',monospace;font-size:15px;font-weight:700">v1.0.0</div>
-        </div>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px">
-          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Sheets ID</div>
-          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text3);word-break:break-all">1mIAuUTWcTVHIaXiXiT3apNDeWbZLBCh7Lz4jou8gacs</div>
-        </div>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px">
-          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Bağlantı</div>
-          <div id="connStatus" style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text3)">— Kontrol edilmedi</div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
-<!-- PERSONEL MODAL -->
 <div class="modal-ov" id="personnelModal">
   <div class="modal">
     <div class="modal-title">👤 Personel Seç</div>
     <div class="modal-close" onclick="closeModal('personnelModal')">✕</div>
-    <div class="p-list" id="personnelList"></div>
-    <div class="add-row">
-      <input type="text" id="newPInp" placeholder="Yeni isim ekle..." onkeydown="if(event.key==='Enter')addPersonnelFromModal()">
-      <button class="btn btn-primary btn-sm" onclick="addPersonnelFromModal()">+ Ekle</button>
-    </div>
+    <div id="personnelList"></div>
   </div>
 </div>
 
-<!-- TESLİM MODAL -->
 <div class="modal-ov" id="teslimModal">
   <div class="modal">
     <div class="modal-title">📦 Ops Teslim Et</div>
@@ -498,7 +363,7 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
         </div>
       </div>
       <div class="form-group full">
-        <label>Not (isteğe bağlı)</label>
+        <label>Not</label>
         <textarea id="teslim-not" placeholder="Teslim notu..." style="min-height:60px"></textarea>
       </div>
     </div>
@@ -510,43 +375,34 @@ tr.tr-late td{background:rgba(239,68,68,.04)}
 </div>
 
 <div class="toast-wrap" id="toastWrap"></div>
-
-<!-- MOBİL ALT NAV -->
-<nav class="mobile-nav" id="mobileNav">
-  <button class="mob-btn active" id="mob-dashboard" onclick="showPage('dashboard')">
-    <span class="mob-ico">📊</span><span>Özet</span>
-  </button>
-  <button class="mob-btn" id="mob-okullar" onclick="showPage('okullar')">
-    <span class="mob-ico">🏫</span><span>Okullar</span>
-  </button>
-  <button class="mob-btn mob-add" id="mob-kayit" onclick="showPage('kayit')">
-    <span class="mob-ico">➕</span><span>Ekle</span>
-  </button>
-  <button class="mob-btn" id="mob-kayitlar" onclick="showPage('kayitlar')">
-    <span class="mob-ico">📋</span><span>Kayıtlar</span>
-  </button>
-  <button class="mob-btn" id="mob-ayarlar" onclick="showPage('ayarlar')">
-    <span class="mob-ico">⚙️</span><span>Ayarlar</span>
-  </button>
+<nav class="mobile-nav">
+  <button class="mob-btn active" id="mob-dashboard" onclick="showPage('dashboard')"><span class="mob-ico">📊</span><span>Özet</span></button>
+  <button class="mob-btn" id="mob-okullar" onclick="showPage('okullar')"><span class="mob-ico">🏫</span><span>Okullar</span></button>
+  <button class="mob-btn mob-add" id="mob-kayit" onclick="showPage('kayit')"><span class="mob-ico">➕</span><span>Ekle</span></button>
+  <button class="mob-btn" id="mob-kayitlar" onclick="showPage('kayitlar')"><span class="mob-ico">📋</span><span>Kayıtlar</span></button>
+  <button class="mob-btn" id="mob-ayarlar" onclick="showPage('ayarlar')"><span class="mob-ico">⚙️</span><span>Ayarlar</span></button>
 </nav>
 </div>
 
 <script>
+const CACHE_TTL = { dashboard: 30000, schools: 120000, personnel: 120000, records: 45000 };
 let SCRIPT_URL = localStorage.getItem("ops_script_url") || "";
 
-const CITIES = ["İstanbul","Kocaeli","Yalova","Bursa"];
+const CITIES = ["İstanbul Avrupa","İstanbul Anadolu","Kocaeli","Yalova","Bursa"];
 const DISTRICTS = {
-  "İstanbul":["Adalar","Arnavutköy","Ataşehir","Avcılar","Bağcılar","Bahçelievler","Bakırköy","Başakşehir","Bayrampaşa","Beşiktaş","Beykoz","Beylikdüzü","Beyoğlu","Büyükçekmece","Çatalca","Çekmeköy","Esenler","Esenyurt","Eyüpsultan","Fatih","Gaziosmanpaşa","Güngören","Kadıköy","Kağıthane","Kartal","Küçükçekmece","Maltepe","Pendik","Sancaktepe","Sarıyer","Silivri","Sultanbeyli","Sultangazi","Şile","Şişli","Tuzla","Ümraniye","Üsküdar","Zeytinburnu"],
+  "İstanbul Avrupa":["Arnavutköy","Avcılar","Bağcılar","Bahçelievler","Bakırköy","Başakşehir","Bayrampaşa","Beşiktaş","Beylikdüzü","Beyoğlu","Büyükçekmece","Çatalca","Esenler","Esenyurt","Eyüpsultan","Fatih","Gaziosmanpaşa","Güngören","Kağıthane","Küçükçekmece","Sarıyer","Silivri","Sultangazi","Şişli","Zeytinburnu"],
+  "İstanbul Anadolu":["Adalar","Ataşehir","Beykoz","Çekmeköy","Kadıköy","Kartal","Maltepe","Pendik","Sancaktepe","Sultanbeyli","Şile","Tuzla","Ümraniye","Üsküdar"],
   "Kocaeli":["Başiskele","Çayırova","Darıca","Derince","Dilovası","Gebze","Gölcük","İzmit","Kandıra","Karamürsel","Kartepe","Körfez"],
   "Yalova":["Altınova","Armutlu","Çınarcık","Çiftlikköy","Merkez","Termal"],
   "Bursa":["Büyükorhan","Gemlik","Gürsu","Harmancık","İnegöl","İznik","Karacabey","Keles","Kestel","Mudanya","Mustafakemalpaşa","Nilüfer","Orhaneli","Orhangazi","Osmangazi","Yıldırım","Yenişehir"]
 };
 
-const S = {
+let S = {
   personnel: localStorage.getItem("ops_personnel") || "",
   personnelList: [],
   schools: [],
   records: [],
+  dashboard: null,
   selFaz: null,
   selSehir: "",
   selIlce: "",
@@ -554,974 +410,450 @@ const S = {
   okulCity: "all",
   recCity: "all",
   teslimRec: null,
-  loading: {
-    schools: false,
-    records: false,
-    personnel: false,
-    dashboard: false
-  }
+  cacheAt: {dashboard:0, schools:0, personnel:0, records:0}
 };
 
-// ── HELPERS ──
-function normalizeUrl(url) {
-  return String(url || "").trim().replace(/\/+$/, "");
-}
-function h(s) {
-  return String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-function escJs(s) {
-  return String(s ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "");
-}
-function showLoader(text = "Yükleniyor...") {
-  const ov = document.getElementById("loaderOv");
-  const txt = document.getElementById("loaderTxt");
-  if (txt) txt.textContent = text;
-  if (ov) ov.classList.add("on");
-}
-function hideLoader() {
-  document.getElementById("loaderOv")?.classList.remove("on");
-}
-function toast(msg, type = "info") {
-  const w = document.getElementById("toastWrap");
-  if (!w) return;
+const qs = s => document.querySelector(s);
+const qsa = s => [...document.querySelectorAll(s)];
+function h(text){ return String(text ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function toast(msg, type="info") {
+  const w = qs("#toastWrap");
   const el = document.createElement("div");
-  el.className = "toast " + (type === "success" ? "t-ok" : type === "error" ? "t-err" : "t-info");
-  const icon = type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️";
-  const span = document.createElement("span");
-  span.textContent = msg;
-  el.append(icon + " ");
-  el.appendChild(span);
+  el.className = "toast " + (type==="success"?"t-ok":type==="error"?"t-err":"t-info");
+  const icon = type==="success" ? "✅" : type==="error" ? "❌" : "ℹ️";
+  el.innerHTML = `<span>${icon}</span><span>${h(msg)}</span>`;
   w.appendChild(el);
-  setTimeout(() => el.remove(), 4200);
+  setTimeout(() => el.remove(), 3500);
 }
-function openModal(id) { document.getElementById(id)?.classList.add("open"); }
-function closeModal(id) { document.getElementById(id)?.classList.remove("open"); }
-function setTopPersonnel(name) {
-  S.personnel = name || "";
-  localStorage.setItem("ops_personnel", S.personnel);
-  const topName = document.getElementById("topName");
-  const topAvatar = document.getElementById("topAvatar");
-  if (topName) topName.textContent = S.personnel || "Personel Seç";
-  if (topAvatar) topAvatar.textContent = S.personnel ? S.personnel.charAt(0).toUpperCase() : "?";
-  const inp = document.getElementById("inp-kayit-personel");
-  if (inp && !inp.value) inp.value = S.personnel || "";
-}
-function updateConnectionStatus(state, text) {
-  const el = document.getElementById("connStatus");
-  if (!el) return;
-  const color = state === "ok" ? "var(--green)" : state === "error" ? "var(--red)" : state === "warn" ? "var(--orange)" : "var(--text3)";
-  el.innerHTML = `<span style="color:${color}">● ${h(text)}</span>`;
-}
-function safeArray(v) { return Array.isArray(v) ? v : []; }
-function sortByDateDesc(list, field) {
-  return [...list].sort((a,b) => parseTRDate(b[field]) - parseTRDate(a[field]));
-}
-function parseTRDate(s) {
-  const m = String(s || "").match(/^(\d{2})\.(\d{2})\.(\d{4})/);
-  if (!m) return new Date(0);
-  return new Date(+m[3], +m[2] - 1, +m[1]);
-}
-function isLate(tarih) {
-  return (Date.now() - parseTRDate(tarih).getTime()) / 864e5 >= 7;
-}
-function durumBadge(d) {
-  if (d === "teslim") return `<span class="badge b-done">✓ Teslim</span>`;
-  if (d === "kismi") return `<span class="badge b-part">⊕ Kısmi</span>`;
-  return `<span class="badge b-wait">⏳ Bekliyor</span>`;
-}
-function isConfigured() {
-  return !!normalizeUrl(SCRIPT_URL);
-}
-function recordRemaining(r) {
-  const total = Number(r.adet || 0);
-  const teslimEdilen = Number(r.teslim_edilen || r.delivered_adet || 0);
-  if (r.durum === "teslim") return 0;
-  return Math.max(1, total - teslimEdilen);
-}
-function findSchoolByName(city, district, name, kurum) {
-  const lname = String(name || "").trim().toLowerCase();
-  const lkurum = String(kurum || "").trim();
-  return S.schools.find(s =>
-    String(s.city || "") === String(city || "") &&
-    String(s.district || "") === String(district || "") &&
-    String(s.school_name || "").trim().toLowerCase() === lname &&
-    (lkurum ? String(s.kurum_kodu || "").trim() === lkurum : true)
-  ) || null;
-}
+function showLoader(txt="Yükleniyor..."){ qs("#loaderTxt").textContent = txt; qs("#loaderOv").classList.add("on"); }
+function hideLoader(){ qs("#loaderOv").classList.remove("on"); }
 
-// ── API ──
-async function readJsonResponse(r) {
-  const text = await r.text();
-  if (!r.ok) {
-    throw new Error(`HTTP ${r.status}: ${text.slice(0, 180) || "Yanıt alınamadı"}`);
-  }
-  let data;
+async function fetchJSON(url, options={}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
   try {
-    data = JSON.parse(text);
-  } catch {
-    throw new Error("Sunucudan JSON yerine farklı bir yanıt döndü. Deploy ayarını ve Web App URL'sini kontrol edin.");
-  }
-  if (data && data.error) {
-    throw new Error(data.error);
-  }
-  return data;
+    const res = await fetch(url, {...options, signal: controller.signal, redirect: "follow"});
+    const text = await res.text();
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    let data;
+    try { data = JSON.parse(text); }
+    catch { throw new Error("Sunucu JSON yerine farklı bir cevap döndürdü."); }
+    if (data.error) throw new Error(data.error);
+    return data;
+  } finally { clearTimeout(timer); }
 }
-async function api(params = {}) {
-  const url = normalizeUrl(SCRIPT_URL);
-  if (!url) throw new Error("Script URL ayarlanmamış. Ayarlar sayfasından girin.");
-  const query = new URLSearchParams();
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== null && v !== "") query.set(k, v);
-  });
-  const r = await fetch(`${url}?${query.toString()}`, {
-    method: "GET",
-    redirect: "follow",
-    headers: { "Accept": "application/json,text/plain,*/*" }
-  });
-  return readJsonResponse(r);
+async function api(params) {
+  if (!SCRIPT_URL) throw new Error("Script URL ayarlanmamış.");
+  const url = SCRIPT_URL + "?" + new URLSearchParams(params).toString();
+  return fetchJSON(url);
 }
-async function apiPost(body = {}) {
-  const url = normalizeUrl(SCRIPT_URL);
-  if (!url) throw new Error("Script URL ayarlanmamış. Ayarlar sayfasından girin.");
-  const r = await fetch(url, {
-    method: "POST",
-    redirect: "follow",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8",
-      "Accept": "application/json,text/plain,*/*"
-    },
+async function apiPost(body) {
+  if (!SCRIPT_URL) throw new Error("Script URL ayarlanmamış.");
+  return fetchJSON(SCRIPT_URL, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
     body: JSON.stringify(body)
   });
-  return readJsonResponse(r);
 }
-async function testUrl(urlToTest) {
-  const prev = SCRIPT_URL;
-  SCRIPT_URL = normalizeUrl(urlToTest);
-  try {
-    await api({ action: "ping" });
-    await api({ action: "getPersonnel" });
-    await apiPost({ action: "__connection_probe__" }).catch(err => {
-      if (!/Geçersiz action/i.test(err.message) && !/invalid action/i.test(err.message)) throw err;
-    });
-    return true;
-  } finally {
-    SCRIPT_URL = prev;
-  }
+function isFresh(key){ return Date.now() - (S.cacheAt[key]||0) < CACHE_TTL[key]; }
+function markFresh(key){ S.cacheAt[key] = Date.now(); }
+
+function buildCityTabs(targetId, clickFnName){
+  const root = qs(targetId);
+  const cities = ['all', ...CITIES];
+  root.innerHTML = cities.map(c => {
+    const label = c === 'all' ? 'Tümü' : c;
+    const stateKey = targetId === '#okulCityTabs' ? S.okulCity : S.recCity;
+    return `<div class="city-tab ${stateKey===c?'active':''}" data-city="${h(c)}" onclick="${clickFnName}(this,'${h(c)}')">${h(label)}</div>`;
+  }).join('');
 }
 
-// ── DATA LOADERS ──
-async function loadPersonnel(force = false) {
-  if (!isConfigured()) return [];
-  if (S.loading.personnel) return S.personnelList;
-  if (S.personnelList.length && !force) return S.personnelList;
-  S.loading.personnel = true;
-  try {
-    const r = await api({ action: "getPersonnel" });
-    S.personnelList = safeArray(r.data);
-    if (S.personnel && !S.personnelList.find(p => p.isim === S.personnel)) {
-      setTopPersonnel("");
-    }
-    refreshPersonnelDropdowns();
-    renderPersonnelList();
-    renderPersonnelMgmt();
-    return S.personnelList;
-  } finally {
-    S.loading.personnel = false;
-  }
-}
-async function loadSchools(force = false) {
-  if (!isConfigured()) return [];
-  if (S.loading.schools) return S.schools;
-  if (S.schools.length && !force) return S.schools;
-  S.loading.schools = true;
-  try {
-    const r = await api({ action: "getSchools" });
-    S.schools = safeArray(r.data);
-    return S.schools;
-  } finally {
-    S.loading.schools = false;
-  }
-}
-async function loadRecords(force = false) {
-  if (!isConfigured()) return [];
-  if (S.loading.records) return S.records;
-  if (S.records.length && !force) return S.records;
-  S.loading.records = true;
-  try {
-    const r = await api({ action: "getRecords" });
-    S.records = sortByDateDesc(safeArray(r.data), "tarih");
-    return S.records;
-  } finally {
-    S.loading.records = false;
-  }
-}
-async function refreshAllData() {
-  if (!isConfigured()) return;
-  showLoader("Veriler yenileniyor...");
-  try {
-    await Promise.all([loadPersonnel(true), loadSchools(true), loadRecords(true)]);
-  } finally {
-    hideLoader();
-  }
-}
-async function ensureBaseData() {
-  if (!isConfigured()) return;
-  await Promise.all([loadPersonnel(), loadSchools()]);
-}
-function refreshPersonnelDropdowns() {
-  const items = S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('kayit-p','${escJs(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Henüz personel yok</div>`;
-  const kayitList = document.getElementById("sd-kayit-p");
-  if (kayitList) kayitList.innerHTML = items;
-  const teslimList = document.getElementById("sd-teslim-p");
-  if (teslimList) {
-    teslimList.innerHTML = S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('teslim-p','${escJs(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Henüz personel yok</div>`;
-  }
-}
-
-// ── PAGE NAV ──
-async function showPage(id) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById("page-" + id)?.classList.add("active");
-  document.querySelectorAll(".nav-btn").forEach(b => {
-    const onclick = b.getAttribute("onclick") || "";
-    b.classList.toggle("active", onclick.includes(`showPage('${id}')`));
-  });
-  ["dashboard","okullar","kayit","kayitlar","ayarlar"].forEach(p => {
-    document.getElementById("mob-" + p)?.classList.toggle("active", p === id);
-  });
-
-  if (id === "dashboard") await loadDashboard();
-  if (id === "okullar") await loadOkullar();
-  if (id === "kayitlar") await loadKayitlar(true);
+function showPage(id){
+  qsa(".page").forEach(p => p.classList.remove("active"));
+  qs("#page-"+id).classList.add("active");
+  qsa(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.page === id));
+  ["dashboard","okullar","kayit","kayitlar","ayarlar"].forEach(p => { const el = qs("#mob-"+p); if(el) el.classList.toggle("active", p===id); });
+  if (id === "dashboard") loadDashboard();
+  if (id === "okullar") loadOkullar();
+  if (id === "kayitlar") loadRecords();
+  if (id === "kayit") ensureBaseData();
   if (id === "ayarlar") loadAyarlar();
-  if (id === "kayit") {
-    await ensureBaseData();
-    refreshPersonnelDropdowns();
-    if (!document.getElementById("inp-kayit-personel").value && S.personnel) {
-      document.getElementById("inp-kayit-personel").value = S.personnel;
-    }
-  }
 }
 
-// ── SEARCHABLE DROPDOWN ──
-function sdOpen(ns) {
-  const l = document.getElementById("sd-" + ns);
-  if (l) {
-    l.classList.add("open");
-    sdFilter(ns);
-  }
-}
-function sdBlur(ns) {
-  setTimeout(() => document.getElementById("sd-" + ns)?.classList.remove("open"), 220);
-}
-function getInputId(ns) {
-  if (ns === "teslim-p") return "teslim-personel";
-  if (ns === "kayit-p") return "inp-kayit-personel";
-  return "inp-" + ns;
-}
-function sdFilter(ns) {
-  const inp = document.getElementById(getInputId(ns));
-  const l = document.getElementById("sd-" + ns);
-  if (!inp || !l) return;
+function sdOpen(ns){ const l=qs("#sd-"+ns); if(l){ l.classList.add("open"); sdFilter(ns);} }
+function sdBlur(ns){ setTimeout(()=>{ const l=qs("#sd-"+ns); if(l) l.classList.remove("open"); },160); }
+function sdFilter(ns){
+  const inputIdMap = { personel:"#inp-personel", teslimp:"#teslim-personel" };
+  const inp = ns==="teslim-p" ? qs("#teslim-personel") : qs("#inp-"+ns);
+  const l = qs("#sd-"+ns);
+  if(!inp || !l) return;
   const q = inp.value.toLowerCase().trim();
   l.classList.add("open");
-
-  if (ns === "sehir") {
-    l.innerHTML = CITIES.filter(c => c.toLowerCase().includes(q))
-      .map(c => `<div class="sd-item" onclick="sdPick('sehir','${escJs(c)}')">${h(c)}</div>`)
-      .join("") || `<div class="sd-empty">Sonuç yok</div>`;
+  if(ns==="sehir"){
+    l.innerHTML = CITIES.filter(c => c.toLowerCase().includes(q)).map(c => `<div class="sd-item" onclick="sdPick('sehir','${h(c)}')">${h(c)}</div>`).join("") || `<div class="sd-empty">Sonuç yok</div>`;
     return;
   }
-
-  if (ns === "ilce") {
-    if (!S.selSehir) {
-      l.innerHTML = `<div class="sd-empty">Önce şehir seçin</div>`;
-      return;
-    }
-    const list = (DISTRICTS[S.selSehir] || []).filter(x => x.toLowerCase().includes(q));
-    l.innerHTML = list.map(x => `<div class="sd-item" onclick="sdPick('ilce','${escJs(x)}')">${h(x)}</div>`).join("") || `<div class="sd-empty">Sonuç yok</div>`;
+  if(ns==="ilce"){
+    if(!S.selSehir){ l.innerHTML = `<div class="sd-empty">Önce şehir seçin</div>`; return; }
+    l.innerHTML = (DISTRICTS[S.selSehir]||[]).filter(x => x.toLowerCase().includes(q)).map(x => `<div class="sd-item" onclick="sdPick('ilce','${h(x)}')">${h(x)}</div>`).join("") || `<div class="sd-empty">Sonuç yok</div>`;
     return;
   }
-
-  if (ns === "okul") {
-    if (!S.selIlce) {
-      l.innerHTML = `<div class="sd-empty">Önce ilçe seçin</div>`;
-      return;
-    }
-    const matches = S.schools.filter(s =>
-      s.city === S.selSehir &&
-      s.district === S.selIlce &&
-      String(s.school_name || "").toLowerCase().includes(q)
-    );
-    let html = matches.map(s =>
-      `<div class="sd-item" onclick="sdPickOkul('${escJs(s.school_id)}','${escJs(s.school_name)}','${escJs(s.kurum_kodu || "")}')">
-        ${h(s.school_name)}
-        ${s.kurum_kodu ? ` <span style="color:var(--text3);font-size:11px">(${h(s.kurum_kodu)})</span>` : ""}
-      </div>`
-    ).join("");
+  if(ns==="personel" || ns==="teslim-p"){
+    const items = S.personnelList.filter(p => (p.isim||"").toLowerCase().includes(q));
+    l.innerHTML = items.map(p => `<div class="sd-item" onclick="sdPick('${ns}','${h(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Personel bulunamadı</div>`;
+    return;
+  }
+  if(ns==="okul"){
+    if(!S.selIlce){ l.innerHTML = `<div class="sd-empty">Önce ilçe seçin</div>`; return; }
+    const matches = S.schools.filter(s => s.city===S.selSehir && s.district===S.selIlce && (s.school_name||"").toLowerCase().includes(q));
+    let html = matches.map(s => `<div class="sd-item" onclick="sdPickOkul('${h(s.school_id)}')">${h(s.school_name)}${s.kurum_kodu ? ` <span style="color:var(--text3);font-size:11px">(${h(s.kurum_kodu)})</span>` : ""}</div>`).join("");
     const typed = inp.value.trim();
-    if (typed && !matches.find(s => String(s.school_name || "").trim().toLowerCase() === typed.toLowerCase())) {
-      html += `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ "${h(typed)}" olarak ekle</div>`;
-    }
-    if (!html) html = `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ Yeni okul ekle</div>`;
-    l.innerHTML = html;
-    return;
-  }
-
-  if (ns === "kayit-p" || ns === "teslim-p") {
-    const items = S.personnelList.filter(p => String(p.isim || "").toLowerCase().includes(q));
-    l.innerHTML = items.map(p => `<div class="sd-item" onclick="sdPick('${ns}','${escJs(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Personel bulunamadı</div>`;
+    if(typed && !matches.find(s => (s.school_name||"").toLowerCase() === typed.toLowerCase())) html += `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ "${h(typed)}" olarak ekle</div>`;
+    l.innerHTML = html || `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ Yeni okul ekle</div>`;
   }
 }
-function sdPick(ns, val) {
-  const inp = document.getElementById(getInputId(ns));
-  if (inp) inp.value = val;
-  document.getElementById("sd-" + ns)?.classList.remove("open");
-
-  if (ns === "sehir") {
-    S.selSehir = val;
-    S.selIlce = "";
-    S.selOkul = null;
-    const ilce = document.getElementById("inp-ilce");
-    const okul = document.getElementById("inp-okul");
-    if (ilce) {
-      ilce.value = "";
-      ilce.disabled = false;
-      ilce.placeholder = "İlçe seçin...";
-    }
-    if (okul) {
-      okul.value = "";
-      okul.disabled = true;
-      okul.placeholder = "Önce ilçe seçin...";
-    }
-    document.getElementById("inp-kurum").value = "";
-  } else if (ns === "ilce") {
-    S.selIlce = val;
-    S.selOkul = null;
-    const okul = document.getElementById("inp-okul");
-    if (okul) {
-      okul.value = "";
-      okul.disabled = false;
-      okul.placeholder = "Okul adı yazın veya seçin...";
-    }
-    document.getElementById("inp-kurum").value = "";
-  } else if (ns === "kayit-p") {
-    setTopPersonnel(val);
+function sdPick(ns,val){
+  const inp = ns==="teslim-p" ? qs("#teslim-personel") : qs("#inp-"+ns);
+  if(inp) inp.value = val;
+  const l = qs("#sd-"+ns); if(l) l.classList.remove("open");
+  if(ns==="personel"){ selectPersonnel(val); qs("#inp-personel").value = val; return; }
+  if(ns==="teslim-p"){ return; }
+  if(ns==="sehir"){
+    S.selSehir = val; S.selIlce=""; S.selOkul=null;
+    qs("#inp-ilce").value=""; qs("#inp-ilce").disabled=false; qs("#inp-okul").value=""; qs("#inp-okul").disabled=true; qs("#inp-kurum").value="";
+  }
+  if(ns==="ilce"){
+    S.selIlce = val; S.selOkul=null;
+    qs("#inp-okul").value=""; qs("#inp-okul").disabled=false; qs("#inp-kurum").value="";
   }
 }
-function sdPickOkul(id, name, kurum) {
-  S.selOkul = { school_id: id, school_name: name, kurum_kodu: kurum };
-  document.getElementById("inp-okul").value = name;
-  document.getElementById("inp-kurum").value = kurum || "";
-  document.getElementById("sd-okul")?.classList.remove("open");
+function sdPickOkul(id){
+  const school = S.schools.find(s => s.school_id === id);
+  if(!school) return;
+  S.selOkul = school;
+  qs("#inp-okul").value = school.school_name || "";
+  qs("#inp-kurum").value = school.kurum_kodu || "";
+  qs("#sd-okul").classList.remove("open");
 }
-function sdPickOkulNew() {
-  const name = document.getElementById("inp-okul").value.trim();
-  if (!name) {
-    toast("Okul adı girin", "error");
-    return;
-  }
-  S.selOkul = { school_id: null, school_name: name, kurum_kodu: document.getElementById("inp-kurum").value.trim() };
-  document.getElementById("sd-okul")?.classList.remove("open");
-  toast("Kayıtla birlikte yeni okul oluşturulacak", "info");
+function sdPickOkulNew(){
+  const name = qs("#inp-okul").value.trim();
+  if(!name){ toast("Okul adı girin","error"); return; }
+  S.selOkul = { school_id:null, school_name:name, kurum_kodu:"", city:S.selSehir, district:S.selIlce };
+  qs("#sd-okul").classList.remove("open");
 }
+function pickFaz(n){ S.selFaz=n; [1,2,3].forEach(i=>{const b=qs("#faz"+i); b.className="faz-btn"; if(i===n) b.classList.add("a"+n);}); }
+function changeAdet(d){ const inp=qs("#inp-adet"); inp.value=Math.max(1,Math.min(99,(parseInt(inp.value)||1)+d)); }
+function changeTeslimAdet(d){ const inp=qs("#teslim-adet"); inp.value=Math.max(1,Math.min(parseInt(inp.max)||99,(parseInt(inp.value)||1)+d)); }
 
-// ── FAZ & ADET ──
-function pickFaz(n) {
-  S.selFaz = n;
-  [1,2,3].forEach(i => {
-    const b = document.getElementById("faz" + i);
-    if (!b) return;
-    b.className = "faz-btn";
-    if (i === n) b.classList.add("a" + n);
-  });
-}
-function changeAdet(d) {
-  const inp = document.getElementById("inp-adet");
-  inp.value = Math.max(1, Math.min(99, (parseInt(inp.value, 10) || 1) + d));
-}
-function changeTeslimAdet(d) {
-  const inp = document.getElementById("teslim-adet");
-  inp.value = Math.max(1, Math.min(parseInt(inp.max, 10) || 99, (parseInt(inp.value, 10) || 1) + d));
-}
-
-// ── DASHBOARD ──
-async function loadDashboard() {
-  const dateEl = document.getElementById("dashDate");
-  if (dateEl) dateEl.textContent = new Date().toLocaleDateString("tr-TR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-
-  if (!isConfigured()) {
-    document.getElementById("citySummaryGrid").innerHTML = `<div class="empty"><div class="empty-ico">⚙️</div><div class="empty-t">Bağlantı Yok</div><div class="empty-s">Ayarlar sayfasından Script URL girin</div></div>`;
-    updateConnectionStatus("warn", "URL Girilmedi");
-    return;
-  }
-
-  const icon = document.getElementById("dashRefreshIcon");
-  if (icon) icon.innerHTML = `<div class="spinner spin-sm" style="display:inline-block;vertical-align:middle"></div>`;
-  try {
-    const res = await api({ action: "getDashboard" });
-    const d = res.data || {};
-    updateConnectionStatus("ok", "Bağlı");
-
-    document.getElementById("s-bekleyen").textContent = d.statBekleyen ?? "0";
-    document.getElementById("s-bugun").textContent = d.statBugun ?? "0";
-    document.getElementById("s-bugun-sub").textContent = `${d.statBugunKayit ?? 0} kayıt`;
-    document.getElementById("s-toplam").textContent = d.statToplam ?? "0";
-    document.getElementById("s-geciken").textContent = d.statGeciken ?? "0";
-    document.getElementById("s-okul").textContent = d.statOkul ?? "0";
-    document.getElementById("s-bugunkayit").textContent = d.statBugunKayit ?? "0";
-
-    const cityStats = d.cityStats || {};
-    document.getElementById("citySummaryGrid").innerHTML = CITIES.map(c => {
-      const s = cityStats[c] || { toplam: 0, bekleyen: 0, teslim: 0, fazCount: { faz1: 0, faz2: 0, faz3: 0 } };
-      const f = s.fazCount || {};
-      const mf = Math.max(f.faz1 || 0, f.faz2 || 0, f.faz3 || 0, 1);
-      return `<div class="csum-card" onclick="showPage('okullar');setOkulCityByName('${escJs(c)}')">
-        <div class="csum-city">📍 ${h(c)}</div>
-        <div class="csum-row"><div class="csum-label">FAZ1</div><div class="csum-track"><div class="csum-fill" style="width:${Math.round(((f.faz1 || 0) / mf) * 100)}%;background:var(--faz1)"></div></div><div class="csum-val">${f.faz1 || 0}</div></div>
-        <div class="csum-row"><div class="csum-label">FAZ2</div><div class="csum-track"><div class="csum-fill" style="width:${Math.round(((f.faz2 || 0) / mf) * 100)}%;background:var(--faz2)"></div></div><div class="csum-val">${f.faz2 || 0}</div></div>
-        <div class="csum-row"><div class="csum-label">FAZ3</div><div class="csum-track"><div class="csum-fill" style="width:${Math.round(((f.faz3 || 0) / mf) * 100)}%;background:var(--faz3)"></div></div><div class="csum-val">${f.faz3 || 0}</div></div>
-        <div class="csum-nums">
-          <div class="csum-num"><div class="csum-num-v" style="color:var(--orange)">${s.bekleyen || 0}</div><div class="csum-num-l">Bekleyen</div></div>
-          <div class="csum-num"><div class="csum-num-v" style="color:var(--green)">${s.teslim || 0}</div><div class="csum-num-l">Teslim</div></div>
-          <div class="csum-num"><div class="csum-num-v">${s.toplam || 0}</div><div class="csum-num-l">Toplam</div></div>
-        </div>
-        <div class="csum-bg">${h(c)}</div>
-      </div>`;
-    }).join("");
-
-    const todayActivity = safeArray(d.todayActivity);
-    document.getElementById("todayActivity").innerHTML = todayActivity.length
-      ? `<div class="timeline">${todayActivity.slice(0, 8).map(r => `
-          <div class="tl-item">
-            <div class="tl-dot" style="background:rgba(${r.faz == 1 ? "79,142,247" : r.faz == 2 ? "168,85,247" : "245,158,11"},.15)">${r.faz == 1 ? "①" : r.faz == 2 ? "②" : "③"}</div>
-            <div class="tl-content"><div class="tl-title">${h(r.school_name)}</div><div class="tl-meta">${h(r.city)} · ${h(r.adet)} adet · ${h(r.personel)} · ${h(r.tarih)}</div></div>
-            ${durumBadge(r.durum)}
-          </div>`).join("")}</div>`
-      : `<div class="empty"><div class="empty-ico">🌙</div><div class="empty-s">Bugün kayıt yok</div></div>`;
-
-    const lateList = safeArray(d.gecikenList);
-    document.getElementById("lateServices").innerHTML = lateList.length
-      ? `<div class="timeline">${lateList.slice(0, 8).map(r => `
-          <div class="tl-item">
-            <div class="tl-dot" style="background:rgba(239,68,68,.15)">⚠️</div>
-            <div class="tl-content"><div class="tl-title">${h(r.school_name)}</div><div class="tl-meta">${h(r.city)} · Faz ${h(r.faz)} · ${h(r.adet)} adet · ${h(r.personel)}</div></div>
-            <span class="badge b-late">${h(r.gun)} gün</span>
-          </div>`).join("")}</div>`
-      : `<div class="empty"><div class="empty-ico">✅</div><div class="empty-t">Harika!</div><div class="empty-s">Geciken servis yok</div></div>`;
-
-    const ps = d.personnelStats || {};
-    const names = Object.keys(ps);
-    document.getElementById("personnelStatsTbl").innerHTML = names.length
-      ? names.map(name => {
-          const p = ps[name] || {};
-          const alin = Number(p.alinan || 0);
-          const teslim = Number(p.teslim || 0);
-          const bek = Math.max(0, alin - teslim);
-          const oran = alin ? Math.round((teslim / alin) * 100) : 0;
-          return `<tr>
-            <td><div style="display:flex;align-items:center;gap:9px"><div class="p-avatar" style="width:28px;height:28px;font-size:11px">${h(name.charAt(0).toUpperCase())}</div><span style="font-weight:600">${h(name)}</span></div></td>
-            <td style="font-family:'Space Mono',monospace;font-weight:700">${alin}</td>
-            <td style="color:var(--green);font-family:'Space Mono',monospace;font-weight:700">${teslim}</td>
-            <td style="color:var(--orange);font-family:'Space Mono',monospace;font-weight:700">${bek}</td>
-            <td style="min-width:120px"><div style="display:flex;align-items:center;gap:9px"><div class="prog-wrap" style="flex:1"><div class="prog-fill" style="width:${oran}%;background:${oran >= 80 ? "var(--green)" : oran >= 50 ? "var(--orange)" : "var(--red)"}"></div></div><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text2)">${oran}%</span></div></td>
-          </tr>`;
-        }).join("")
-      : `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3)">Henüz kayıt yok</td></tr>`;
-  } catch (e) {
-    updateConnectionStatus("error", "Bağlantı Hatası");
-    toast("Dashboard yüklenemedi: " + e.message, "error");
-  } finally {
-    if (icon) icon.textContent = "↻";
-  }
-}
-
-// ── OKULLAR ──
-async function loadOkullar() {
-  const list = document.getElementById("okullarList");
-  list.innerHTML = `<div class="empty"><div class="spinner"></div></div>`;
-  if (!isConfigured()) {
-    list.innerHTML = `<div class="empty"><div class="empty-ico">⚙️</div><div class="empty-t">Bağlantı yok</div><div class="empty-s">Önce Ayarlar sayfasından bağlantıyı tamamlayın</div></div>`;
-    return;
-  }
-  try {
-    await Promise.all([loadSchools(true), loadRecords(true)]);
-    renderOkullar();
-  } catch (e) {
-    list.innerHTML = `<div class="empty"><div class="empty-s" style="color:var(--red)">Okullar yüklenemedi: ${h(e.message)}</div></div>`;
-  }
-}
-function setOkulCity(el, c) {
-  S.okulCity = c;
-  document.querySelectorAll("#okulCityTabs .city-tab").forEach(t => t.classList.remove("active"));
-  el.classList.add("active");
-  renderOkullar();
-}
-function setOkulCityByName(c) {
-  S.okulCity = c;
-  document.querySelectorAll("#okulCityTabs .city-tab").forEach(t => t.classList.toggle("active", t.dataset.city === c));
-  renderOkullar();
-}
-function renderOkullar() {
-  const q = (document.getElementById("okulSearch")?.value || "").toLowerCase().trim();
-  let schools = [...S.schools];
-  if (S.okulCity !== "all") schools = schools.filter(s => s.city === S.okulCity);
-  if (q) {
-    schools = schools.filter(s =>
-      String(s.school_name || "").toLowerCase().includes(q) ||
-      String(s.district || "").toLowerCase().includes(q) ||
-      String(s.kurum_kodu || "").toLowerCase().includes(q)
-    );
-  }
-  const box = document.getElementById("okullarList");
-  if (!schools.length) {
-    box.innerHTML = `<div class="empty"><div class="empty-ico">🏫</div><div class="empty-t">Okul bulunamadı</div><div class="empty-s">Yeni kayıt oluşturduğunuzda okullar buraya eklenir</div></div>`;
-    return;
-  }
-  const stats = {};
-  S.records.forEach(r => {
-    const sid = r.school_id;
-    if (!stats[sid]) stats[sid] = { b: 0, t: 0 };
-    stats[sid].t += Number(r.adet || 0);
-    if (r.durum !== "teslim") stats[sid].b += recordRemaining(r);
-  });
-  box.innerHTML = schools.map(s => {
-    const st = stats[s.school_id] || { b: 0, t: 0 };
-    return `<div class="school-card" id="sc-${h(s.school_id)}" onclick="toggleSchoolDetail('${escJs(s.school_id)}')">
-      <div class="sc-icon">🏫</div>
-      <div class="sc-info"><div class="sc-name">${h(s.school_name)}</div><div class="sc-meta">${h(s.city)} › ${h(s.district)}${s.kurum_kodu ? " · Kod: " + h(s.kurum_kodu) : ""}</div></div>
-      <div class="sc-stats">
-        <div class="sc-stat"><div class="sc-stat-v" style="color:var(--orange)">${st.b}</div><div class="sc-stat-l">Bekleyen</div></div>
-        <div class="sc-stat"><div class="sc-stat-v">${st.t}</div><div class="sc-stat-l">Toplam</div></div>
-      </div>
-      <span id="sc-arr-${h(s.school_id)}" style="color:var(--text3);font-size:16px;flex-shrink:0">›</span>
-    </div>
-    <div class="school-detail" id="scd-${h(s.school_id)}"></div>`;
-  }).join("");
-}
-async function toggleSchoolDetail(sid) {
-  const card = document.getElementById("sc-" + sid);
-  const detail = document.getElementById("scd-" + sid);
-  const arr = document.getElementById("sc-arr-" + sid);
-  if (!detail) return;
-  if (detail.classList.contains("open")) {
-    detail.classList.remove("open");
-    card?.classList.remove("expanded");
-    if (arr) arr.textContent = "›";
-    return;
-  }
-  card?.classList.add("expanded");
-  if (arr) arr.textContent = "⌄";
-  detail.classList.add("open");
-  detail.innerHTML = `<div style="padding:20px;text-align:center"><div class="spinner"></div></div>`;
-  try {
-    const res = await api({ action: "getRecords", school_id: sid });
-    const recs = sortByDateDesc(safeArray(res.data), "tarih");
-    const school = S.schools.find(s => s.school_id === sid) || {};
-    if (!recs.length) {
-      detail.innerHTML = `<div class="empty"><div class="empty-ico">📦</div><div class="empty-t">Kayıt yok</div><div class="empty-s">Bu okul için henüz ops alım kaydı yok</div></div>
-      <div style="padding:0 20px 20px"><button class="btn btn-primary btn-sm" onclick="goNewKayit('${escJs(sid)}','${escJs(school.school_name || "")}','${escJs(school.city || "")}','${escJs(school.district || "")}','${escJs(school.kurum_kodu || "")}')">➕ Kayıt Oluştur</button></div>`;
-      return;
-    }
-    detail.innerHTML = `
-      <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:9px">
-        <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700">${h(school.school_name || "")} — KAYITLAR</span>
-        <button class="btn btn-primary btn-sm" onclick="goNewKayit('${escJs(sid)}','${escJs(school.school_name || "")}','${escJs(school.city || "")}','${escJs(school.district || "")}','${escJs(school.kurum_kodu || "")}')">➕ Yeni Kayıt</button>
-      </div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>Faz</th><th>Adet</th><th>Kalan</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead>
-        <tbody>${recs.map(r => `
-          <tr class="${r.durum !== "teslim" && isLate(r.tarih) ? "tr-late" : ""}">
-            <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
-            <td style="font-family:'Space Mono',monospace;font-weight:700">${h(r.adet)}</td>
-            <td style="font-family:'Space Mono',monospace;font-weight:700;color:var(--orange)">${recordRemaining(r)}</td>
-            <td>${h(r.personel)}</td>
-            <td style="color:var(--text2);font-size:12px">${h(r.tarih)}</td>
-            <td>${durumBadge(r.durum)}</td>
-            <td style="color:var(--text2);font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h(r.notlar || "")}">${h(r.notlar || "—")}</td>
-            <td>${r.durum !== "teslim"
-              ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal('${escJs(r.record_id)}','${escJs(r.school_name)}',${recordRemaining(r)},'${escJs(r.tarih)}',${Number(r.faz || 0)},'${escJs(r.school_id || sid)}')">📦 Teslim</button>`
-              : `<span style="color:var(--green);font-size:12px">✓</span>`}
-            </td>
-          </tr>`).join("")}</tbody>
-      </table></div>`;
-  } catch (e) {
-    detail.innerHTML = `<div class="empty"><div class="empty-s" style="color:var(--red)">Yüklenemedi: ${h(e.message)}</div></div>`;
-  }
-}
-function goNewKayit(sid, name, city, district, kurum) {
-  S.selSehir = city;
-  S.selIlce = district;
-  S.selOkul = { school_id: sid, school_name: name, kurum_kodu: kurum };
-  document.getElementById("inp-sehir").value = city;
-  const ilce = document.getElementById("inp-ilce");
-  ilce.value = district;
-  ilce.disabled = false;
-  const okul = document.getElementById("inp-okul");
-  okul.value = name;
-  okul.disabled = false;
-  document.getElementById("inp-kurum").value = kurum || "";
-  showPage("kayit");
-}
-
-// ── KAYITLAR ──
-async function loadKayitlar(force = false) {
-  if (!isConfigured()) {
-    document.getElementById("kayitlarTbl").innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Önce bağlantıyı kurun</td></tr>`;
-    return;
-  }
-  try {
-    await loadRecords(force);
-    renderKayitlar();
-  } catch (e) {
-    toast("Kayıtlar yüklenemedi: " + e.message, "error");
-  }
-}
-function setRecCity(el, c) {
-  S.recCity = c;
-  document.querySelectorAll("#recCityTabs .city-tab").forEach(t => t.classList.remove("active"));
-  el.classList.add("active");
-  renderKayitlar();
-}
-function renderKayitlar() {
-  const q = (document.getElementById("recSearch")?.value || "").toLowerCase().trim();
-  const df = document.getElementById("recDurumFilter")?.value || "all";
-  const ff = document.getElementById("recFazFilter")?.value || "all";
-  let recs = [...S.records];
-  if (S.recCity !== "all") recs = recs.filter(r => r.city === S.recCity);
-  if (df !== "all") recs = recs.filter(r => r.durum === df);
-  if (ff !== "all") recs = recs.filter(r => String(r.faz) === ff);
-  if (q) {
-    recs = recs.filter(r =>
-      String(r.school_name || "").toLowerCase().includes(q) ||
-      String(r.district || "").toLowerCase().includes(q)
-    );
-  }
-  const t = document.getElementById("kayitlarTbl");
-  if (!recs.length) {
-    t.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Kayıt bulunamadı</td></tr>`;
-    return;
-  }
-  t.innerHTML = recs.map(r => `
-    <tr class="${r.durum !== "teslim" && isLate(r.tarih) ? "tr-late" : ""}">
-      <td><div style="font-weight:600;font-size:13px">${h(r.school_name)}</div></td>
-      <td style="color:var(--text2);font-size:12px">${h(r.city || "")}${r.district ? " / " + h(r.district) : ""}</td>
-      <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
-      <td style="font-family:'Space Mono',monospace;font-weight:700">${h(r.adet)}</td>
-      <td>${h(r.personel)}</td>
-      <td style="color:var(--text2);font-size:12px;white-space:nowrap">${h(r.tarih)}</td>
-      <td>${durumBadge(r.durum)}</td>
-      <td style="color:var(--text2);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h(r.notlar || "")}">${h(r.notlar || "—")}</td>
-      <td>${r.durum !== "teslim"
-        ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal('${escJs(r.record_id)}','${escJs(r.school_name)}',${recordRemaining(r)},'${escJs(r.tarih)}',${Number(r.faz || 0)},'${escJs(r.school_id || "")}')">📦 Teslim</button>`
-        : `<span style="color:var(--green);font-size:12px">✓</span>`}
-      </td>
-    </tr>`).join("");
-}
-
-// ── YENİ KAYIT ──
-async function submitKayit() {
-  if (!isConfigured()) { toast("Script URL ayarlanmamış", "error"); return; }
-  const personel = document.getElementById("inp-kayit-personel").value.trim();
-  if (!personel) { toast("Personel seçin", "error"); return; }
-  if (!S.personnelList.find(p => p.isim === personel)) { toast("Listeden geçerli bir personel seçin", "error"); return; }
-  if (!S.selSehir) { toast("Şehir seçin", "error"); return; }
-  if (!S.selIlce) { toast("İlçe seçin", "error"); return; }
-  const okulAdi = document.getElementById("inp-okul").value.trim();
-  if (!okulAdi) { toast("Okul seçin veya yazın", "error"); return; }
-  if (!S.selFaz) { toast("Faz seçin", "error"); return; }
-
-  const adet = parseInt(document.getElementById("inp-adet").value, 10) || 1;
-  const notlar = document.getElementById("inp-not").value.trim();
-  const kurum = document.getElementById("inp-kurum").value.trim();
-  const btn = document.getElementById("kayitBtn");
-  btn.disabled = true;
-  document.getElementById("kayitBtnTxt").innerHTML = `<div class="spinner spin-sm" style="display:inline-block;vertical-align:middle"></div> Kaydediliyor...`;
-
-  try {
-    setTopPersonnel(personel);
-
-    let school = S.selOkul && S.selOkul.school_name && S.selOkul.school_name.trim().toLowerCase() === okulAdi.toLowerCase()
-      ? { ...S.selOkul, school_name: okulAdi, kurum_kodu: kurum || S.selOkul.kurum_kodu || "" }
-      : findSchoolByName(S.selSehir, S.selIlce, okulAdi, kurum) || { school_id: null, school_name: okulAdi, kurum_kodu: kurum };
-
-    if (!school.school_id) {
-      const sr = await apiPost({
-        action: "addSchool",
-        city: S.selSehir,
-        district: S.selIlce,
-        school_name: okulAdi,
-        kurum_kodu: kurum
-      });
-
-      school = sr.data && sr.data.school_id ? sr.data : null;
-      await loadSchools(true);
-      if (!school) {
-        school = findSchoolByName(S.selSehir, S.selIlce, okulAdi, kurum);
-      }
-      if (!school || !school.school_id) {
-        throw new Error("Okul oluşturuldu ama okul kimliği alınamadı. Sheets tarafındaki addSchool dönüşünü kontrol edin.");
-      }
-    }
-
-    await apiPost({
-      action: "addRecord",
-      school_id: school.school_id,
-      city: S.selSehir,
-      district: S.selIlce,
-      school_name: school.school_name,
-      kurum_kodu: school.kurum_kodu || kurum,
-      faz: S.selFaz,
-      adet,
-      personel,
-      notlar
-    });
-
-    toast(`Kayıt oluşturuldu ✓ — ${school.school_name}, Faz ${S.selFaz}, ${adet} adet`, "success");
-    resetKayitForm();
-    await Promise.all([loadRecords(true), loadSchools(true)]);
-    if (document.getElementById("page-dashboard").classList.contains("active")) await loadDashboard();
-  } catch (e) {
-    toast("Kayıt eklenemedi: " + e.message, "error");
-  } finally {
-    btn.disabled = false;
-    document.getElementById("kayitBtnTxt").textContent = "💾 Kayıt Oluştur";
-  }
-}
-function resetKayitForm() {
-  S.selSehir = "";
-  S.selIlce = "";
-  S.selOkul = null;
-  S.selFaz = null;
-  ["inp-sehir","inp-ilce","inp-okul","inp-kurum","inp-not"].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.value = "";
-    if (id === "inp-ilce" || id === "inp-okul") el.disabled = true;
-  });
-  const personelInp = document.getElementById("inp-kayit-personel");
-  if (personelInp) personelInp.value = S.personnel || "";
-  document.getElementById("inp-adet").value = "1";
-  [1,2,3].forEach(i => {
-    const b = document.getElementById("faz" + i);
-    if (b) b.className = "faz-btn";
-  });
-}
-
-// ── TESLİM ──
-function openTeslimModal(recId, schoolName, adet, tarih, faz, schoolId) {
-  S.teslimRec = { recId, schoolName, adet, tarih, faz, schoolId };
-  document.getElementById("teslimInfo").innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div><div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px">Okul</div><div style="font-weight:600">${h(schoolName)}</div></div>
-      <div><div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px">Faz / Kalan Adet</div><div><span class="badge b-f${h(faz)}" style="margin-right:6px">FAZ ${h(faz)}</span><span style="font-family:'Space Mono',monospace;font-weight:700">${adet} adet</span></div></div>
-      <div><div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px">Alım Tarihi</div><div style="color:var(--text2);font-size:13px">${h(tarih)}</div></div>
-    </div>`;
-  const ai = document.getElementById("teslim-adet");
-  ai.value = 1;
-  ai.max = adet;
-  refreshPersonnelDropdowns();
-  document.getElementById("teslim-personel").value = S.personnel || "";
-  document.getElementById("teslim-not").value = "";
-  openModal("teslimModal");
-}
-async function submitTeslim() {
-  const rec = S.teslimRec;
-  if (!rec) { toast("Kayıt seçili değil", "error"); return; }
-  const teslimAdet = parseInt(document.getElementById("teslim-adet").value, 10) || 1;
-  const personel = document.getElementById("teslim-personel").value.trim();
-  const notlar = document.getElementById("teslim-not").value.trim();
-  if (!personel) { toast("Personel seçin", "error"); return; }
-  if (!S.personnelList.find(p => p.isim === personel)) { toast("Listeden geçerli bir personel seçin", "error"); return; }
-  const btn = document.getElementById("teslimBtn");
-  btn.disabled = true;
-  btn.innerHTML = `<div class="spinner spin-sm" style="display:inline-block;vertical-align:middle"></div> Kaydediliyor...`;
-  try {
-    setTopPersonnel(personel);
-    const res = await apiPost({
-      action: "addDelivery",
-      record_id: rec.recId,
-      school_id: rec.schoolId,
-      school_name: rec.schoolName,
-      teslim_adet: teslimAdet,
-      personel,
-      notlar
-    });
-    toast(`Teslim kaydedildi ✓ — ${teslimAdet} adet · Durum: ${res.data?.yeniDurum || "güncellendi"}`, "success");
-    closeModal("teslimModal");
-    await loadRecords(true);
-    renderKayitlar();
-    if (document.getElementById("page-okullar").classList.contains("active")) renderOkullar();
-    if (document.getElementById("page-dashboard").classList.contains("active")) await loadDashboard();
-  } catch (e) {
-    toast("Teslim kaydedilemedi: " + e.message, "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "✅ Teslimi Onayla";
-  }
-}
-
-// ── PERSONEL ──
-function openPersonnelModal() {
-  renderPersonnelList();
-  openModal("personnelModal");
-}
-function renderPersonnelList() {
-  const l = document.getElementById("personnelList");
-  if (!l) return;
-  if (!S.personnelList.length) {
-    l.innerHTML = `<div class="empty"><div class="empty-s">Henüz personel yok. Aşağıdan ekleyin.</div></div>`;
-    return;
-  }
-  l.innerHTML = S.personnelList.map(p => `
-    <div class="p-item ${p.isim === S.personnel ? "sel" : ""}" onclick="selectPersonnel('${escJs(p.isim)}')">
-      <div class="p-avatar p-item-av">${h(p.isim.charAt(0).toUpperCase())}</div>
-      <span>${h(p.isim)}</span>
-      ${p.isim === S.personnel ? `<span style="margin-left:auto;color:var(--green);font-size:12px">✓ Aktif</span>` : ""}
-    </div>`).join("");
-}
-function selectPersonnel(name) {
-  setTopPersonnel(name);
-  renderPersonnelList();
-  refreshPersonnelDropdowns();
-  closeModal("personnelModal");
-  toast(`${name} olarak giriş yapıldı`, "success");
-}
-async function addPersonnelFromModal() {
-  const inp = document.getElementById("newPInp");
-  const name = inp.value.trim();
-  if (!name) { toast("İsim girin", "error"); return; }
-  if (!isConfigured()) { toast("Önce Script URL kaydedin", "error"); return; }
-  if (S.personnelList.find(p => p.isim.toLowerCase() === name.toLowerCase())) { toast("Bu personel zaten kayıtlı", "info"); return; }
-
-  try {
-    showLoader("Personel ekleniyor...");
-    const res = await apiPost({ action: "addPersonnel", isim: name });
-    const item = res.data || { isim: name };
-    if (!item.isim) item.isim = name;
-    S.personnelList.push(item);
-    S.personnelList.sort((a, b) => String(a.isim).localeCompare(String(b.isim), "tr"));
-    inp.value = "";
-    setTopPersonnel(item.isim);
-    refreshPersonnelDropdowns();
-    renderPersonnelList();
-    renderPersonnelMgmt();
-    toast(`${item.isim} eklendi`, "success");
-  } catch (e) {
-    toast("Personel eklenemedi: " + e.message, "error");
-  } finally {
-    hideLoader();
-  }
-}
-
-// ── AYARLAR ──
-function loadAyarlar() {
-  document.getElementById("cfg-url").value = SCRIPT_URL;
-  updateConnectionStatus(isConfigured() ? "warn" : "idle", isConfigured() ? "URL Kaydedildi" : "URL Girilmedi");
+async function loadPersonnel(force=false){
+  if(!SCRIPT_URL) return;
+  if(!force && isFresh("personnel") && S.personnelList.length) return;
+  const r = await api({action:"getPersonnel"});
+  S.personnelList = r.data || [];
+  markFresh("personnel");
   renderPersonnelMgmt();
 }
-async function saveConfig() {
-  const url = normalizeUrl(document.getElementById("cfg-url").value);
-  if (!url) { toast("URL girin", "error"); return; }
-  document.getElementById("cfgStatus").innerHTML = `<div class="spinner spin-sm" style="display:inline-block;vertical-align:middle"></div> Doğrulanıyor...`;
-  try {
-    await testUrl(url);
-    SCRIPT_URL = url;
-    localStorage.setItem("ops_script_url", url);
-    document.getElementById("cfgStatus").textContent = "✅ Kaydedildi ve doğrulandı";
-    updateConnectionStatus("ok", "Bağlı");
-    toast("Bağlantı ayarı kaydedildi", "success");
-    await refreshAllData();
-    await loadDashboard();
-  } catch (e) {
-    document.getElementById("cfgStatus").textContent = "❌ Kaydedilemedi: " + e.message;
-    updateConnectionStatus("error", "Bağlantı Hatası");
-    toast("URL doğrulanamadı: " + e.message, "error");
-  }
+async function loadSchools(force=false){
+  if(!SCRIPT_URL) return;
+  if(!force && isFresh("schools") && S.schools.length) return;
+  const r = await api({action:"getSchools"});
+  S.schools = r.data || [];
+  markFresh("schools");
 }
-async function testConnection() {
-  const url = normalizeUrl(document.getElementById("cfg-url").value);
-  if (!url) { toast("Önce URL girin", "error"); return; }
-  document.getElementById("cfgStatus").innerHTML = `<div class="spinner spin-sm" style="display:inline-block;vertical-align:middle"></div> Test ediliyor...`;
-  try {
-    await testUrl(url);
-    document.getElementById("cfgStatus").textContent = "✅ GET ve POST bağlantısı başarılı";
-    updateConnectionStatus("ok", "Bağlı");
-    toast("Bağlantı başarılı ✓", "success");
-  } catch (e) {
-    document.getElementById("cfgStatus").textContent = "❌ Hata: " + e.message;
-    updateConnectionStatus("error", "Bağlantı Hatası");
-    toast("Bağlantı hatası: " + e.message, "error");
-  }
+async function loadRecords(force=false){
+  if(!SCRIPT_URL) return;
+  if(!force && isFresh("records") && S.records.length) { renderKayitlar(); return; }
+  const r = await api({action:"getRecords"});
+  S.records = r.data || [];
+  markFresh("records");
+  renderKayitlar();
 }
-function renderPersonnelMgmt() {
-  const c = document.getElementById("personnelMgmtList");
-  if (!c) return;
-  if (!S.personnelList.length) {
-    c.innerHTML = `<div style="color:var(--text3);font-size:13px">Henüz personel yok</div>`;
+async function ensureBaseData(force=false){
+  if(!SCRIPT_URL) return;
+  await Promise.all([loadPersonnel(force), loadSchools(force)]);
+  fillPersonnelDropdowns();
+}
+function fillPersonnelDropdowns(){
+  const html = S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('personel','${h(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Önce personel ekleyin</div>`;
+  qs("#sd-personel").innerHTML = html;
+  qs("#sd-teslim-p").innerHTML = S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('teslim-p','${h(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Personel yok</div>`;
+  if(S.personnel) qs("#inp-personel").value = S.personnel;
+}
+
+async function loadDashboard(force=false){
+  qs("#dashDate").textContent = new Date().toLocaleDateString("tr-TR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  if(!SCRIPT_URL){ qs("#citySummaryGrid").innerHTML=`<div class="empty"><div class="empty-ico">⚙️</div><div class="empty-t">Bağlantı Yok</div><div class="empty-s">Ayarlar sayfasından Script URL girin</div></div>`; return; }
+  if(!force && isFresh("dashboard") && S.dashboard){ renderDashboard(); return; }
+  try{
+    const res = await api({action:"getDashboard"});
+    S.dashboard = res.data;
+    markFresh("dashboard");
+    renderDashboard();
+  }catch(e){ toast("Dashboard yüklenemedi: "+e.message,"error"); }
+}
+function renderDashboard(){
+  const d = S.dashboard;
+  if(!d) return;
+  qs("#s-bekleyen").textContent = d.statBekleyen ?? 0;
+  qs("#s-bugun").textContent = d.statBugun ?? 0;
+  qs("#s-bugun-sub").textContent = `${d.statBugunKayit ?? 0} kayıt`;
+  qs("#s-toplam").textContent = d.statToplam ?? 0;
+  qs("#s-geciken").textContent = d.statGeciken ?? 0;
+  qs("#s-okul").textContent = d.statOkul ?? 0;
+  qs("#s-bugunkayit").textContent = d.statBugunKayit ?? 0;
+  const grid = qs("#citySummaryGrid");
+  grid.className = "stats-grid";
+  grid.innerHTML = CITIES.map(c=>{
+    const s=(d.cityStats||{})[c]||{toplam:0,bekleyen:0,teslim:0,fazCount:{faz1:0,faz2:0,faz3:0}};
+    const f=s.fazCount||{faz1:0,faz2:0,faz3:0};
+    return `<div class="stat-card sc-blue" onclick="showPage('okullar');setOkulCityByName('${h(c)}')">
+      <div class="stat-label">${h(c)}</div>
+      <div class="stat-sub">Bekleyen: ${h(s.bekleyen)} · Teslim: ${h(s.teslim)} · Toplam: ${h(s.toplam)}</div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <span class="badge b-f1">F1 ${h(f.faz1)}</span>
+        <span class="badge b-f2">F2 ${h(f.faz2)}</span>
+        <span class="badge b-f3">F3 ${h(f.faz3)}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function loadOkullar(force=false){
+  if(!SCRIPT_URL) return;
+  qs("#okullarList").innerHTML = `<div class="empty"><div class="empty-s">Yükleniyor...</div></div>`;
+  try{
+    await Promise.all([loadSchools(force), loadRecords(force)]);
+    renderOkullar();
+  }catch(e){ toast("Okullar yüklenemedi: "+e.message,"error"); }
+}
+function setOkulCity(el,c){ S.okulCity=c; qsa("#okulCityTabs .city-tab").forEach(t=>t.classList.remove("active")); el.classList.add("active"); renderOkullar(); }
+function setOkulCityByName(c){ S.okulCity=c; qsa("#okulCityTabs .city-tab").forEach(t=>t.classList.toggle("active", t.dataset.city===c)); renderOkullar(); }
+function renderOkullar(){
+  buildCityTabs("#okulCityTabs","setOkulCity");
+  const q=(qs("#okulSearch").value||"").toLowerCase().trim();
+  let schools=[...S.schools];
+  if(S.okulCity!=="all") schools=schools.filter(s=>s.city===S.okulCity);
+  if(q) schools=schools.filter(s=>`${s.school_name} ${s.district} ${s.kurum_kodu||""}`.toLowerCase().includes(q));
+  if(!schools.length){ qs("#okullarList").innerHTML=`<div class="empty"><div class="empty-t">Okul bulunamadı</div></div>`; return; }
+  const stats = {};
+  for(const r of S.records){ if(!stats[r.school_id]) stats[r.school_id]={bekleyen:0,toplam:0}; stats[r.school_id].toplam++; if(r.durum!=="teslim") stats[r.school_id].bekleyen++; }
+  qs("#okullarList").innerHTML = schools.map(s=>{
+    const st = stats[s.school_id] || {bekleyen:0,toplam:0};
+    return `<div class="school-card" id="sc-${h(s.school_id)}" onclick="toggleSchoolDetail('${h(s.school_id)}')">
+      <div class="sc-icon">🏫</div>
+      <div class="sc-info"><div class="sc-name">${h(s.school_name)}</div><div class="sc-meta">${h(s.city)} › ${h(s.district)}${s.kurum_kodu?` · Kod: ${h(s.kurum_kodu)}`:""}</div></div>
+      <div class="sc-stats"><div class="sc-stat"><div class="sc-stat-v" style="color:var(--orange)">${h(st.bekleyen)}</div><div class="sc-stat-l">Bekleyen</div></div><div class="sc-stat"><div class="sc-stat-v">${h(st.toplam)}</div><div class="sc-stat-l">Toplam</div></div></div>
+      <span id="sc-arr-${h(s.school_id)}" style="color:var(--text3);font-size:16px">›</span>
+    </div><div class="school-detail" id="scd-${h(s.school_id)}"></div>`;
+  }).join("");
+}
+function toggleSchoolDetail(sid){
+  const detail=qs("#scd-"+CSS.escape(sid));
+  const card=qs("#sc-"+CSS.escape(sid));
+  const arr=qs("#sc-arr-"+CSS.escape(sid));
+  if(detail.classList.contains("open")){ detail.classList.remove("open"); card.classList.remove("expanded"); arr.textContent="›"; return; }
+  detail.classList.add("open"); card.classList.add("expanded"); arr.textContent="⌄";
+  const recs=S.records.filter(r=>String(r.school_id)===String(sid));
+  const school=S.schools.find(s=>String(s.school_id)===String(sid));
+  if(!recs.length){
+    detail.innerHTML = `<div class="empty"><div class="empty-s">Bu okul için kayıt yok</div></div>`;
     return;
   }
-  c.innerHTML = S.personnelList
-    .slice()
-    .sort((a, b) => String(a.isim).localeCompare(String(b.isim), "tr"))
-    .map(p => `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm)">
-      <div class="p-avatar" style="width:28px;height:28px;font-size:11px">${h(p.isim.charAt(0).toUpperCase())}</div>
-      <span style="flex:1;font-size:14px">${h(p.isim)}</span>
-      <span style="font-size:11px;color:var(--text3)">${h(p.created_at || "")}</span>
-    </div>`).join("");
-}
-async function addNewPersonnel() {
-  const inp = document.getElementById("newPersonnelInp");
-  const name = inp.value.trim();
-  if (!name) { toast("İsim girin", "error"); return; }
-  if (!isConfigured()) { toast("Önce Script URL kaydedin", "error"); return; }
-  if (S.personnelList.find(p => p.isim.toLowerCase() === name.toLowerCase())) { toast("Bu personel zaten kayıtlı", "info"); return; }
-  try {
-    showLoader("Personel ekleniyor...");
-    const res = await apiPost({ action: "addPersonnel", isim: name });
-    const item = res.data || { isim: name };
-    if (!item.isim) item.isim = name;
-    S.personnelList.push(item);
-    S.personnelList.sort((a, b) => String(a.isim).localeCompare(String(b.isim), "tr"));
-    inp.value = "";
-    renderPersonnelMgmt();
-    renderPersonnelList();
-    refreshPersonnelDropdowns();
-    toast(`${item.isim} eklendi`, "success");
-  } catch (e) {
-    toast("Personel eklenemedi: " + e.message, "error");
-  } finally {
-    hideLoader();
-  }
+  detail.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Faz</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead><tbody>` + recs.map(r=>`
+    <tr>
+      <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
+      <td>${h(r.adet)}</td>
+      <td>${h(r.personel)}</td>
+      <td>${h(r.tarih)}</td>
+      <td>${durumBadge(r.durum)}</td>
+      <td>${h(r.notlar || "—")}</td>
+      <td>${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal('${h(r.record_id)}')">📦 Teslim</button>` : "✓"}</td>
+    </tr>`).join("") + `</tbody></table></div>`;
 }
 
-// ── GLOBAL EVENTS ──
-document.querySelectorAll(".modal-ov").forEach(ov => ov.addEventListener("click", e => {
-  if (e.target === ov) ov.classList.remove("open");
-}));
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape") document.querySelectorAll(".modal-ov.open").forEach(m => m.classList.remove("open"));
-});
+function setRecCity(el,c){ S.recCity=c; qsa("#recCityTabs .city-tab").forEach(t=>t.classList.remove("active")); el.classList.add("active"); renderKayitlar(); }
+function renderKayitlar(){
+  buildCityTabs("#recCityTabs","setRecCity");
+  const q=(qs("#recSearch").value||"").toLowerCase().trim();
+  const df=qs("#recDurumFilter").value||"all";
+  const ff=qs("#recFazFilter").value||"all";
+  let recs=[...S.records];
+  if(S.recCity!=="all") recs=recs.filter(r=>r.city===S.recCity);
+  if(df!=="all") recs=recs.filter(r=>r.durum===df);
+  if(ff!=="all") recs=recs.filter(r=>String(r.faz)===ff);
+  if(q) recs=recs.filter(r=>`${r.school_name} ${r.district||""}`.toLowerCase().includes(q));
+  const t=qs("#kayitlarTbl");
+  if(!recs.length){ t.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Kayıt bulunamadı</td></tr>`; return; }
+  t.innerHTML = recs.map(r=>`<tr>
+    <td>${h(r.school_name)}</td>
+    <td>${h(r.city)}${r.district?` / ${h(r.district)}`:""}</td>
+    <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
+    <td>${h(r.adet)}</td>
+    <td>${h(r.personel)}</td>
+    <td>${h(r.tarih)}</td>
+    <td>${durumBadge(r.durum)}</td>
+    <td>${h(r.notlar || "—")}</td>
+    <td>${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal('${h(r.record_id)}')">📦 Teslim</button>` : "✓"}</td>
+  </tr>`).join("");
+}
 
-// ── INIT ──
-(async () => {
-  setTopPersonnel(S.personnel);
-  const kayitPersonel = document.getElementById("inp-kayit-personel");
-  if (kayitPersonel && S.personnel) kayitPersonel.value = S.personnel;
-  if (isConfigured()) {
-    try {
-      await Promise.all([loadSchools(true), loadPersonnel(true), loadRecords(true)]);
-      updateConnectionStatus("ok", "Bağlı");
-    } catch (e) {
-      updateConnectionStatus("error", "Bağlantı Hatası");
+async function submitKayit(){
+  try{
+    if(!SCRIPT_URL) throw new Error("Script URL ayarlanmamış");
+    const personel = qs("#inp-personel").value.trim() || S.personnel;
+    if(!personel) throw new Error("Personel seçin");
+    if(!S.selSehir) throw new Error("Şehir seçin");
+    if(!S.selIlce) throw new Error("İlçe seçin");
+    if(!S.selOkul?.school_name) throw new Error("Okul seçin veya yazın");
+    if(!S.selFaz) throw new Error("Faz seçin");
+    const adet = parseInt(qs("#inp-adet").value)||1;
+    const notlar = qs("#inp-not").value.trim();
+    const kurum = qs("#inp-kurum").value.trim();
+    const btn = qs("#kayitBtn"); btn.disabled = true; btn.textContent = "Kaydediliyor...";
+    let school = S.selOkul;
+    if(!school.school_id){
+      const sr = await apiPost({action:"addSchool", city:S.selSehir, district:S.selIlce, school_name:school.school_name, kurum_kodu:kurum});
+      school = sr.data;
+      S.schools.unshift(school);
+      markFresh("schools");
     }
+    const rr = await apiPost({action:"addRecord", school_id:school.school_id, city:S.selSehir, district:S.selIlce, school_name:school.school_name, kurum_kodu:school.kurum_kodu || kurum, faz:S.selFaz, adet, personel, notlar});
+    const newRec = {...rr.data, school_id:school.school_id, city:S.selSehir, district:S.selIlce, school_name:school.school_name, kurum_kodu:school.kurum_kodu || kurum, faz:S.selFaz, adet, personel, notlar, durum:"bekliyor"};
+    S.records.unshift(newRec);
+    markFresh("records");
+    S.dashboard = null; S.cacheAt.dashboard = 0;
+    toast("Kayıt oluşturuldu","success");
+    resetKayitForm();
+  }catch(e){ toast(e.message,"error"); }
+  finally{ const btn = qs("#kayitBtn"); btn.disabled=false; btn.textContent="💾 Kayıt Oluştur"; }
+}
+function resetKayitForm(){
+  S.selSehir=""; S.selIlce=""; S.selOkul=null; S.selFaz=null;
+  ["#inp-sehir","#inp-ilce","#inp-okul","#inp-kurum","#inp-not"].forEach(id=>{ const el=qs(id); el.value=""; });
+  qs("#inp-ilce").disabled=true; qs("#inp-okul").disabled=true; qs("#inp-adet").value=1;
+  if(S.personnel) qs("#inp-personel").value = S.personnel;
+  [1,2,3].forEach(i=>qs("#faz"+i).className="faz-btn");
+}
+function openTeslimModal(recordId){
+  const rec = S.records.find(r => String(r.record_id) === String(recordId));
+  if(!rec) return;
+  S.teslimRec = rec;
+  qs("#teslimInfo").innerHTML = `<div><strong>${h(rec.school_name)}</strong></div><div style="margin-top:6px;color:var(--text2)">Faz ${h(rec.faz)} · ${h(rec.adet)} adet · ${h(rec.tarih)}</div>`;
+  qs("#teslim-adet").value = 1;
+  qs("#teslim-adet").max = rec.kalan_adet || rec.adet;
+  qs("#teslim-personel").value = S.personnel || "";
+  fillPersonnelDropdowns();
+  qs("#teslim-not").value = "";
+  openModal("teslimModal");
+}
+async function submitTeslim(){
+  try{
+    const rec=S.teslimRec;
+    if(!rec) throw new Error("Kayıt seçili değil");
+    const teslim_adet=parseInt(qs("#teslim-adet").value)||1;
+    const personel=qs("#teslim-personel").value.trim();
+    const notlar=qs("#teslim-not").value.trim();
+    if(!personel) throw new Error("Personel seçin");
+    const btn=qs("#teslimBtn"); btn.disabled=true; btn.textContent="Kaydediliyor...";
+    const res=await apiPost({action:"addDelivery", record_id:rec.record_id, school_id:rec.school_id, school_name:rec.school_name, teslim_adet, personel, notlar});
+    rec.toplam_teslim = res.data.toplamTeslim;
+    rec.kalan_adet = Math.max(0, (Number(rec.adet)||0) - (Number(res.data.toplamTeslim)||0));
+    rec.durum = res.data.yeniDurum;
+    markFresh("records");
+    S.dashboard = null; S.cacheAt.dashboard = 0;
+    closeModal("teslimModal");
+    renderKayitlar();
+    if(qs("#page-okullar").classList.contains("active")) renderOkullar();
+    toast("Teslim kaydedildi","success");
+  }catch(e){ toast(e.message,"error"); }
+  finally{ const btn=qs("#teslimBtn"); btn.disabled=false; btn.textContent="✅ Teslimi Onayla"; }
+}
+
+function openPersonnelModal(){ renderPersonnelList(); openModal("personnelModal"); }
+function renderPersonnelList(){
+  const root=qs("#personnelList");
+  if(!S.personnelList.length){ root.innerHTML = `<div class="empty"><div class="empty-s">Henüz personel yok.</div></div>`; return; }
+  root.innerHTML = S.personnelList.map(p=>`<div class="school-card" onclick="selectPersonnel('${h(p.isim)}')"><div class="sc-icon">${h((p.isim||'?').charAt(0).toUpperCase())}</div><div class="sc-info"><div class="sc-name">${h(p.isim)}</div></div>${p.isim===S.personnel?'<span style="color:var(--green)">✓ Aktif</span>':''}</div>`).join("");
+}
+function selectPersonnel(name){
+  S.personnel = name;
+  localStorage.setItem("ops_personnel",name);
+  qs("#topName").textContent = name;
+  qs("#topAvatar").textContent = name.charAt(0).toUpperCase();
+  if(qs("#inp-personel")) qs("#inp-personel").value = name;
+  closeModal("personnelModal");
+}
+function renderPersonnelMgmt(){
+  const c=qs("#personnelMgmtList");
+  if(!S.personnelList.length){ c.innerHTML = `<div style="color:var(--text3);font-size:13px">Henüz personel yok</div>`; return; }
+  c.innerHTML = S.personnelList.map(p=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm)"><div class="p-avatar" style="width:28px;height:28px;font-size:11px">${h(p.isim.charAt(0).toUpperCase())}</div><span style="flex:1;font-size:14px">${h(p.isim)}</span><span style="font-size:11px;color:var(--text3)">${h(p.created_at||"")}</span></div>`).join("");
+}
+async function addNewPersonnel(){
+  try{
+    const isim = qs("#newPersonnelInp").value.trim();
+    if(!isim) throw new Error("İsim girin");
+    if(!SCRIPT_URL) throw new Error("Önce bağlantıyı kaydedin");
+    const res = await apiPost({action:"addPersonnel", isim});
+    if(!S.personnelList.find(p => p.isim.toLowerCase() === res.data.isim.toLowerCase())) S.personnelList.push(res.data);
+    S.personnelList.sort((a,b)=>String(a.isim).localeCompare(String(b.isim),'tr'));
+    markFresh("personnel");
+    qs("#newPersonnelInp").value="";
+    renderPersonnelMgmt(); fillPersonnelDropdowns();
+    toast("Personel eklendi","success");
+  }catch(e){ toast(e.message,"error"); }
+}
+
+function openModal(id){ qs("#"+id).classList.add("open"); }
+function closeModal(id){ qs("#"+id).classList.remove("open"); }
+function durumBadge(d){ if(d==="teslim") return `<span class="badge b-done">✓ Teslim</span>`; if(d==="kismi") return `<span class="badge b-part">⊕ Kısmi</span>`; return `<span class="badge b-wait">⏳ Bekliyor</span>`; }
+
+function loadAyarlar(){ qs("#cfg-url").value = SCRIPT_URL; renderPersonnelMgmt(); }
+async function testConnection(){
+  const url = qs("#cfg-url").value.trim();
+  if(!url){ toast("Önce URL girin","error"); return; }
+  const old = SCRIPT_URL;
+  try{
+    SCRIPT_URL = url;
+    const ping = await api({action:"ping"});
+    if(!ping.ok) throw new Error("Ping başarısız");
+    await api({action:"getPersonnel"});
+    qs("#cfgStatus").textContent = "✅ Bağlantı başarılı";
+    toast("Bağlantı başarılı","success");
+  }catch(e){
+    SCRIPT_URL = old;
+    qs("#cfgStatus").textContent = "❌ " + e.message;
+    toast("Bağlantı hatası: "+e.message,"error");
   }
-  await loadDashboard();
+}
+async function saveConfig(){
+  const url = qs("#cfg-url").value.trim();
+  if(!url){ toast("URL girin","error"); return; }
+  const old = SCRIPT_URL;
+  try{
+    SCRIPT_URL = url;
+    await api({action:"ping"});
+    localStorage.setItem("ops_script_url",url);
+    qs("#cfgStatus").textContent = "✓ Kaydedildi";
+    await ensureBaseData(true);
+    fillPersonnelDropdowns();
+    toast("Bağlantı kaydedildi","success");
+  }catch(e){
+    SCRIPT_URL = old;
+    toast("Kaydedilemedi: "+e.message,"error");
+  }
+}
+
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") qsa(".modal-ov.open").forEach(m=>m.classList.remove("open")); });
+qsa(".modal-ov").forEach(ov=>ov.addEventListener("click",e=>{ if(e.target===ov) ov.classList.remove("open"); }));
+
+(async function init(){
+  buildCityTabs("#okulCityTabs","setOkulCity");
+  buildCityTabs("#recCityTabs","setRecCity");
+  if(S.personnel){ qs("#topName").textContent=S.personnel; qs("#topAvatar").textContent=S.personnel.charAt(0).toUpperCase(); qs("#inp-personel").value=S.personnel; }
+  if(SCRIPT_URL){
+    try{ await Promise.all([loadPersonnel(), loadSchools()]); fillPersonnelDropdowns(); }catch(e){}
+  }
+  loadDashboard();
 })();
 </script>
 </body>
