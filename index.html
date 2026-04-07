@@ -309,19 +309,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 </div>
 
 <div id="page-ayarlar" class="page">
-  <div class="page-header"><div class="page-title">// AYARLAR</div><div class="page-sub">Sistem yapılandırması</div></div>
-  <div class="cfg-banner"><div class="cfg-ico">🔗</div><div><div class="cfg-title">GOOGLE APPS SCRIPT BAĞLANTISI</div><div class="cfg-sub">Web App URL gir</div></div></div>
-  <div class="section">
-    <div class="section-head"><div class="section-title">⚙️ BAĞLANTI AYARLARI</div></div>
-    <div class="section-body">
-      <div class="form-grid"><div class="form-group full"><label>Google Apps Script Web App URL *</label><input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/AKfy.../exec"></div></div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="saveConfig()">💾 Kaydet</button>
-        <button class="btn btn-secondary" onclick="testConnection()">🔌 Bağlantıyı Test Et</button>
-        <span id="cfgStatus" style="font-size:13px;color:var(--text2)"></span>
-      </div>
-    </div>
-  </div>
+  <div class="page-header"><div class="page-title">// AYARLAR</div><div class="page-sub">Personel ve sistem bilgileri</div></div>
   <div class="section">
     <div class="section-head"><div class="section-title">👤 PERSONEL YÖNETİMİ</div></div>
     <div class="section-body">
@@ -387,7 +375,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 
 <script>
 const CACHE_TTL = { dashboard: 30000, schools: 120000, personnel: 120000, records: 45000 };
-let SCRIPT_URL = localStorage.getItem("ops_script_url") || "";
+let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZXE4OxOawYB8XlDF6HpRMkBP1F3Zka80MUqoKFz5GTHMn0YrKEqr2wsOHeIth-UE/exec";
 
 const CITIES = ["İstanbul Avrupa","İstanbul Anadolu","Kocaeli","Yalova","Bursa"];
 const DISTRICTS = {
@@ -559,7 +547,7 @@ function changeAdet(d){ const inp=qs("#inp-adet"); inp.value=Math.max(1,Math.min
 function changeTeslimAdet(d){ const inp=qs("#teslim-adet"); inp.value=Math.max(1,Math.min(parseInt(inp.max)||99,(parseInt(inp.value)||1)+d)); }
 
 async function loadPersonnel(force=false){
-  if(!SCRIPT_URL) return;
+  
   if(!force && isFresh("personnel") && S.personnelList.length) return;
   const r = await api({action:"getPersonnel"});
   S.personnelList = r.data || [];
@@ -567,14 +555,14 @@ async function loadPersonnel(force=false){
   renderPersonnelMgmt();
 }
 async function loadSchools(force=false){
-  if(!SCRIPT_URL) return;
+  
   if(!force && isFresh("schools") && S.schools.length) return;
   const r = await api({action:"getSchools"});
   S.schools = r.data || [];
   markFresh("schools");
 }
 async function loadRecords(force=false){
-  if(!SCRIPT_URL) return;
+  
   if(!force && isFresh("records") && S.records.length) { renderKayitlar(); return; }
   const r = await api({action:"getRecords"});
   S.records = r.data || [];
@@ -582,7 +570,7 @@ async function loadRecords(force=false){
   renderKayitlar();
 }
 async function ensureBaseData(force=false){
-  if(!SCRIPT_URL) return;
+  
   await Promise.all([loadPersonnel(force), loadSchools(force)]);
   fillPersonnelDropdowns();
 }
@@ -595,7 +583,7 @@ function fillPersonnelDropdowns(){
 
 async function loadDashboard(force=false){
   qs("#dashDate").textContent = new Date().toLocaleDateString("tr-TR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-  if(!SCRIPT_URL){ qs("#citySummaryGrid").innerHTML=`<div class="empty"><div class="empty-ico">⚙️</div><div class="empty-t">Bağlantı Yok</div><div class="empty-s">Ayarlar sayfasından Script URL girin</div></div>`; return; }
+  
   if(!force && isFresh("dashboard") && S.dashboard){ renderDashboard(); return; }
   try{
     const res = await api({action:"getDashboard"});
@@ -632,7 +620,7 @@ function renderDashboard(){
 }
 
 async function loadOkullar(force=false){
-  if(!SCRIPT_URL) return;
+  
   qs("#okullarList").innerHTML = `<div class="empty"><div class="empty-s">Yükleniyor...</div></div>`;
   try{
     await Promise.all([loadSchools(force), loadRecords(force)]);
@@ -712,7 +700,7 @@ function renderKayitlar(){
 
 async function submitKayit(){
   try{
-    if(!SCRIPT_URL) throw new Error("Script URL ayarlanmamış");
+    
     const personel = qs("#inp-personel").value.trim() || S.personnel;
     if(!personel) throw new Error("Personel seçin");
     if(!S.selSehir) throw new Error("Şehir seçin");
@@ -805,7 +793,7 @@ async function addNewPersonnel(){
   try{
     const isim = qs("#newPersonnelInp").value.trim();
     if(!isim) throw new Error("İsim girin");
-    if(!SCRIPT_URL) throw new Error("Önce bağlantıyı kaydedin");
+    
     const res = await apiPost({action:"addPersonnel", isim});
     if(!S.personnelList.find(p => p.isim.toLowerCase() === res.data.isim.toLowerCase())) S.personnelList.push(res.data);
     S.personnelList.sort((a,b)=>String(a.isim).localeCompare(String(b.isim),'tr'));
@@ -820,24 +808,7 @@ function openModal(id){ qs("#"+id).classList.add("open"); }
 function closeModal(id){ qs("#"+id).classList.remove("open"); }
 function durumBadge(d){ if(d==="teslim") return `<span class="badge b-done">✓ Teslim</span>`; if(d==="kismi") return `<span class="badge b-part">⊕ Kısmi</span>`; return `<span class="badge b-wait">⏳ Bekliyor</span>`; }
 
-function loadAyarlar(){ qs("#cfg-url").value = SCRIPT_URL; renderPersonnelMgmt(); }
-async function testConnection(){
-  const url = qs("#cfg-url").value.trim();
-  if(!url){ toast("Önce URL girin","error"); return; }
-  const old = SCRIPT_URL;
-  try{
-    SCRIPT_URL = url;
-    const ping = await api({action:"ping"});
-    if(!ping.ok) throw new Error("Ping başarısız");
-    await api({action:"getPersonnel"});
-    qs("#cfgStatus").textContent = "✅ Bağlantı başarılı";
-    toast("Bağlantı başarılı","success");
-  }catch(e){
-    SCRIPT_URL = old;
-    qs("#cfgStatus").textContent = "❌ " + e.message;
-    toast("Bağlantı hatası: "+e.message,"error");
-  }
-}
+function loadAyarlar(){ renderPersonnelMgmt(); qs("#connStatus").innerHTML = `<span style="color:var(--green)">● Bağlı</span>`; }
 async function saveConfig(){
   const url = qs("#cfg-url").value.trim();
   if(!url){ toast("URL girin","error"); return; }
@@ -846,7 +817,6 @@ async function saveConfig(){
     SCRIPT_URL = url;
     await api({action:"ping"});
     localStorage.setItem("ops_script_url",url);
-    qs("#cfgStatus").textContent = "✓ Kaydedildi";
     await ensureBaseData(true);
     fillPersonnelDropdowns();
     toast("Bağlantı kaydedildi","success");
