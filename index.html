@@ -50,7 +50,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .stat-value{font-family:'Space Mono',monospace;font-size:30px;font-weight:700}
 .stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px;align-items:start}
-.form-group{display:flex;flex-direction:column;gap:6px;position:relative;z-index:2}
+.form-group{display:flex;flex-direction:column;gap:6px;position:relative;z-index:1}
+.form-group.dropdown-open{z-index:3000}
 .form-group.full{grid-column:1/-1}
 label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.9px}
 input,select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;outline:none;transition:border-color .18s,box-shadow .18s;width:100%}
@@ -451,7 +452,7 @@ async function apiPost(body) {
   if (!SCRIPT_URL) throw new Error("Script URL ayarlanmamış.");
   return fetchJSON(SCRIPT_URL, {
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
     body: JSON.stringify(body)
   });
 }
@@ -480,8 +481,20 @@ function showPage(id){
   if (id === "ayarlar") loadAyarlar();
 }
 
-function sdOpen(ns){ const l=qs("#sd-"+ns); if(l){ l.classList.add("open"); sdFilter(ns);} }
-function sdBlur(ns){ setTimeout(()=>{ const l=qs("#sd-"+ns); if(l) l.classList.remove("open"); },160); }
+function sdOpen(ns){
+  const l=qs("#sd-"+ns);
+  const wrap=l?.closest(".form-group");
+  if(wrap) wrap.classList.add("dropdown-open");
+  if(l){ l.classList.add("open"); sdFilter(ns);}
+}
+function sdBlur(ns){
+  setTimeout(()=>{
+    const l=qs("#sd-"+ns);
+    if(l) l.classList.remove("open");
+    const wrap=l?.closest(".form-group");
+    if(wrap) wrap.classList.remove("dropdown-open");
+  },160);
+}
 function sdFilter(ns){
   const inputIdMap = { personel:"#inp-personel", teslimp:"#teslim-personel" };
   const inp = ns==="teslim-p" ? qs("#teslim-personel") : qs("#inp-"+ns);
