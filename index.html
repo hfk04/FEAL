@@ -320,13 +320,32 @@ tr:hover td{background:rgba(255,255,255,.018)}
       </div>
     </div>
   </div>
+  <div class="section">
+    <div class="section-head"><div class="section-title">ℹ️ SİSTEM BİLGİSİ</div></div>
+    <div class="section-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px">
+          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Sheets ID</div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text3);word-break:break-all">1mIAuUTWcTVHIaXiXiT3apNDeWbZLBCh7Lz4jou8gacs</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px">
+          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Bağlantı</div>
+          <div id="connStatus" style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text3)">— Kontrol ediliyor</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal-ov" id="personnelModal">
   <div class="modal">
     <div class="modal-title">👤 Personel Seç</div>
     <div class="modal-close" onclick="closeModal('personnelModal')">✕</div>
-    <div id="personnelList"></div>
+    <div id="personnelList" style="margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="modalPersonnelInp" placeholder="Yeni isim ekle..." onkeydown="if(event.key==='Enter')addPersonnelFromModal()">
+      <button class="btn btn-primary btn-sm" onclick="addPersonnelFromModal()" style="flex-shrink:0">+ Ekle</button>
+    </div>
   </div>
 </div>
 
@@ -773,8 +792,27 @@ async function submitTeslim(){
 function openPersonnelModal(){ renderPersonnelList(); openModal("personnelModal"); }
 function renderPersonnelList(){
   const root=qs("#personnelList");
-  if(!S.personnelList.length){ root.innerHTML = `<div class="empty"><div class="empty-s">Henüz personel yok.</div></div>`; return; }
+  if(!S.personnelList.length){ root.innerHTML = `<div class="empty"><div class="empty-s">Henüz personel yok. Aşağıdan ekleyin.</div></div>`; return; }
   root.innerHTML = S.personnelList.map(p=>`<div class="school-card" onclick="selectPersonnel('${h(p.isim)}')"><div class="sc-icon">${h((p.isim||'?').charAt(0).toUpperCase())}</div><div class="sc-info"><div class="sc-name">${h(p.isim)}</div></div>${p.isim===S.personnel?'<span style="color:var(--green)">✓ Aktif</span>':''}</div>`).join("");
+}
+async function addPersonnelFromModal(){
+  const inp = qs("#modalPersonnelInp");
+  const isim = inp.value.trim();
+  if(!isim){ toast("İsim girin","error"); return; }
+  if(S.personnelList.find(p => p.isim.toLowerCase() === isim.toLowerCase())){
+    toast("Bu isim zaten var","info"); return;
+  }
+  const localEntry = { personnel_id:"local_"+Date.now(), isim, created_at:"" };
+  S.personnelList.push(localEntry);
+  S.personnelList.sort((a,b)=>String(a.isim).localeCompare(String(b.isim),'tr'));
+  inp.value="";
+  renderPersonnelList(); fillPersonnelDropdowns();
+  selectPersonnel(isim);
+  if(SCRIPT_URL){
+    apiPost({action:"addPersonnel", isim})
+      .then(res=>{ const idx=S.personnelList.findIndex(p=>p.isim===isim); if(idx>=0) S.personnelList[idx]=res.data; })
+      .catch(()=>{});
+  }
 }
 function selectPersonnel(name){
   S.personnel = name;
@@ -793,14 +831,23 @@ async function addNewPersonnel(){
   try{
     const isim = qs("#newPersonnelInp").value.trim();
     if(!isim) throw new Error("İsim girin");
-    
-    const res = await apiPost({action:"addPersonnel", isim});
-    if(!S.personnelList.find(p => p.isim.toLowerCase() === res.data.isim.toLowerCase())) S.personnelList.push(res.data);
+    if(S.personnelList.find(p => p.isim.toLowerCase() === isim.toLowerCase())){
+      toast("Bu isim zaten var","info"); return;
+    }
+    // Önce local listeye ekle, UI anında güncellenir
+    const localEntry = { personnel_id:"local_"+Date.now(), isim, created_at:"" };
+    S.personnelList.push(localEntry);
     S.personnelList.sort((a,b)=>String(a.isim).localeCompare(String(b.isim),'tr'));
     markFresh("personnel");
     qs("#newPersonnelInp").value="";
     renderPersonnelMgmt(); fillPersonnelDropdowns();
     toast("Personel eklendi","success");
+    // Sheets'e arka planda kaydet
+    if(SCRIPT_URL){
+      apiPost({action:"addPersonnel", isim})
+        .then(res=>{ const idx=S.personnelList.findIndex(p=>p.isim===isim); if(idx>=0) S.personnelList[idx]=res.data; })
+        .catch(()=>{});
+    }
   }catch(e){ toast(e.message,"error"); }
 }
 
@@ -808,7 +855,11 @@ function openModal(id){ qs("#"+id).classList.add("open"); }
 function closeModal(id){ qs("#"+id).classList.remove("open"); }
 function durumBadge(d){ if(d==="teslim") return `<span class="badge b-done">✓ Teslim</span>`; if(d==="kismi") return `<span class="badge b-part">⊕ Kısmi</span>`; return `<span class="badge b-wait">⏳ Bekliyor</span>`; }
 
-function loadAyarlar(){ renderPersonnelMgmt(); qs("#connStatus").innerHTML = `<span style="color:var(--green)">● Bağlı</span>`; }
+function loadAyarlar(){
+  renderPersonnelMgmt();
+  const el = qs("#connStatus");
+  if(el) el.innerHTML = SCRIPT_URL ? `<span style="color:var(--green)">● Bağlı</span>` : `<span style="color:var(--text3)">— URL Girilmedi</span>`;
+}
 async function saveConfig(){
   const url = qs("#cfg-url").value.trim();
   if(!url){ toast("URL girin","error"); return; }
