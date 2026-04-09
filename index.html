@@ -616,54 +616,61 @@ function fillPersonnelDropdowns(){
 
 async function loadDashboard(force=false){
   qs("#dashDate").textContent = new Date().toLocaleDateString("tr-TR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-  if(!force && isFresh("dashboard") && S.dashboard && S.records.length){ renderDashboard(); return; }
+  if(!force && isFresh("records") && isFresh("schools") && S.records.length){ renderDashboard(); return; }
   try{
-    // Records ve dashboard paralel yükle
-    const [res] = await Promise.all([
-      api({action:"getDashboard"}),
-      loadRecords(force),
-      loadSchools(force)
-    ]);
-    S.dashboard = res.data;
-    markFresh("dashboard");
+    await Promise.all([loadRecords(force), loadSchools(force)]);
     renderDashboard();
   }catch(e){ toast("Ana sayfa yüklenemedi: "+e.message,"error"); }
 }
 function renderDashboard(){
-  const d = S.dashboard;
-  if(!d) return;
-  qs("#s-bekleyen").textContent = d.statBekleyen ?? 0;
-  qs("#s-bugun").textContent = d.statBugun ?? 0;
-  qs("#s-bugun-sub").textContent = `${d.statBugunKayit ?? 0} kayıt`;
-  qs("#s-toplam").textContent = d.statToplam ?? 0;
-  qs("#s-geciken").textContent = d.statGeciken ?? 0;
-  qs("#s-okul").textContent = d.statOkul ?? 0;
-  qs("#s-bugunkayit").textContent = d.statBugunKayit ?? 0;
+  const d = S.dashboard; // sadece cityStats için kullanılıyor artık
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2,"0");
+  const mm = String(now.getMonth()+1).padStart(2,"0");
+  const yyyy = now.getFullYear();
+  const todayStr = `${dd}.${mm}.${yyyy}`;
 
-  // Şehir kartları
+  // ── TÜM SAYILAR client-side S.records / S.schools'tan ──
+  const todayRecs  = S.records.filter(r => String(r.tarih||"").startsWith(todayStr));
+  const bekleyen   = S.records.filter(r => r.durum !== "teslim");
+  const lateRecs   = bekleyen.filter(r => {
+    const m = String(r.tarih||"").match(/^(\d{2})\.(\d{2})\.(\d{4})/);
+    if(!m) return false;
+    return (now - new Date(+m[3],+m[2]-1,+m[1])) / 86400000 >= 7;
+  }).map(r => {
+    const m = String(r.tarih).match(/^(\d{2})\.(\d{2})\.(\d{4})/);
+    return {...r, gun: Math.floor((now - new Date(+m[3],+m[2]-1,+m[1])) / 86400000)};
+  }).sort((a,b) => b.gun - a.gun);
+
+  qs("#s-bekleyen").textContent   = bekleyen.length;
+  qs("#s-bugun").textContent      = todayRecs.reduce((s,r) => s + Number(r.adet||0), 0);
+  qs("#s-bugun-sub").textContent  = `${todayRecs.length} kayıt`;
+  qs("#s-toplam").textContent     = S.records.length;
+  qs("#s-geciken").textContent    = lateRecs.length;
+  qs("#s-okul").textContent       = S.schools.length;
+  qs("#s-bugunkayit").textContent = todayRecs.length;
+
+  // ── ŞEHİR KARTLARI — client-side'dan hesapla ──
   const grid = qs("#citySummaryGrid");
   grid.className = "stats-grid";
-  grid.innerHTML = CITIES.map(c=>{
-    const s=(d.cityStats||{})[c]||{toplam:0,bekleyen:0,teslim:0,fazCount:{faz1:0,faz2:0,faz3:0}};
-    const f=s.fazCount||{faz1:0,faz2:0,faz3:0};
+  grid.innerHTML = CITIES.map(c => {
+    const cRecs = S.records.filter(r => r.city === c);
+    const cBek  = cRecs.filter(r => r.durum !== "teslim");
+    const cTes  = cRecs.filter(r => r.durum === "teslim");
+    const fazCount = {faz1:0, faz2:0, faz3:0};
+    cBek.forEach(r => { const k="faz"+r.faz; if(fazCount[k]!==undefined) fazCount[k] += Number(r.kalan_adet||r.adet||0); });
     return `<div class="stat-card sc-blue" style="cursor:pointer" onclick="showPage('okullar');setOkulCityByName('${h(c)}')">
       <div class="stat-label">${h(c)}</div>
-      <div class="stat-sub">Bekleyen: ${h(s.bekleyen)} · Teslim: ${h(s.teslim)} · Toplam: ${h(s.toplam)}</div>
+      <div class="stat-sub">Bekleyen: ${cBek.length} · Teslim: ${cTes.length} · Toplam: ${cRecs.length}</div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-        <span class="badge b-f1">F1 ${h(f.faz1)}</span>
-        <span class="badge b-f2">F2 ${h(f.faz2)}</span>
-        <span class="badge b-f3">F3 ${h(f.faz3)}</span>
+        <span class="badge b-f1">F1 ${fazCount.faz1}</span>
+        <span class="badge b-f2">F2 ${fazCount.faz2}</span>
+        <span class="badge b-f3">F3 ${fazCount.faz3}</span>
       </div>
     </div>`;
   }).join("");
 
-  // Bugünün aktivitesi — tarih karşılaştırması dd.MM.yyyy formatında güvenli şekilde
-  const now2 = new Date();
-  const dd = String(now2.getDate()).padStart(2,"0");
-  const mm = String(now2.getMonth()+1).padStart(2,"0");
-  const yyyy = now2.getFullYear();
-  const todayStr = `${dd}.${mm}.${yyyy}`;
-  const todayRecs = S.records.filter(r => String(r.tarih||"").startsWith(todayStr));
+  // ── BUGÜNÜN AKTİVİTESİ ──
   const todayEl = qs("#todayActivity");
   if(todayRecs.length){
     todayEl.innerHTML = `<div class="timeline">${todayRecs.slice(0,8).map(r=>`
@@ -676,18 +683,7 @@ function renderDashboard(){
     todayEl.innerHTML = `<div class="empty"><div class="empty-ico">🌙</div><div class="empty-s">Bugün kayıt yok</div></div>`;
   }
 
-  // Geciken servisler — client-side hesapla
-  const now = now2;
-  const lateRecs = S.records.filter(r=>{
-    if(r.durum==="teslim") return false;
-    const m = String(r.tarih||"").match(/^(\d{2})\.(\d{2})\.(\d{4})/);
-    if(!m) return false;
-    return (now - new Date(+m[3],+m[2]-1,+m[1])) / 86400000 >= 7;
-  }).map(r=>{
-    const m = String(r.tarih).match(/^(\d{2})\.(\d{2})\.(\d{4})/);
-    return {...r, gun: Math.floor((now - new Date(+m[3],+m[2]-1,+m[1])) / 86400000)};
-  }).sort((a,b)=>b.gun-a.gun);
-
+  // ── GECİKEN SERVİSLER ──
   const lateEl = qs("#lateServices");
   if(lateRecs.length){
     lateEl.innerHTML = `<div class="timeline">${lateRecs.slice(0,8).map(r=>`
@@ -699,15 +695,6 @@ function renderDashboard(){
   } else {
     lateEl.innerHTML = `<div class="empty"><div class="empty-ico">✅</div><div class="empty-t">Harika!</div><div class="empty-s">Geciken servis yok</div></div>`;
   }
-
-  // Bekleyen ve bugün sayılarını client-side'dan da doğru göster
-  const bekleyenCount = S.records.filter(r=>r.durum!=="teslim").length;
-  const bugunAdet = todayRecs.reduce((s,r)=>s+Number(r.adet||0),0);
-  qs("#s-bekleyen").textContent = bekleyenCount;
-  qs("#s-bugun").textContent = bugunAdet;
-  qs("#s-bugun-sub").textContent = `${todayRecs.length} kayıt`;
-  qs("#s-bugunkayit").textContent = todayRecs.length;
-  qs("#s-geciken").textContent = lateRecs.length;
 }
 
 async function loadOkullar(force=false){
