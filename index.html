@@ -217,6 +217,16 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div class="stat-value" id="s-borclu">—</div>
       <div class="stat-sub">Bekleyen kaydı olan okul</div>
     </div>
+    <div class="stat-card sc-cyan">
+      <div class="stat-label">🏫 Sınıftan Alınan</div>
+      <div class="stat-value" id="s-sinif">—</div>
+      <div class="stat-sub">Bekleyen adet</div>
+    </div>
+    <div class="stat-card" style="border-top:3px solid #a16207;background:var(--surface)">
+      <div class="stat-label" style="color:var(--text2)">📦 Yedekten Alınan</div>
+      <div class="stat-value" id="s-yedek">—</div>
+      <div class="stat-sub">Bekleyen adet</div>
+    </div>
   </div>
   <div class="section">
     <div class="section-head"><div class="section-title">📍 ŞEHİR BAZINDA DURUM</div><button class="btn btn-secondary btn-sm" onclick="loadDashboard(true)">↻ Yenile</button></div>
@@ -285,6 +295,13 @@ tr:hover td{background:rgba(255,255,255,.018)}
             <button class="adet-btn" onclick="changeAdet(1)">+</button>
           </div>
         </div>
+        <div class="form-group">
+          <label>Kaynak *</label>
+          <div class="faz-toggle">
+            <button class="faz-btn" id="kaynak-sinif" onclick="pickKaynak('sinif')" style="font-size:11px">🏫 SINIFTAN</button>
+            <button class="faz-btn" id="kaynak-yedek" onclick="pickKaynak('yedek')" style="font-size:11px">📦 YEDEK</button>
+          </div>
+        </div>
         <div class="form-group full">
           <label>Not</label>
           <textarea id="inp-not" placeholder="Cihaz durumu, seri no, özel bilgi..."></textarea>
@@ -323,7 +340,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
     <button class="btn btn-secondary btn-sm" onclick="loadRecords(true)">↻ Yenile</button>
   </div>
   <div class="section"><div class="section-body" style="padding:0"><div class="table-wrap"><table>
-    <thead><tr><th>Okul</th><th>Şehir / İlçe</th><th>Faz</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead>
+    <thead><tr><th>Okul</th><th>Şehir / İlçe</th><th>Faz</th><th>Kaynak</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead>
     <tbody id="kayitlarTbl"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Yükleniyor...</td></tr></tbody>
   </table></div></div></div>
 </div>
@@ -435,6 +452,7 @@ let S = {
   records: [],
   dashboard: null,
   selFaz: null,
+  selKaynak: null,
   selSehir: "",
   selIlce: "",
   selOkul: null,
@@ -585,6 +603,13 @@ function sdPickOkulNew(){
   qs("#sd-okul").classList.remove("open");
 }
 function pickFaz(n){ S.selFaz=n; [1,2,3].forEach(i=>{const b=qs("#faz"+i); b.className="faz-btn"; if(i===n) b.classList.add("a"+n);}); }
+function pickKaynak(k){
+  S.selKaynak=k;
+  const bs = qs("#kaynak-sinif"); const by = qs("#kaynak-yedek");
+  bs.className="faz-btn"; by.className="faz-btn";
+  if(k==="sinif"){ bs.classList.add("a1"); }
+  else { by.style.borderColor="var(--orange)"; by.style.background="rgba(245,158,11,.14)"; by.style.color="var(--orange)"; }
+}
 function changeAdet(d){ const inp=qs("#inp-adet"); inp.value=Math.max(1,Math.min(99,(parseInt(inp.value)||1)+d)); }
 function changeTeslimAdet(d){ const inp=qs("#teslim-adet"); inp.value=Math.max(1,Math.min(parseInt(inp.max)||99,(parseInt(inp.value)||1)+d)); }
 
@@ -648,11 +673,16 @@ function renderDashboard(){
   // Bekleyen kaydı olan benzersiz okul sayısı
   const borcluOkullar = new Set(bekleyen.map(r=>r.school_id)).size;
 
+  const sinifAdet = bekleyen.filter(r=>r.kaynak==="sinif").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
+  const yedekAdet = bekleyen.filter(r=>r.kaynak==="yedek").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
+
   qs("#s-faz1").textContent   = faz1Adet;
   qs("#s-faz2").textContent   = faz2Adet;
   qs("#s-faz3").textContent   = faz3Adet;
   qs("#s-teslim").textContent = teslimAdet;
   qs("#s-borclu").textContent = borcluOkullar;
+  qs("#s-sinif").textContent  = sinifAdet;
+  qs("#s-yedek").textContent  = yedekAdet;
 
   // Şehir kartları
   const grid = qs("#citySummaryGrid");
@@ -721,9 +751,10 @@ function toggleSchoolDetail(sid){
     detail.innerHTML = schoolInfo + `<div class="empty"><div class="empty-s">Bu okul için kayıt yok</div></div>`;
     return;
   }
-  detail.innerHTML = schoolInfo + `<div class="table-wrap"><table><thead><tr><th>Faz</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead><tbody>` + recs.map(r=>`
+  detail.innerHTML = schoolInfo + `<div class="table-wrap"><table><thead><tr><th>Faz</th><th>Kaynak</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead><tbody>` + recs.map(r=>`
     <tr>
       <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
+      <td>${r.kaynak==="sinif"?`<span class="badge b-done">🏫 Sınıf</span>`:r.kaynak==="yedek"?`<span class="badge b-f3">📦 Yedek</span>`:`<span style="color:var(--text3)">—</span>`}</td>
       <td>${h(r.adet)}</td>
       <td>${h(r.personel)}</td>
       <td>${h(r.tarih)}</td>
@@ -780,6 +811,7 @@ function renderKayitlar(){
     <td>${h(r.school_name)}</td>
     <td>${h(r.city)}${r.district?` / ${h(r.district)}`:""}</td>
     <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
+    <td>${r.kaynak==="sinif"?`<span class="badge b-done">🏫 Sınıf</span>`:r.kaynak==="yedek"?`<span class="badge b-f3">📦 Yedek</span>`:`<span style="color:var(--text3)">—</span>`}</td>
     <td>${h(r.adet)}</td>
     <td>${h(r.personel)}</td>
     <td>${h(r.tarih)}</td>
@@ -812,6 +844,7 @@ async function submitKayit(){
     const adet = parseInt(qs("#inp-adet").value)||1;
     const notlar = qs("#inp-not").value.trim();
     const kurum = qs("#inp-kurum").value.trim();
+    if(!S.selKaynak) throw new Error("Kaynak seçin (Sınıftan / Yedek)");
     const btn = qs("#kayitBtn"); btn.disabled = true; btn.textContent = "Kaydediliyor...";
     let school = S.selOkul;
     if(!school.school_id){
@@ -820,8 +853,8 @@ async function submitKayit(){
       S.schools.unshift(school);
       markFresh("schools");
     }
-    const rr = await apiPost({action:"addRecord", school_id:school.school_id, city:S.selSehir, district:S.selIlce, school_name:school.school_name, kurum_kodu:school.kurum_kodu || kurum, faz:S.selFaz, adet, personel, notlar});
-    const newRec = {...rr.data, school_id:school.school_id, city:S.selSehir, district:S.selIlce, school_name:school.school_name, kurum_kodu:school.kurum_kodu || kurum, faz:S.selFaz, adet, personel, notlar, durum:"bekliyor"};
+    const rr = await apiPost({action:"addRecord", school_id:school.school_id, city:S.selSehir, district:S.selIlce, school_name:school.school_name, kurum_kodu:school.kurum_kodu || kurum, faz:S.selFaz, adet, personel, notlar, kaynak:S.selKaynak});
+    const newRec = {...rr.data, school_id:school.school_id, city:S.selSehir, district:S.selIlce, school_name:school.school_name, kurum_kodu:school.kurum_kodu || kurum, faz:S.selFaz, adet, personel, notlar, kaynak:S.selKaynak, durum:"bekliyor"};
     S.records.unshift(newRec);
     markFresh("records");
     S.dashboard = null; S.cacheAt.dashboard = 0;
@@ -831,11 +864,13 @@ async function submitKayit(){
   finally{ const btn = qs("#kayitBtn"); btn.disabled=false; btn.textContent="💾 Kayıt Oluştur"; }
 }
 function resetKayitForm(){
-  S.selSehir=""; S.selIlce=""; S.selOkul=null; S.selFaz=null;
+  S.selSehir=""; S.selIlce=""; S.selOkul=null; S.selFaz=null; S.selKaynak=null;
   ["#inp-sehir","#inp-ilce","#inp-okul","#inp-kurum","#inp-not"].forEach(id=>{ const el=qs(id); el.value=""; });
   qs("#inp-ilce").disabled=true; qs("#inp-okul").disabled=true; qs("#inp-adet").value=1;
   if(S.personnel) qs("#inp-personel").value = S.personnel;
   [1,2,3].forEach(i=>qs("#faz"+i).className="faz-btn");
+  qs("#kaynak-sinif").className="faz-btn"; qs("#kaynak-sinif").style="";
+  qs("#kaynak-yedek").className="faz-btn"; qs("#kaynak-yedek").style="";
 }
 function openTeslimModal(recordId){
   const rec = S.records.find(r => String(r.record_id) === String(recordId));
