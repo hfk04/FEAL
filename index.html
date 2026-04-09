@@ -191,27 +191,36 @@ tr:hover td{background:rgba(255,255,255,.018)}
 
 <div id="page-dashboard" class="page active">
   <div class="page-header"><div class="page-title">// ANA SAYFA</div><div class="page-sub" id="dashDate">—</div></div>
-  <div class="stats-grid">
-    <div class="stat-card sc-orange"><div class="stat-label">Bekleyen OPS</div><div class="stat-value" id="s-bekleyen">—</div><div class="stat-sub">Teslim edilmemiş</div></div>
-    <div class="stat-card sc-green"><div class="stat-label">Bugün Alınan</div><div class="stat-value" id="s-bugun">—</div><div class="stat-sub" id="s-bugun-sub">adet ops</div></div>
-    <div class="stat-card sc-blue"><div class="stat-label">Toplam Kayıt</div><div class="stat-value" id="s-toplam">—</div><div class="stat-sub">Tüm zamanlar</div></div>
-    <div class="stat-card sc-red"><div class="stat-label">Geciken (7+ gün)</div><div class="stat-value" id="s-geciken">—</div><div class="stat-sub">Acil dikkat</div></div>
-    <div class="stat-card sc-purple"><div class="stat-label">Kayıtlı Okul</div><div class="stat-value" id="s-okul">—</div><div class="stat-sub">5 şehir bölgesi</div></div>
-    <div class="stat-card sc-cyan"><div class="stat-label">Bugün Kayıt</div><div class="stat-value" id="s-bugunkayit">—</div><div class="stat-sub">İşlem sayısı</div></div>
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <div class="stat-card sc-blue">
+      <div class="stat-label">FAZ 1 — Bekleyen</div>
+      <div class="stat-value" id="s-faz1">—</div>
+      <div class="stat-sub">Teslim edilmemiş adet</div>
+    </div>
+    <div class="stat-card sc-purple">
+      <div class="stat-label">FAZ 2 — Bekleyen</div>
+      <div class="stat-value" id="s-faz2">—</div>
+      <div class="stat-sub">Teslim edilmemiş adet</div>
+    </div>
+    <div class="stat-card sc-orange">
+      <div class="stat-label">FAZ 3 — Bekleyen</div>
+      <div class="stat-value" id="s-faz3">—</div>
+      <div class="stat-sub">Teslim edilmemiş adet</div>
+    </div>
+    <div class="stat-card sc-green">
+      <div class="stat-label">Toplam Teslim Edilen</div>
+      <div class="stat-value" id="s-teslim">—</div>
+      <div class="stat-sub">Tüm zamanlar</div>
+    </div>
+    <div class="stat-card sc-red">
+      <div class="stat-label">Borçlu Okul</div>
+      <div class="stat-value" id="s-borclu">—</div>
+      <div class="stat-sub">Bekleyen kaydı olan okul</div>
+    </div>
   </div>
   <div class="section">
     <div class="section-head"><div class="section-title">📍 ŞEHİR BAZINDA DURUM</div><button class="btn btn-secondary btn-sm" onclick="loadDashboard(true)">↻ Yenile</button></div>
     <div class="section-body"><div id="citySummaryGrid"></div></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:0">
-    <div class="section">
-      <div class="section-head"><div class="section-title">🕐 BUGÜNÜN AKTİVİTESİ</div></div>
-      <div class="section-body" id="todayActivity"><div class="empty"><div class="empty-ico">🌙</div><div class="empty-s">Bugün kayıt yok</div></div></div>
-    </div>
-    <div class="section">
-      <div class="section-head"><div class="section-title">🚨 GECİKEN SERVİSLER</div></div>
-      <div class="section-body" id="lateServices"><div class="empty"><div class="empty-ico">✅</div><div class="empty-t">Harika!</div><div class="empty-s">Geciken servis yok</div></div></div>
-    </div>
   </div>
 </div>
 
@@ -623,78 +632,48 @@ async function loadDashboard(force=false){
   }catch(e){ toast("Ana sayfa yüklenemedi: "+e.message,"error"); }
 }
 function renderDashboard(){
-  const d = S.dashboard; // sadece cityStats için kullanılıyor artık
   const now = new Date();
-  const dd = String(now.getDate()).padStart(2,"0");
-  const mm = String(now.getMonth()+1).padStart(2,"0");
-  const yyyy = now.getFullYear();
-  const todayStr = `${dd}.${mm}.${yyyy}`;
 
-  // ── TÜM SAYILAR client-side S.records / S.schools'tan ──
-  const todayRecs  = S.records.filter(r => String(r.tarih||"").startsWith(todayStr));
-  const bekleyen   = S.records.filter(r => r.durum !== "teslim");
-  const lateRecs   = bekleyen.filter(r => {
-    const m = String(r.tarih||"").match(/^(\d{2})\.(\d{2})\.(\d{4})/);
-    if(!m) return false;
-    return (now - new Date(+m[3],+m[2]-1,+m[1])) / 86400000 >= 7;
-  }).map(r => {
-    const m = String(r.tarih).match(/^(\d{2})\.(\d{2})\.(\d{4})/);
-    return {...r, gun: Math.floor((now - new Date(+m[3],+m[2]-1,+m[1])) / 86400000)};
-  }).sort((a,b) => b.gun - a.gun);
+  // Bekleyen kayıtlar (teslim edilmemiş)
+  const bekleyen = S.records.filter(r => r.durum !== "teslim");
 
-  qs("#s-bekleyen").textContent   = bekleyen.length;
-  qs("#s-bugun").textContent      = todayRecs.reduce((s,r) => s + Number(r.adet||0), 0);
-  qs("#s-bugun-sub").textContent  = `${todayRecs.length} kayıt`;
-  qs("#s-toplam").textContent     = S.records.length;
-  qs("#s-geciken").textContent    = lateRecs.length;
-  qs("#s-okul").textContent       = S.schools.length;
-  qs("#s-bugunkayit").textContent = todayRecs.length;
+  // Faz bazında bekleyen ADET (kalan_adet varsa onu, yoksa adet'i kullan)
+  const faz1Adet = bekleyen.filter(r=>String(r.faz)==="1").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
+  const faz2Adet = bekleyen.filter(r=>String(r.faz)==="2").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
+  const faz3Adet = bekleyen.filter(r=>String(r.faz)==="3").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
 
-  // ── ŞEHİR KARTLARI — client-side'dan hesapla ──
+  // Toplam teslim edilen adet (teslim + kısmi teslim edilenler)
+  const teslimAdet = S.records.reduce((s,r)=>s+Number(r.toplam_teslim||0),0);
+
+  // Bekleyen kaydı olan benzersiz okul sayısı
+  const borcluOkullar = new Set(bekleyen.map(r=>r.school_id)).size;
+
+  qs("#s-faz1").textContent   = faz1Adet;
+  qs("#s-faz2").textContent   = faz2Adet;
+  qs("#s-faz3").textContent   = faz3Adet;
+  qs("#s-teslim").textContent = teslimAdet;
+  qs("#s-borclu").textContent = borcluOkullar;
+
+  // Şehir kartları
   const grid = qs("#citySummaryGrid");
   grid.className = "stats-grid";
   grid.innerHTML = CITIES.map(c => {
     const cRecs = S.records.filter(r => r.city === c);
     const cBek  = cRecs.filter(r => r.durum !== "teslim");
     const cTes  = cRecs.filter(r => r.durum === "teslim");
-    const fazCount = {faz1:0, faz2:0, faz3:0};
-    cBek.forEach(r => { const k="faz"+r.faz; if(fazCount[k]!==undefined) fazCount[k] += Number(r.kalan_adet||r.adet||0); });
+    const f1 = cBek.filter(r=>String(r.faz)==="1").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
+    const f2 = cBek.filter(r=>String(r.faz)==="2").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
+    const f3 = cBek.filter(r=>String(r.faz)==="3").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
     return `<div class="stat-card sc-blue" style="cursor:pointer" onclick="showPage('okullar');setOkulCityByName('${h(c)}')">
       <div class="stat-label">${h(c)}</div>
       <div class="stat-sub">Bekleyen: ${cBek.length} · Teslim: ${cTes.length} · Toplam: ${cRecs.length}</div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-        <span class="badge b-f1">F1 ${fazCount.faz1}</span>
-        <span class="badge b-f2">F2 ${fazCount.faz2}</span>
-        <span class="badge b-f3">F3 ${fazCount.faz3}</span>
+        <span class="badge b-f1">F1 ${f1}</span>
+        <span class="badge b-f2">F2 ${f2}</span>
+        <span class="badge b-f3">F3 ${f3}</span>
       </div>
     </div>`;
   }).join("");
-
-  // ── BUGÜNÜN AKTİVİTESİ ──
-  const todayEl = qs("#todayActivity");
-  if(todayRecs.length){
-    todayEl.innerHTML = `<div class="timeline">${todayRecs.slice(0,8).map(r=>`
-      <div class="tl-item">
-        <div class="tl-dot" style="background:rgba(${r.faz==1?"79,142,247":r.faz==2?"168,85,247":"245,158,11"},.18);font-size:13px;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;flex-shrink:0">${r.faz==1?"①":r.faz==2?"②":"③"}</div>
-        <div class="tl-content"><div class="tl-title">${h(r.school_name)}</div><div class="tl-meta">${h(r.city)} · ${h(r.adet)} adet · ${h(r.personel)} · ${h(r.tarih)}</div></div>
-        <span class="badge ${r.durum==="teslim"?"b-done":r.durum==="kismi"?"b-part":"b-wait"}">${r.durum==="teslim"?"Teslim":r.durum==="kismi"?"Kısmi":"Bekliyor"}</span>
-      </div>`).join("")}</div>`;
-  } else {
-    todayEl.innerHTML = `<div class="empty"><div class="empty-ico">🌙</div><div class="empty-s">Bugün kayıt yok</div></div>`;
-  }
-
-  // ── GECİKEN SERVİSLER ──
-  const lateEl = qs("#lateServices");
-  if(lateRecs.length){
-    lateEl.innerHTML = `<div class="timeline">${lateRecs.slice(0,8).map(r=>`
-      <div class="tl-item">
-        <div style="width:30px;height:30px;border-radius:50%;background:rgba(239,68,68,.18);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">⚠️</div>
-        <div class="tl-content"><div class="tl-title">${h(r.school_name)}</div><div class="tl-meta">${h(r.city)} · Faz ${h(r.faz)} · ${h(r.adet)} adet · ${h(r.personel)}</div></div>
-        <span class="badge b-late">${h(r.gun)} gün</span>
-      </div>`).join("")}</div>`;
-  } else {
-    lateEl.innerHTML = `<div class="empty"><div class="empty-ico">✅</div><div class="empty-t">Harika!</div><div class="empty-s">Geciken servis yok</div></div>`;
-  }
 }
 
 async function loadOkullar(force=false){
