@@ -657,8 +657,12 @@ function renderDashboard(){
     </div>`;
   }).join("");
 
-  // Bugünün aktivitesi — client-side hesapla (cache sorunundan bağımsız)
-  const todayStr = new Date().toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"}).split(".").join(".");
+  // Bugünün aktivitesi — tarih karşılaştırması dd.MM.yyyy formatında güvenli şekilde
+  const now2 = new Date();
+  const dd = String(now2.getDate()).padStart(2,"0");
+  const mm = String(now2.getMonth()+1).padStart(2,"0");
+  const yyyy = now2.getFullYear();
+  const todayStr = `${dd}.${mm}.${yyyy}`;
   const todayRecs = S.records.filter(r => String(r.tarih||"").startsWith(todayStr));
   const todayEl = qs("#todayActivity");
   if(todayRecs.length){
@@ -673,7 +677,7 @@ function renderDashboard(){
   }
 
   // Geciken servisler — client-side hesapla
-  const now = new Date();
+  const now = now2;
   const lateRecs = S.records.filter(r=>{
     if(r.durum==="teslim") return false;
     const m = String(r.tarih||"").match(/^(\d{2})\.(\d{2})\.(\d{4})/);
