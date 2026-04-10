@@ -422,7 +422,75 @@ tr:hover td{background:rgba(255,255,255,.018)}
   </div>
 </div>
 
+<!-- SİLME ONAY MODAL -->
+<div class="modal-ov" id="confirmDeleteModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">🗑️ Kaydı Sil</div>
+    <div class="modal-close" onclick="closeModal('confirmDeleteModal')">✕</div>
+    <input type="hidden" id="del-record-id">
+    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:var(--r-sm);padding:16px;margin-bottom:20px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Silinecek kayıt:</div>
+      <div id="del-record-info" style="font-weight:600;font-size:14px"></div>
+      <div style="margin-top:10px;font-size:12px;color:var(--red)">⚠️ Bu işlem geri alınamaz.</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-danger" id="confirmDeleteBtn" onclick="executeDeleteRecord()">🗑️ Evet, Sil</button>
+      <button class="btn btn-secondary" onclick="closeModal('confirmDeleteModal')">İptal</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
+
+<!-- KAYIT DÜZENLE MODAL -->
+<div class="modal-ov" id="editRecordModal">
+  <div class="modal">
+    <div class="modal-title">✏️ Kaydı Düzenle</div>
+    <div class="modal-close" onclick="closeModal('editRecordModal')">✕</div>
+    <input type="hidden" id="er-record-id">
+    <div id="er-school-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:18px;font-size:13px;color:var(--text2)"></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Faz *</label>
+        <div class="faz-toggle">
+          <button class="faz-btn" id="er-faz1" onclick="erPickFaz(1)">FAZ 1</button>
+          <button class="faz-btn" id="er-faz2" onclick="erPickFaz(2)">FAZ 2</button>
+          <button class="faz-btn" id="er-faz3" onclick="erPickFaz(3)">FAZ 3</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Adet *</label>
+        <div class="adet-wrap">
+          <button class="adet-btn" onclick="erChangeAdet(-1)">−</button>
+          <input type="number" class="adet-num" id="er-adet" value="1" min="1" max="99">
+          <button class="adet-btn" onclick="erChangeAdet(1)">+</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Kaynak *</label>
+        <div class="faz-toggle">
+          <button class="faz-btn" id="er-kaynak-sinif" onclick="erPickKaynak('sinif')" style="font-size:11px">🏫 SINIFTAN</button>
+          <button class="faz-btn" id="er-kaynak-yedek" onclick="erPickKaynak('yedek')" style="font-size:11px">📦 YEDEK</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Personel *</label>
+        <div class="sd-wrap">
+          <input type="text" id="er-personel" placeholder="Personel seç..." autocomplete="off" oninput="sdFilter('er-p')" onfocus="sdOpen('er-p')" onblur="sdBlur('er-p')">
+          <div class="sd-list" id="sd-er-p"></div>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>Not</label>
+        <textarea id="er-not" placeholder="Cihaz durumu, seri no, özel bilgi..." style="min-height:70px"></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="editRecordBtn" onclick="saveEditRecord()">💾 Kaydet</button>
+      <button class="btn btn-secondary" onclick="closeModal('editRecordModal')">İptal</button>
+    </div>
+  </div>
+</div>
 <nav class="mobile-nav">
   <button class="mob-btn active" id="mob-dashboard" onclick="showPage('dashboard')"><span class="mob-ico">📊</span><span>Özet</span></button>
   <button class="mob-btn" id="mob-okullar" onclick="showPage('okullar')"><span class="mob-ico">🏫</span><span>Okullar</span></button>
@@ -559,8 +627,10 @@ function sdFilter(ns){
     l.innerHTML = (DISTRICTS[S.selSehir]||[]).filter(x => x.toLowerCase().includes(q)).map(x => `<div class="sd-item" onclick="sdPick('ilce','${h(x)}')">${h(x)}</div>`).join("") || `<div class="sd-empty">Sonuç yok</div>`;
     return;
   }
-  if(ns==="personel" || ns==="teslim-p"){
-    const items = S.personnelList.filter(p => (p.isim||"").toLowerCase().includes(q));
+  if(ns==="personel" || ns==="teslim-p" || ns==="er-p"){
+    const inpEl = ns==="teslim-p" ? qs("#teslim-personel") : ns==="er-p" ? qs("#er-personel") : qs("#inp-personel");
+    const qq = (inpEl?.value||"").toLowerCase().trim();
+    const items = S.personnelList.filter(p => (p.isim||"").toLowerCase().includes(qq));
     l.innerHTML = items.map(p => `<div class="sd-item" onclick="sdPick('${ns}','${h(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Personel bulunamadı</div>`;
     return;
   }
@@ -574,11 +644,11 @@ function sdFilter(ns){
   }
 }
 function sdPick(ns,val){
-  const inp = ns==="teslim-p" ? qs("#teslim-personel") : qs("#inp-"+ns);
+  const inp = ns==="teslim-p" ? qs("#teslim-personel") : ns==="er-p" ? qs("#er-personel") : qs("#inp-"+ns);
   if(inp) inp.value = val;
   const l = qs("#sd-"+ns); if(l) l.classList.remove("open");
   if(ns==="personel"){ selectPersonnel(val); qs("#inp-personel").value = val; return; }
-  if(ns==="teslim-p"){ return; }
+  if(ns==="teslim-p" || ns==="er-p"){ return; }
   if(ns==="sehir"){
     S.selSehir = val; S.selIlce=""; S.selOkul=null;
     qs("#inp-ilce").value=""; qs("#inp-ilce").disabled=false; qs("#inp-okul").value=""; qs("#inp-okul").disabled=true; qs("#inp-kurum").value="";
@@ -759,8 +829,12 @@ function toggleSchoolDetail(sid){
       <td>${h(r.personel)}</td>
       <td>${h(r.tarih)}</td>
       <td>${durumBadge(r.durum)}</td>
-      <td>${h(r.notlar || "—")}</td>
-      <td>${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal('${h(r.record_id)}')">📦 Teslim</button>` : "✓"}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap">
+        ${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal('${h(r.record_id)}')">📦 Teslim</button>` : ""}
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditRecordModal('${h(r.record_id)}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteRecord('${h(r.record_id)}','${h(r.school_name)}')">🗑️</button>
+      </td>
     </tr>`).join("") + `</tbody></table></div>`;
 }
 
@@ -816,8 +890,12 @@ function renderKayitlar(){
     <td>${h(r.personel)}</td>
     <td>${h(r.tarih)}</td>
     <td>${durumBadge(r.durum)}</td>
-    <td>${h(r.notlar || "—")}</td>
-    <td>${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal('${h(r.record_id)}')">📦 Teslim</button>` : "✓"}</td>
+    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
+    <td style="display:flex;gap:5px;flex-wrap:wrap">
+      ${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal('${h(r.record_id)}')">📦</button>` : `<span style="color:var(--green);font-size:12px">✓</span>`}
+      <button class="btn btn-secondary btn-sm" onclick="openEditRecordModal('${h(r.record_id)}')">✏️</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteRecord('${h(r.record_id)}','${h(r.school_name)}')">🗑️</button>
+    </td>
   </tr>`).join("");
 }
 
@@ -941,9 +1019,98 @@ async function addNewPersonnel(){
   }catch(e){ toast(e.message,"error"); }
 }
 
-function openModal(id){ qs("#"+id).classList.add("open"); }
+function confirmDeleteRecord(recordId, schoolName){
+  qs("#del-record-id").value = recordId;
+  const rec = S.records.find(r => String(r.record_id) === String(recordId));
+  qs("#del-record-info").innerHTML = rec
+    ? `${h(rec.school_name)} · <span class="badge b-f${h(rec.faz)}">FAZ ${h(rec.faz)}</span> · ${h(rec.adet)} adet · ${h(rec.tarih)}`
+    : h(schoolName);
+  openModal("confirmDeleteModal");
+}
+async function executeDeleteRecord(){
+  const rid = qs("#del-record-id").value;
+  const btn = qs("#confirmDeleteBtn"); btn.disabled=true; btn.textContent="Siliniyor...";
+  try{
+    await apiPost({action:"deleteRecord", record_id:rid});
+    // Local state'den kaldır
+    const idx = S.records.findIndex(r=>String(r.record_id)===String(rid));
+    if(idx>=0) S.records.splice(idx,1);
+    S.cacheAt.records=0;
+    closeModal("confirmDeleteModal");
+    renderKayitlar();
+    renderDashboard();
+    // Okul detayı açıksa yenile
+    const openDetail = qs(".school-detail.open");
+    if(openDetail){ const sid=openDetail.id.replace("scd-",""); toggleSchoolDetail(sid); toggleSchoolDetail(sid); }
+    toast("Kayıt silindi","success");
+  }catch(e){ toast("Hata: "+e.message,"error"); }
+  finally{ btn.disabled=false; btn.textContent="🗑️ Evet, Sil"; }
+}
 function closeModal(id){ qs("#"+id).classList.remove("open"); }
 function durumBadge(d){ if(d==="teslim") return `<span class="badge b-done">✓ Teslim</span>`; if(d==="kismi") return `<span class="badge b-part">⊕ Kısmi</span>`; return `<span class="badge b-wait">⏳ Bekliyor</span>`; }
+
+// ── KAYIT DÜZENLEME ──
+let erFaz = null;
+let erKaynak = null;
+
+function openEditRecordModal(recordId){
+  const rec = S.records.find(r => String(r.record_id) === String(recordId));
+  if(!rec){ toast("Kayıt bulunamadı","error"); return; }
+  erFaz = Number(rec.faz); erKaynak = rec.kaynak || null;
+  qs("#er-record-id").value = rec.record_id;
+  qs("#er-school-info").innerHTML = `<strong>${h(rec.school_name)}</strong> · ${h(rec.city)} / ${h(rec.district)} · <span class="badge b-f${h(rec.faz)}">FAZ ${h(rec.faz)}</span>`;
+  qs("#er-adet").value = rec.adet;
+  qs("#er-personel").value = rec.personel || "";
+  qs("#er-not").value = rec.notlar || "";
+  // Faz butonları
+  [1,2,3].forEach(i=>{ const b=qs("#er-faz"+i); b.className="faz-btn"; if(i===erFaz) b.classList.add("a"+i); });
+  // Kaynak butonları
+  const bs=qs("#er-kaynak-sinif"); const by=qs("#er-kaynak-yedek");
+  bs.className="faz-btn"; bs.removeAttribute("style");
+  by.className="faz-btn"; by.removeAttribute("style");
+  if(erKaynak==="sinif") bs.classList.add("a1");
+  else if(erKaynak==="yedek"){ by.style.borderColor="var(--orange)"; by.style.background="rgba(245,158,11,.14)"; by.style.color="var(--orange)"; }
+  // Personel dropdown
+  qs("#sd-er-p").innerHTML = S.personnelList.map(p=>`<div class="sd-item" onclick="sdPick('er-p','${h(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Personel yok</div>`;
+  openModal("editRecordModal");
+}
+function erPickFaz(n){
+  erFaz=n; [1,2,3].forEach(i=>{const b=qs("#er-faz"+i); b.className="faz-btn"; if(i===n) b.classList.add("a"+n);});
+}
+function erPickKaynak(k){
+  erKaynak=k;
+  const bs=qs("#er-kaynak-sinif"); const by=qs("#er-kaynak-yedek");
+  bs.className="faz-btn"; bs.removeAttribute("style");
+  by.className="faz-btn"; by.removeAttribute("style");
+  if(k==="sinif") bs.classList.add("a1");
+  else { by.style.borderColor="var(--orange)"; by.style.background="rgba(245,158,11,.14)"; by.style.color="var(--orange)"; }
+}
+function erChangeAdet(d){ const inp=qs("#er-adet"); inp.value=Math.max(1,Math.min(99,(parseInt(inp.value)||1)+d)); }
+async function saveEditRecord(){
+  const rid = qs("#er-record-id").value;
+  if(!erFaz){ toast("Faz seçin","error"); return; }
+  if(!erKaynak){ toast("Kaynak seçin","error"); return; }
+  const adet = parseInt(qs("#er-adet").value)||1;
+  const personel = qs("#er-personel").value.trim();
+  const notlar = qs("#er-not").value.trim();
+  if(!personel){ toast("Personel seçin","error"); return; }
+  const btn=qs("#editRecordBtn"); btn.disabled=true; btn.textContent="Kaydediliyor...";
+  try{
+    await apiPost({action:"updateRecord", record_id:rid, faz:erFaz, adet, personel, notlar, kaynak:erKaynak});
+    // Local state güncelle
+    const idx = S.records.findIndex(r=>String(r.record_id)===String(rid));
+    if(idx>=0){ Object.assign(S.records[idx], {faz:erFaz, adet, personel, notlar, kaynak:erKaynak}); }
+    S.cacheAt.records=0;
+    closeModal("editRecordModal");
+    renderKayitlar();
+    renderDashboard();
+    // Okul detayı açıksa yenile
+    const openDetail = qs(".school-detail.open");
+    if(openDetail){ const sid=openDetail.id.replace("scd-",""); toggleSchoolDetail(sid); toggleSchoolDetail(sid); }
+    toast("Kayıt güncellendi ✓","success");
+  }catch(e){ toast("Hata: "+e.message,"error"); }
+  finally{ btn.disabled=false; btn.textContent="💾 Kaydet"; }
+}
 
 function loadAyarlar(){ renderPersonnelMgmt(); qs("#connStatus").innerHTML = `<span style="color:var(--green)">● Bağlı</span>`; }
 async function saveConfig(){
