@@ -814,6 +814,7 @@ function refreshSchoolDetail(sid){
   detail.classList.remove("open");
   toggleSchoolDetail(sid);
 }
+function toggleSchoolDetail(sid){
   const detail=qs("#scd-"+CSS.escape(sid));
   const card=qs("#sc-"+CSS.escape(sid));
   const arr=qs("#sc-arr-"+CSS.escape(sid));
