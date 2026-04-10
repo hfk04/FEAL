@@ -83,6 +83,7 @@ select option{background:var(--surface2)}
 .btn-primary:hover{background:#3d7de8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,142,247,.35)}
 .btn-success{background:var(--green);color:#fff}
 .btn-success:hover{background:#16a34a;transform:translateY(-1px)}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#dc2626;transform:translateY(-1px)}
 .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
 .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
 .btn-sm{padding:6px 13px;font-size:12px}
@@ -501,8 +502,9 @@ tr:hover td{background:rgba(255,255,255,.018)}
 </div>
 
 <script>
-const CACHE_TTL = { dashboard: 30000, schools: 120000, personnel: 120000, records: 45000 };
-let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZXE4OxOawYB8XlDF6HpRMkBP1F3Zka80MUqoKFz5GTHMn0YrKEqr2wsOHeIth-UE/exec";
+
+const CACHE_TTL = { dashboard: 30000, schools: 180000, personnel: 180000, records: 60000 };
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZXE4OxOawYB8XlDF6HpRMkBP1F3Zka80MUqoKFz5GTHMn0YrKEqr2wsOHeIth-UE/exec";
 
 const CITIES = ["İstanbul Avrupa","İstanbul Anadolu","Kocaeli","Yalova","Bursa"];
 const DISTRICTS = {
@@ -513,12 +515,14 @@ const DISTRICTS = {
   "Bursa":["Büyükorhan","Gemlik","Gürsu","Harmancık","İnegöl","İznik","Karacabey","Keles","Kestel","Mudanya","Mustafakemalpaşa","Nilüfer","Orhaneli","Orhangazi","Osmangazi","Yıldırım","Yenişehir"]
 };
 
-let S = {
+const S = {
   personnel: localStorage.getItem("ops_personnel") || "",
   personnelList: [],
   schools: [],
   records: [],
-  dashboard: null,
+  cacheAt: { dashboard:0, schools:0, personnel:0, records:0 },
+  pending: { schools:null, personnel:null, records:null },
+  derived: null,
   selFaz: null,
   selKaynak: null,
   selSehir: "",
@@ -527,246 +531,334 @@ let S = {
   okulCity: "all",
   recCity: "all",
   teslimRec: null,
-  cacheAt: {dashboard:0, schools:0, personnel:0, records:0}
 };
 
 const qs = s => document.querySelector(s);
 const qsa = s => [...document.querySelectorAll(s)];
-function h(text){ return String(text ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+const pageIs = id => qs("#page-"+id)?.classList.contains("active");
+const h = v => String(v ?? "").replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const isFresh = key => (Date.now() - (S.cacheAt[key] || 0)) < CACHE_TTL[key];
+const markFresh = key => { S.cacheAt[key] = Date.now(); };
+const jsonq = value => JSON.stringify(String(value ?? ""));
+
 function toast(msg, type="info") {
   const w = qs("#toastWrap");
   const el = document.createElement("div");
-  el.className = "toast " + (type==="success"?"t-ok":type==="error"?"t-err":"t-info");
+  el.className = "toast " + (type==="success" ? "t-ok" : type==="error" ? "t-err" : "t-info");
   const icon = type==="success" ? "✅" : type==="error" ? "❌" : "ℹ️";
   el.innerHTML = `<span>${icon}</span><span>${h(msg)}</span>`;
   w.appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
-function showLoader(txt="Yükleniyor..."){ qs("#loaderTxt").textContent = txt; qs("#loaderOv").classList.add("on"); }
-function hideLoader(){ qs("#loaderOv").classList.remove("on"); }
 
-async function fetchJSON(url, options={}) {
+function showLoader(txt="Yükleniyor..."){ const ov=qs("#loaderOv"); if(ov){ qs("#loaderTxt").textContent = txt; ov.classList.add("on"); } }
+function hideLoader(){ qs("#loaderOv")?.classList.remove("on"); }
+
+async function fetchJSON(url, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20000);
   try {
-    const res = await fetch(url, {...options, signal: controller.signal, redirect: "follow"});
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      cache: "no-store",
+      redirect: "follow"
+    });
     const text = await res.text();
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     let data;
-    try { data = JSON.parse(text); }
-    catch { throw new Error("Sunucu JSON yerine farklı bir cevap döndürdü."); }
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error("Sunucu geçersiz yanıt döndürdü.");
+    }
     if (data.error) throw new Error(data.error);
     return data;
-  } finally { clearTimeout(timer); }
+  } catch (err) {
+    if (err.name === "AbortError") throw new Error("İstek zaman aşımına uğradı.");
+    if (/Failed to fetch|NetworkError/i.test(String(err))) throw new Error("Sunucuya ulaşılamadı.");
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
-async function api(params) {
-  if (!SCRIPT_URL) throw new Error("Script URL ayarlanmamış.");
-  const url = SCRIPT_URL + "?" + new URLSearchParams(params).toString();
-  return fetchJSON(url);
-}
-async function apiPost(body) {
-  if (!SCRIPT_URL) throw new Error("Script URL ayarlanmamış.");
+function api(params){ return fetchJSON(SCRIPT_URL + "?" + new URLSearchParams(params).toString()); }
+function apiPost(body){
   return fetchJSON(SCRIPT_URL, {
-    method:"POST",
-    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(body)
   });
 }
-function isFresh(key){ return Date.now() - (S.cacheAt[key]||0) < CACHE_TTL[key]; }
-function markFresh(key){ S.cacheAt[key] = Date.now(); }
 
-function buildCityTabs(targetId, clickFnName){
-  const root = qs(targetId);
-  const cities = ['all', ...CITIES];
-  root.innerHTML = cities.map(c => {
-    const label = c === 'all' ? 'Tümü' : c;
-    const stateKey = targetId === '#okulCityTabs' ? S.okulCity : S.recCity;
-    return `<div class="city-tab ${stateKey===c?'active':''}" data-city="${h(c)}" onclick="${clickFnName}(this,'${h(c)}')">${h(label)}</div>`;
-  }).join('');
-}
-
-function showPage(id){
-  qsa(".page").forEach(p => p.classList.remove("active"));
-  qs("#page-"+id).classList.add("active");
-  qsa(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.page === id));
-  ["dashboard","okullar","kayit","kayitlar","ayarlar"].forEach(p => { const el = qs("#mob-"+p); if(el) el.classList.toggle("active", p===id); });
-  if (id === "dashboard") loadDashboard();
-  if (id === "okullar") loadOkullar();
-  if (id === "kayitlar") loadRecords();
-  if (id === "kayit") ensureBaseData();
-  if (id === "ayarlar") loadAyarlar();
-}
-
-function sdOpen(ns){
-  const l=qs("#sd-"+ns);
-  const wrap=l?.closest(".form-group");
-  if(wrap) wrap.classList.add("dropdown-open");
-  if(l){ l.classList.add("open"); sdFilter(ns);}
-}
-function sdBlur(ns){
-  setTimeout(()=>{
-    const l=qs("#sd-"+ns);
-    if(l) l.classList.remove("open");
-    const wrap=l?.closest(".form-group");
-    if(wrap) wrap.classList.remove("dropdown-open");
-  },160);
-}
-function sdFilter(ns){
-  const inputIdMap = { personel:"#inp-personel", teslimp:"#teslim-personel" };
-  const inp = ns==="teslim-p" ? qs("#teslim-personel") : qs("#inp-"+ns);
-  const l = qs("#sd-"+ns);
-  if(!inp || !l) return;
-  const q = inp.value.toLowerCase().trim();
-  l.classList.add("open");
-  if(ns==="sehir"){
-    l.innerHTML = CITIES.filter(c => c.toLowerCase().includes(q)).map(c => `<div class="sd-item" onclick="sdPick('sehir','${h(c)}')">${h(c)}</div>`).join("") || `<div class="sd-empty">Sonuç yok</div>`;
-    return;
-  }
-  if(ns==="ilce"){
-    if(!S.selSehir){ l.innerHTML = `<div class="sd-empty">Önce şehir seçin</div>`; return; }
-    l.innerHTML = (DISTRICTS[S.selSehir]||[]).filter(x => x.toLowerCase().includes(q)).map(x => `<div class="sd-item" onclick="sdPick('ilce','${h(x)}')">${h(x)}</div>`).join("") || `<div class="sd-empty">Sonuç yok</div>`;
-    return;
-  }
-  if(ns==="personel" || ns==="teslim-p" || ns==="er-p"){
-    const inpEl = ns==="teslim-p" ? qs("#teslim-personel") : ns==="er-p" ? qs("#er-personel") : qs("#inp-personel");
-    const qq = (inpEl?.value||"").toLowerCase().trim();
-    const items = S.personnelList.filter(p => (p.isim||"").toLowerCase().includes(qq));
-    l.innerHTML = items.map(p => `<div class="sd-item" onclick="sdPick('${ns}','${h(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Personel bulunamadı</div>`;
-    return;
-  }
-  if(ns==="okul"){
-    if(!S.selIlce){ l.innerHTML = `<div class="sd-empty">Önce ilçe seçin</div>`; return; }
-    const matches = S.schools.filter(s => s.city===S.selSehir && s.district===S.selIlce && (s.school_name||"").toLowerCase().includes(q));
-    let html = matches.map(s => `<div class="sd-item" onclick="sdPickOkul('${h(s.school_id)}')">${h(s.school_name)}${s.kurum_kodu ? ` <span style="color:var(--text3);font-size:11px">(${h(s.kurum_kodu)})</span>` : ""}</div>`).join("");
-    const typed = inp.value.trim();
-    if(typed && !matches.find(s => (s.school_name||"").toLowerCase() === typed.toLowerCase())) html += `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ "${h(typed)}" olarak ekle</div>`;
-    l.innerHTML = html || `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ Yeni okul ekle</div>`;
-  }
-}
-function sdPick(ns,val){
-  const inp = ns==="teslim-p" ? qs("#teslim-personel") : ns==="er-p" ? qs("#er-personel") : qs("#inp-"+ns);
-  if(inp) inp.value = val;
-  const l = qs("#sd-"+ns); if(l) l.classList.remove("open");
-  if(ns==="personel"){ selectPersonnel(val); qs("#inp-personel").value = val; return; }
-  if(ns==="teslim-p" || ns==="er-p"){ return; }
-  if(ns==="sehir"){
-    S.selSehir = val; S.selIlce=""; S.selOkul=null;
-    qs("#inp-ilce").value=""; qs("#inp-ilce").disabled=false; qs("#inp-okul").value=""; qs("#inp-okul").disabled=true; qs("#inp-kurum").value="";
-  }
-  if(ns==="ilce"){
-    S.selIlce = val; S.selOkul=null;
-    qs("#inp-okul").value=""; qs("#inp-okul").disabled=false; qs("#inp-kurum").value="";
-  }
-}
-function sdPickOkul(id){
-  const school = S.schools.find(s => s.school_id === id);
-  if(!school) return;
-  S.selOkul = school;
-  qs("#inp-okul").value = school.school_name || "";
-  qs("#inp-kurum").value = school.kurum_kodu || "";
-  qs("#sd-okul").classList.remove("open");
-}
-function sdPickOkulNew(){
-  const name = qs("#inp-okul").value.trim();
-  if(!name){ toast("Okul adı girin","error"); return; }
-  S.selOkul = { school_id:null, school_name:name, kurum_kodu:"", city:S.selSehir, district:S.selIlce };
-  qs("#sd-okul").classList.remove("open");
-}
-function pickFaz(n){ S.selFaz=n; [1,2,3].forEach(i=>{const b=qs("#faz"+i); b.className="faz-btn"; if(i===n) b.classList.add("a"+n);}); }
-function pickKaynak(k){
-  S.selKaynak=k;
-  const bs = qs("#kaynak-sinif"); const by = qs("#kaynak-yedek");
-  bs.className="faz-btn"; by.className="faz-btn";
-  if(k==="sinif"){ bs.classList.add("a1"); }
-  else { by.style.borderColor="var(--orange)"; by.style.background="rgba(245,158,11,.14)"; by.style.color="var(--orange)"; }
-}
-function changeAdet(d){ const inp=qs("#inp-adet"); inp.value=Math.max(1,Math.min(99,(parseInt(inp.value)||1)+d)); }
-function changeTeslimAdet(d){ const inp=qs("#teslim-adet"); inp.value=Math.max(1,Math.min(parseInt(inp.max)||99,(parseInt(inp.value)||1)+d)); }
-
-async function loadPersonnel(force=false){
-  
-  if(!force && isFresh("personnel") && S.personnelList.length) return;
-  const r = await api({action:"getPersonnel"});
-  S.personnelList = r.data || [];
-  markFresh("personnel");
-  renderPersonnelMgmt();
-}
-async function loadSchools(force=false){
-  
-  if(!force && isFresh("schools") && S.schools.length) return;
-  const r = await api({action:"getSchools"});
-  S.schools = r.data || [];
-  markFresh("schools");
-}
-async function loadRecords(force=false){
-  
-  if(!force && isFresh("records") && S.records.length) { renderKayitlar(); return; }
-  const r = await api({action:"getRecords"});
-  S.records = r.data || [];
-  markFresh("records");
-  renderKayitlar();
-}
-async function ensureBaseData(force=false){
-  
-  await Promise.all([loadPersonnel(force), loadSchools(force)]);
-  fillPersonnelDropdowns();
-}
-function fillPersonnelDropdowns(){
-  const html = S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('personel','${h(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Önce personel ekleyin</div>`;
-  qs("#sd-personel").innerHTML = html;
-  qs("#sd-teslim-p").innerHTML = S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('teslim-p','${h(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Personel yok</div>`;
-  if(S.personnel) qs("#inp-personel").value = S.personnel;
-}
-
-async function loadDashboard(force=false){
-  qs("#dashDate").textContent = new Date().toLocaleDateString("tr-TR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-  if(!force && isFresh("records") && isFresh("schools") && S.records.length){ renderDashboard(); return; }
-  try{
-    await Promise.all([loadRecords(force), loadSchools(force)]);
-    renderDashboard();
-  }catch(e){ toast("Ana sayfa yüklenemedi: "+e.message,"error"); }
-}
-function renderDashboard(){
-  // ── TEK GEÇİŞTE TÜM İSTATİSTİKLER ──
-  const cityAgg = {}; // city → {bek,tes,top,f1,f2,f3}
-  CITIES.forEach(c => { cityAgg[c]={bek:0,tes:0,top:0,f1:0,f2:0,f3:0}; });
-
-  let faz1=0, faz2=0, faz3=0, teslimToplam=0, sinif=0, yedek=0;
+function rebuildDerived() {
+  const schoolStats = {};
+  const cityAgg = {};
   const borcluSet = new Set();
+  for (const c of CITIES) cityAgg[c] = { bek:0, tes:0, top:0, f1:0, f2:0, f3:0 };
 
-  for(const r of S.records){
-    const adet = Number(r.kalan_adet||r.adet||0);
-    const ham  = Number(r.adet||0);
-    const tt   = Number(r.toplam_teslim||0);
-    const bek  = r.durum !== "teslim";
-    teslimToplam += tt;
-    const c = cityAgg[r.city];
-    if(c) { c.top++; if(bek) c.bek++; else c.tes++; }
-    if(bek){
-      borcluSet.add(r.school_id);
-      const faz = String(r.faz);
-      if(faz==="1"){ faz1+=adet; if(c) c.f1+=adet; }
-      else if(faz==="2"){ faz2+=adet; if(c) c.f2+=adet; }
-      else if(faz==="3"){ faz3+=adet; if(c) c.f3+=adet; }
-      if(r.kaynak==="sinif") sinif+=adet;
-      else if(r.kaynak==="yedek") yedek+=adet;
+  let faz1 = 0, faz2 = 0, faz3 = 0, teslimToplam = 0, sinif = 0, yedek = 0;
+
+  for (const r of S.records) {
+    const schoolId = String(r.school_id ?? "");
+    const city = r.city || "";
+    const adet = Number(r.adet || 0);
+    const toplamTeslim = Number(r.toplam_teslim || 0);
+    const kalan = Math.max(0, Number(r.kalan_adet ?? (adet - toplamTeslim)));
+    const isBekleyen = (r.durum || "bekliyor") !== "teslim";
+
+    if (!schoolStats[schoolId]) schoolStats[schoolId] = { bekleyen:0, toplam:0 };
+    schoolStats[schoolId].toplam += 1;
+    if (isBekleyen) schoolStats[schoolId].bekleyen += 1;
+
+    if (cityAgg[city]) {
+      cityAgg[city].top += 1;
+      if (isBekleyen) cityAgg[city].bek += 1;
+      else cityAgg[city].tes += 1;
+    }
+
+    teslimToplam += toplamTeslim;
+
+    if (isBekleyen) {
+      borcluSet.add(schoolId);
+      const faz = String(r.faz || "");
+      if (faz === "1") { faz1 += kalan; if (cityAgg[city]) cityAgg[city].f1 += kalan; }
+      else if (faz === "2") { faz2 += kalan; if (cityAgg[city]) cityAgg[city].f2 += kalan; }
+      else if (faz === "3") { faz3 += kalan; if (cityAgg[city]) cityAgg[city].f3 += kalan; }
+
+      if (r.kaynak === "sinif") sinif += kalan;
+      else if (r.kaynak === "yedek") yedek += kalan;
     }
   }
 
-  qs("#s-faz1").textContent   = faz1;
-  qs("#s-faz2").textContent   = faz2;
-  qs("#s-faz3").textContent   = faz3;
-  qs("#s-teslim").textContent = teslimToplam;
-  qs("#s-borclu").textContent = borcluSet.size;
-  qs("#s-sinif").textContent  = sinif;
-  qs("#s-yedek").textContent  = yedek;
+  S.derived = { schoolStats, cityAgg, faz1, faz2, faz3, teslimToplam, sinif, yedek, borcluCount: borcluSet.size };
+}
 
-  // Şehir kartları
+async function loadPersonnel(force = false) {
+  if (!force && isFresh("personnel") && S.personnelList.length) return S.personnelList;
+  if (S.pending.personnel) return S.pending.personnel;
+  S.pending.personnel = api({ action: "getPersonnel" }).then(r => {
+    S.personnelList = Array.isArray(r.data) ? r.data.slice().sort((a,b)=>String(a.isim||"").localeCompare(String(b.isim||""), "tr")) : [];
+    markFresh("personnel");
+    fillPersonnelDropdowns();
+    if (pageIs("ayarlar")) renderPersonnelMgmt();
+    return S.personnelList;
+  }).finally(() => { S.pending.personnel = null; });
+  return S.pending.personnel;
+}
+async function loadSchools(force = false) {
+  if (!force && isFresh("schools") && S.schools.length) return S.schools;
+  if (S.pending.schools) return S.pending.schools;
+  S.pending.schools = api({ action: "getSchools" }).then(r => {
+    S.schools = Array.isArray(r.data) ? r.data : [];
+    markFresh("schools");
+    return S.schools;
+  }).finally(() => { S.pending.schools = null; });
+  return S.pending.schools;
+}
+async function loadRecords(force = false) {
+  if (!force && isFresh("records") && S.records.length) return S.records;
+  if (S.pending.records) return S.pending.records;
+  S.pending.records = api({ action: "getRecords" }).then(r => {
+    S.records = Array.isArray(r.data) ? r.data : [];
+    markFresh("records");
+    rebuildDerived();
+    return S.records;
+  }).finally(() => { S.pending.records = null; });
+  return S.pending.records;
+}
+async function ensureBaseData(force = false) {
+  await Promise.all([loadPersonnel(force), loadSchools(force)]);
+}
+
+function buildCityTabs(targetId, clickFnName, selectedValue) {
+  const root = qs(targetId);
+  if (!root) return;
+  const cities = ["all", ...CITIES];
+  root.innerHTML = cities.map(c => {
+    const label = c === "all" ? "Tümü" : c;
+    return `<div class="city-tab ${selectedValue===c ? 'active' : ''}" data-city="${h(c)}" onclick="${clickFnName}(this, ${jsonq(c)})">${h(label)}</div>`;
+  }).join("");
+}
+
+function showPage(id) {
+  qsa(".page").forEach(p => p.classList.remove("active"));
+  qs("#page-"+id)?.classList.add("active");
+  qsa(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.page === id));
+  ["dashboard","okullar","kayit","kayitlar","ayarlar"].forEach(p => qs("#mob-"+p)?.classList.toggle("active", p === id));
+
+  if (id === "dashboard") loadDashboard();
+  else if (id === "okullar") loadOkullar();
+  else if (id === "kayitlar") loadKayitlarPage();
+  else if (id === "kayit") ensureBaseData().catch(e=>toast(e.message,"error"));
+  else if (id === "ayarlar") loadAyarlar();
+}
+
+function clearDropdownZ() { qsa(".form-group.dropdown-open").forEach(el => el.classList.remove("dropdown-open")); }
+function sdOpen(ns) {
+  const l = qs("#sd-"+ns);
+  const wrap = l?.closest(".form-group");
+  clearDropdownZ();
+  if (wrap) wrap.classList.add("dropdown-open");
+  if (l) { l.classList.add("open"); sdFilter(ns); }
+}
+function sdBlur(ns) {
+  setTimeout(() => {
+    qs("#sd-"+ns)?.classList.remove("open");
+    qs("#sd-"+ns)?.closest(".form-group")?.classList.remove("dropdown-open");
+  }, 140);
+}
+function sdFilter(ns) {
+  const inp = ns==="teslim-p" ? qs("#teslim-personel") : ns==="er-p" ? qs("#er-personel") : qs("#inp-"+ns);
+  const list = qs("#sd-"+ns);
+  if (!inp || !list) return;
+  const q = (inp.value || "").toLowerCase().trim();
+  list.classList.add("open");
+
+  if (ns === "personel" || ns === "teslim-p" || ns === "er-p") {
+    const items = S.personnelList.filter(p => String(p.isim || "").toLowerCase().includes(q));
+    list.innerHTML = items.length
+      ? items.map(p => `<div class="sd-item" onclick="sdPick(${jsonq(ns)}, ${jsonq(p.isim)})">${h(p.isim)}</div>`).join("")
+      : `<div class="sd-empty">Personel bulunamadı</div>`;
+    return;
+  }
+  if (ns === "sehir") {
+    const items = CITIES.filter(c => c.toLowerCase().includes(q));
+    list.innerHTML = items.length
+      ? items.map(c => `<div class="sd-item" onclick="sdPick('sehir', ${jsonq(c)})">${h(c)}</div>`).join("")
+      : `<div class="sd-empty">Sonuç yok</div>`;
+    return;
+  }
+  if (ns === "ilce") {
+    if (!S.selSehir) { list.innerHTML = `<div class="sd-empty">Önce şehir seçin</div>`; return; }
+    const items = (DISTRICTS[S.selSehir] || []).filter(d => d.toLowerCase().includes(q));
+    list.innerHTML = items.length
+      ? items.map(d => `<div class="sd-item" onclick="sdPick('ilce', ${jsonq(d)})">${h(d)}</div>`).join("")
+      : `<div class="sd-empty">Sonuç yok</div>`;
+    return;
+  }
+  if (ns === "okul") {
+    if (!S.selIlce) { list.innerHTML = `<div class="sd-empty">Önce ilçe seçin</div>`; return; }
+    const matches = S.schools.filter(s =>
+      s.city === S.selSehir &&
+      s.district === S.selIlce &&
+      String(s.school_name || "").toLowerCase().includes(q)
+    );
+    let html = matches.map(s => `<div class="sd-item" onclick="sdPickOkul(${jsonq(s.school_id)})">${h(s.school_name)}${s.kurum_kodu ? ` <span style="color:var(--text3);font-size:11px">(${h(s.kurum_kodu)})</span>` : ""}</div>`).join("");
+    const typed = inp.value.trim();
+    if (typed && !matches.some(s => String(s.school_name || "").toLowerCase() === typed.toLowerCase())) {
+      html += `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ "${h(typed)}" olarak ekle</div>`;
+    }
+    list.innerHTML = html || `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ Yeni okul ekle</div>`;
+  }
+}
+function sdPick(ns, val) {
+  const inp = ns==="teslim-p" ? qs("#teslim-personel") : ns==="er-p" ? qs("#er-personel") : qs("#inp-"+ns);
+  if (inp) inp.value = val;
+  qs("#sd-"+ns)?.classList.remove("open");
+  qs("#sd-"+ns)?.closest(".form-group")?.classList.remove("dropdown-open");
+
+  if (ns === "personel") { selectPersonnel(val, false); return; }
+  if (ns === "teslim-p" || ns === "er-p") return;
+
+  if (ns === "sehir") {
+    S.selSehir = val; S.selIlce = ""; S.selOkul = null;
+    qs("#inp-ilce").value = ""; qs("#inp-ilce").disabled = false;
+    qs("#inp-okul").value = ""; qs("#inp-okul").disabled = true;
+    qs("#inp-kurum").value = "";
+    return;
+  }
+  if (ns === "ilce") {
+    S.selIlce = val; S.selOkul = null;
+    qs("#inp-okul").value = ""; qs("#inp-okul").disabled = false;
+    qs("#inp-kurum").value = "";
+  }
+}
+function sdPickOkul(id) {
+  const school = S.schools.find(s => String(s.school_id) === String(id));
+  if (!school) return;
+  S.selOkul = school;
+  qs("#inp-okul").value = school.school_name || "";
+  qs("#inp-kurum").value = school.kurum_kodu || "";
+  qs("#sd-okul")?.classList.remove("open");
+  qs("#sd-okul")?.closest(".form-group")?.classList.remove("dropdown-open");
+}
+function sdPickOkulNew() {
+  const name = qs("#inp-okul").value.trim();
+  if (!name) return toast("Okul adı girin", "error");
+  S.selOkul = { school_id:null, school_name:name, kurum_kodu:qs("#inp-kurum").value.trim(), city:S.selSehir, district:S.selIlce };
+  qs("#sd-okul")?.classList.remove("open");
+  qs("#sd-okul")?.closest(".form-group")?.classList.remove("dropdown-open");
+}
+
+function pickFaz(n) {
+  S.selFaz = n;
+  [1,2,3].forEach(i => {
+    const b = qs("#faz"+i);
+    if (!b) return;
+    b.className = "faz-btn";
+    if (i === n) b.classList.add("a"+n);
+  });
+}
+function pickKaynak(k) {
+  S.selKaynak = k;
+  const sinif = qs("#kaynak-sinif"), yedek = qs("#kaynak-yedek");
+  if (!sinif || !yedek) return;
+  sinif.className = "faz-btn"; sinif.removeAttribute("style");
+  yedek.className = "faz-btn"; yedek.removeAttribute("style");
+  if (k === "sinif") sinif.classList.add("a1");
+  else { yedek.style.borderColor = "var(--orange)"; yedek.style.background = "rgba(245,158,11,.14)"; yedek.style.color = "var(--orange)"; }
+}
+function changeAdet(d) {
+  const inp = qs("#inp-adet");
+  inp.value = Math.max(1, Math.min(99, (parseInt(inp.value,10) || 1) + d));
+}
+function changeTeslimAdet(d) {
+  const inp = qs("#teslim-adet");
+  inp.value = Math.max(1, Math.min(parseInt(inp.max,10) || 99, (parseInt(inp.value,10) || 1) + d));
+}
+
+function fillPersonnelDropdowns() {
+  const items = S.personnelList.length
+    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('personel', ${jsonq(p.isim)})">${h(p.isim)}</div>`).join("")
+    : `<div class="sd-empty">Önce personel ekleyin</div>`;
+  if (qs("#sd-personel")) qs("#sd-personel").innerHTML = items;
+  if (qs("#sd-teslim-p")) qs("#sd-teslim-p").innerHTML = S.personnelList.length
+    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('teslim-p', ${jsonq(p.isim)})">${h(p.isim)}</div>`).join("")
+    : `<div class="sd-empty">Personel yok</div>`;
+  if (S.personnel && qs("#inp-personel")) qs("#inp-personel").value = S.personnel;
+}
+
+async function loadDashboard(force = false) {
+  qs("#dashDate").textContent = new Date().toLocaleDateString("tr-TR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  try {
+    if (force || !S.records.length || !isFresh("records")) {
+      showLoader("Ana sayfa yükleniyor...");
+      await Promise.all([loadRecords(force), loadSchools(force)]);
+    }
+    renderDashboard();
+  } catch (e) {
+    toast("Ana sayfa yüklenemedi: " + e.message, "error");
+  } finally {
+    hideLoader();
+  }
+}
+function renderDashboard() {
+  if (!S.derived) rebuildDerived();
+  const d = S.derived;
+  qs("#s-faz1").textContent = d.faz1;
+  qs("#s-faz2").textContent = d.faz2;
+  qs("#s-faz3").textContent = d.faz3;
+  qs("#s-teslim").textContent = d.teslimToplam;
+  qs("#s-borclu").textContent = d.borcluCount;
+  qs("#s-sinif").textContent = d.sinif;
+  qs("#s-yedek").textContent = d.yedek;
+
   const grid = qs("#citySummaryGrid");
   grid.className = "stats-grid";
   grid.innerHTML = CITIES.map(c => {
-    const a = cityAgg[c]||{bek:0,tes:0,top:0,f1:0,f2:0,f3:0};
-    return `<div class="stat-card sc-blue" style="cursor:pointer" onclick="showPage('okullar');setOkulCityByName('${h(c)}')">
+    const a = d.cityAgg[c] || {bek:0, tes:0, top:0, f1:0, f2:0, f3:0};
+    return `<div class="stat-card sc-blue" style="cursor:pointer" onclick="showPage('okullar');setOkulCityByName(${jsonq(c)})">
       <div class="stat-label">${h(c)}</div>
       <div class="stat-sub">Bekleyen: ${a.bek} · Teslim: ${a.tes} · Toplam: ${a.top}</div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
@@ -778,257 +870,495 @@ function renderDashboard(){
   }).join("");
 }
 
-async function loadOkullar(force=false){
-  
-  qs("#okullarList").innerHTML = `<div class="empty"><div class="empty-s">Yükleniyor...</div></div>`;
-  try{
-    await Promise.all([loadSchools(force), loadRecords(force)]);
+async function loadOkullar(force = false) {
+  try {
+    if (force || !S.schools.length || !isFresh("schools") || !S.records.length || !isFresh("records")) {
+      showLoader("Okullar yükleniyor...");
+      await Promise.all([loadSchools(force), loadRecords(force)]);
+    }
     renderOkullar();
-  }catch(e){ toast("Okullar yüklenemedi: "+e.message,"error"); }
+  } catch (e) {
+    toast("Okullar yüklenemedi: " + e.message, "error");
+  } finally {
+    hideLoader();
+  }
 }
-function setOkulCity(el,c){ S.okulCity=c; qsa("#okulCityTabs .city-tab").forEach(t=>t.classList.remove("active")); el.classList.add("active"); renderOkullar(); }
-function setOkulCityByName(c){ S.okulCity=c; qsa("#okulCityTabs .city-tab").forEach(t=>t.classList.toggle("active", t.dataset.city===c)); renderOkullar(); }
-function renderOkullar(){
-  buildCityTabs("#okulCityTabs","setOkulCity");
-  const q=(qs("#okulSearch").value||"").toLowerCase().trim();
-  let schools=[...S.schools];
-  if(S.okulCity!=="all") schools=schools.filter(s=>s.city===S.okulCity);
-  if(q) schools=schools.filter(s=>`${s.school_name} ${s.district} ${s.kurum_kodu||""}`.toLowerCase().includes(q));
-  if(!schools.length){ qs("#okullarList").innerHTML=`<div class="empty"><div class="empty-t">Okul bulunamadı</div></div>`; return; }
-  const stats = {};
-  for(const r of S.records){ if(!stats[r.school_id]) stats[r.school_id]={bekleyen:0,toplam:0}; stats[r.school_id].toplam++; if(r.durum!=="teslim") stats[r.school_id].bekleyen++; }
-  qs("#okullarList").innerHTML = schools.map(s=>{
-    const st = stats[s.school_id] || {bekleyen:0,toplam:0};
-    return `<div class="school-card" id="sc-${h(s.school_id)}" onclick="toggleSchoolDetail('${h(s.school_id)}')">
+function setOkulCity(el, c) {
+  S.okulCity = c;
+  qsa("#okulCityTabs .city-tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  renderOkullar();
+}
+function setOkulCityByName(c) {
+  S.okulCity = c;
+  buildCityTabs("#okulCityTabs", "setOkulCity", S.okulCity);
+  renderOkullar();
+}
+function renderOkullar() {
+  buildCityTabs("#okulCityTabs", "setOkulCity", S.okulCity);
+  const q = (qs("#okulSearch")?.value || "").toLowerCase().trim();
+  let schools = S.schools.slice();
+  if (S.okulCity !== "all") schools = schools.filter(s => s.city === S.okulCity);
+  if (q) schools = schools.filter(s => `${s.school_name||""} ${s.district||""} ${s.kurum_kodu||""}`.toLowerCase().includes(q));
+
+  const root = qs("#okullarList");
+  if (!schools.length) {
+    root.innerHTML = `<div class="empty"><div class="empty-t">Okul bulunamadı</div></div>`;
+    return;
+  }
+
+  const schoolStats = (S.derived || {}).schoolStats || {};
+  root.innerHTML = schools.map(s => {
+    const st = schoolStats[String(s.school_id)] || {bekleyen:0, toplam:0};
+    return `<div class="school-card" id="sc-${h(s.school_id)}" onclick="toggleSchoolDetail(${jsonq(s.school_id)})">
       <div class="sc-icon">🏫</div>
-      <div class="sc-info"><div class="sc-name">${h(s.school_name)}</div><div class="sc-meta">${h(s.city)} › ${h(s.district)}${s.kurum_kodu?` · Kod: ${h(s.kurum_kodu)}`:""}</div></div>
-      <div class="sc-stats"><div class="sc-stat"><div class="sc-stat-v" style="color:var(--orange)">${h(st.bekleyen)}</div><div class="sc-stat-l">Bekleyen</div></div><div class="sc-stat"><div class="sc-stat-v">${h(st.toplam)}</div><div class="sc-stat-l">Toplam</div></div></div>
+      <div class="sc-info"><div class="sc-name">${h(s.school_name)}</div><div class="sc-meta">${h(s.city)} › ${h(s.district)}${s.kurum_kodu ? ` · Kod: ${h(s.kurum_kodu)}` : ""}</div></div>
+      <div class="sc-stats"><div class="sc-stat"><div class="sc-stat-v" style="color:var(--orange)">${st.bekleyen}</div><div class="sc-stat-l">Bekleyen</div></div><div class="sc-stat"><div class="sc-stat-v">${st.toplam}</div><div class="sc-stat-l">Toplam</div></div></div>
       <span id="sc-arr-${h(s.school_id)}" style="color:var(--text3);font-size:16px">›</span>
     </div><div class="school-detail" id="scd-${h(s.school_id)}"></div>`;
   }).join("");
 }
-function refreshSchoolDetail(sid){
-  const detail = qs("#scd-"+CSS.escape(sid));
-  if(!detail || !detail.classList.contains("open")) return;
-  // detayı kapat ve tekrar aç — içerik güncel data ile yeniden render edilir
+function refreshSchoolDetail(sid) {
+  const detail = qs("#scd-" + CSS.escape(String(sid)));
+  if (!detail || !detail.classList.contains("open")) return;
   detail.classList.remove("open");
   toggleSchoolDetail(sid);
 }
-function toggleSchoolDetail(sid){
-  const detail=qs("#scd-"+CSS.escape(sid));
-  const card=qs("#sc-"+CSS.escape(sid));
-  const arr=qs("#sc-arr-"+CSS.escape(sid));
-  if(detail.classList.contains("open")){ detail.classList.remove("open"); card.classList.remove("expanded"); arr.textContent="›"; return; }
-  detail.classList.add("open"); card.classList.add("expanded"); arr.textContent="⌄";
-  const recs=S.records.filter(r=>String(r.school_id)===String(sid));
-  const school=S.schools.find(s=>String(s.school_id)===String(sid));
+function toggleSchoolDetail(sid) {
+  sid = String(sid);
+  const detail = qs("#scd-" + CSS.escape(sid));
+  const card = qs("#sc-" + CSS.escape(sid));
+  const arr = qs("#sc-arr-" + CSS.escape(sid));
+  if (!detail || !card || !arr) return;
+  if (detail.classList.contains("open")) {
+    detail.classList.remove("open");
+    card.classList.remove("expanded");
+    arr.textContent = "›";
+    return;
+  }
+
+  detail.classList.add("open");
+  card.classList.add("expanded");
+  arr.textContent = "⌄";
+
+  const school = S.schools.find(s => String(s.school_id) === sid);
+  const recs = S.records.filter(r => String(r.school_id) === sid);
   const schoolInfo = `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-    <div style="font-size:13px;color:var(--text2)">${h(school?.school_name||"")} <span style="color:var(--text3)">·</span> ${h(school?.city||"")} / ${h(school?.district||"")}${school?.kurum_kodu?` <span style="color:var(--text3)">·</span> Kod: ${h(school.kurum_kodu)}`:""}</div>
-    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditSchoolModal('${h(sid)}')">✏️ Okul Bilgilerini Düzenle</button>
+    <div style="font-size:13px;color:var(--text2)">${h(school?.school_name||"")} <span style="color:var(--text3)">·</span> ${h(school?.city||"")} / ${h(school?.district||"")}${school?.kurum_kodu ? ` <span style="color:var(--text3)">·</span> Kod: ${h(school.kurum_kodu)}` : ""}</div>
+    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditSchoolModal(${jsonq(sid)})">✏️ Okul Bilgilerini Düzenle</button>
   </div>`;
-  if(!recs.length){
+
+  if (!recs.length) {
     detail.innerHTML = schoolInfo + `<div class="empty"><div class="empty-s">Bu okul için kayıt yok</div></div>`;
     return;
   }
-  detail.innerHTML = schoolInfo + `<div class="table-wrap"><table><thead><tr><th>Faz</th><th>Kaynak</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead><tbody>` + recs.map(r=>`
-    <tr>
+
+  detail.innerHTML = schoolInfo + `<div class="table-wrap"><table><thead><tr><th>Faz</th><th>Kaynak</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead><tbody>${
+    recs.map(r => `<tr>
       <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
-      <td>${r.kaynak==="sinif"?`<span class="badge b-done">🏫 Sınıf</span>`:r.kaynak==="yedek"?`<span class="badge b-f3">📦 Yedek</span>`:`<span style="color:var(--text3)">—</span>`}</td>
+      <td>${kaynakBadge(r.kaynak)}</td>
       <td>${h(r.adet)}</td>
       <td>${h(r.personel)}</td>
       <td>${h(r.tarih)}</td>
       <td>${durumBadge(r.durum)}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
       <td style="white-space:nowrap">
-        ${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal('${h(r.record_id)}')">📦 Teslim</button> ` : ""}
-        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditRecordModal('${h(r.record_id)}')">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteRecord('${h(r.record_id)}','${h(r.school_name)}')">🗑️</button>
+        ${(r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal(${jsonq(r.record_id)})">📦 Teslim</button> ` : ""}
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditRecordModal(${jsonq(r.record_id)})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteRecord(${jsonq(r.record_id)}, ${jsonq(r.school_name)})">🗑️</button>
       </td>
-    </tr>`).join("") + `</tbody></table></div>`;
+    </tr>`).join("")
+  }</tbody></table></div>`;
 }
 
-function openEditSchoolModal(sid){
-  const school = S.schools.find(s=>String(s.school_id)===String(sid));
-  if(!school) return;
-  qs("#edit-school-id").value = school.school_id;
-  qs("#edit-school-name").value = school.school_name || "";
-  qs("#edit-school-kurum").value = school.kurum_kodu || "";
-  openModal("editSchoolModal");
-}
-async function saveEditSchool(){
-  const sid = qs("#edit-school-id").value;
-  const newName = qs("#edit-school-name").value.trim();
-  const newKurum = qs("#edit-school-kurum").value.trim();
-  if(!newName){ toast("Okul adı boş olamaz","error"); return; }
-  const btn = qs("#editSchoolBtn"); btn.disabled=true; btn.textContent="Kaydediliyor...";
-  try{
-    await apiPost({action:"updateSchool", school_id:sid, school_name:newName, kurum_kodu:newKurum});
-    // Local state güncelle
-    const idx = S.schools.findIndex(s=>String(s.school_id)===String(sid));
-    if(idx>=0){ S.schools[idx].school_name=newName; S.schools[idx].kurum_kodu=newKurum; }
-    // Kayıtlarda da güncelle
-    S.records.forEach(r=>{ if(String(r.school_id)===String(sid)){ r.school_name=newName; r.kurum_kodu=newKurum; } });
-    S.cacheAt.schools=0; S.cacheAt.records=0;
-    closeModal("editSchoolModal");
-    renderOkullar();
-    renderKayitlar();
-    toast("Okul bilgileri güncellendi","success");
-  }catch(e){ toast("Hata: "+e.message,"error"); }
-  finally{ btn.disabled=false; btn.textContent="💾 Kaydet"; }
+function kaynakBadge(k) {
+  if (k === "sinif") return `<span class="badge b-done">🏫 Sınıf</span>`;
+  if (k === "yedek") return `<span class="badge b-f3">📦 Yedek</span>`;
+  return `<span style="color:var(--text3)">—</span>`;
 }
 
-function setRecCity(el,c){ S.recCity=c; qsa("#recCityTabs .city-tab").forEach(t=>t.classList.remove("active")); el.classList.add("active"); renderKayitlar(); }
-function renderKayitlar(){
-  buildCityTabs("#recCityTabs","setRecCity");
-  const q=(qs("#recSearch").value||"").toLowerCase().trim();
-  const df=qs("#recDurumFilter").value||"all";
-  const ff=qs("#recFazFilter").value||"all";
-  let recs=[...S.records];
-  if(S.recCity!=="all") recs=recs.filter(r=>r.city===S.recCity);
-  if(df!=="all") recs=recs.filter(r=>r.durum===df);
-  if(ff!=="all") recs=recs.filter(r=>String(r.faz)===ff);
-  if(q) recs=recs.filter(r=>`${r.school_name} ${r.district||""}`.toLowerCase().includes(q));
-  const t=qs("#kayitlarTbl");
-  if(!recs.length){ t.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Kayıt bulunamadı</td></tr>`; return; }
-  t.innerHTML = recs.map(r=>`<tr>
+function loadKayitlarPage(force = false) {
+  loadRecords(force).then(() => renderKayitlar()).catch(e => toast("Kayıtlar yüklenemedi: " + e.message, "error"));
+}
+function setRecCity(el, c) {
+  S.recCity = c;
+  qsa("#recCityTabs .city-tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  renderKayitlar();
+}
+function renderKayitlar() {
+  buildCityTabs("#recCityTabs", "setRecCity", S.recCity);
+  const q = (qs("#recSearch")?.value || "").toLowerCase().trim();
+  const df = qs("#recDurumFilter")?.value || "all";
+  const ff = qs("#recFazFilter")?.value || "all";
+  let recs = S.records.slice();
+  if (S.recCity !== "all") recs = recs.filter(r => r.city === S.recCity);
+  if (df !== "all") recs = recs.filter(r => r.durum === df);
+  if (ff !== "all") recs = recs.filter(r => String(r.faz) === ff);
+  if (q) recs = recs.filter(r => `${r.school_name||""} ${r.district||""}`.toLowerCase().includes(q));
+
+  const t = qs("#kayitlarTbl");
+  if (!recs.length) {
+    t.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text3)">Kayıt bulunamadı</td></tr>`;
+    return;
+  }
+  t.innerHTML = recs.map(r => `<tr>
     <td>${h(r.school_name)}</td>
-    <td>${h(r.city)}${r.district?` / ${h(r.district)}`:""}</td>
+    <td>${h(r.city)}${r.district ? ` / ${h(r.district)}` : ""}</td>
     <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
-    <td>${r.kaynak==="sinif"?`<span class="badge b-done">🏫 Sınıf</span>`:r.kaynak==="yedek"?`<span class="badge b-f3">📦 Yedek</span>`:`<span style="color:var(--text3)">—</span>`}</td>
+    <td>${kaynakBadge(r.kaynak)}</td>
     <td>${h(r.adet)}</td>
     <td>${h(r.personel)}</td>
     <td>${h(r.tarih)}</td>
     <td>${durumBadge(r.durum)}</td>
     <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
     <td style="white-space:nowrap">
-      ${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal('${h(r.record_id)}')">📦</button> ` : `<span style="color:var(--green);font-size:12px">✓ </span>`}
-      <button class="btn btn-secondary btn-sm" onclick="openEditRecordModal('${h(r.record_id)}')">✏️</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteRecord('${h(r.record_id)}','${h(r.school_name)}')">🗑️</button>
+      ${(r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal(${jsonq(r.record_id)})">📦</button> ` : `<span style="color:var(--green);font-size:12px">✓ </span>`}
+      <button class="btn btn-secondary btn-sm" onclick="openEditRecordModal(${jsonq(r.record_id)})">✏️</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteRecord(${jsonq(r.record_id)}, ${jsonq(r.school_name)})">🗑️</button>
     </td>
   </tr>`).join("");
 }
 
-async function submitKayit(){
-  try{
-    const personel = qs("#inp-personel").value.trim() || S.personnel;
-    if(!personel) throw new Error("Personel seçin");
-    if(!S.selSehir) throw new Error("Şehir seçin");
-    if(!S.selIlce) throw new Error("İlçe seçin");
-    if(!S.selFaz) throw new Error("Faz seçin");
+async function submitKayit() {
+  const btn = qs("#kayitBtn");
+  try {
+    const personel = (qs("#inp-personel").value.trim() || S.personnel).trim();
+    if (!personel) throw new Error("Personel seçin");
+    if (!S.selSehir) throw new Error("Şehir seçin");
+    if (!S.selIlce) throw new Error("İlçe seçin");
+    if (!S.selFaz) throw new Error("Faz seçin");
+    if (!S.selKaynak) throw new Error("Kaynak seçin (Sınıftan / Yedek)");
 
-    // Okul adı input'tan otomatik al — artık dropdown'dan seçmek zorunlu değil
-    const okulAdı = qs("#inp-okul").value.trim();
-    if(!okulAdı) throw new Error("Okul adı girin");
-    if(!S.selOkul || S.selOkul.school_name.toLowerCase() !== okulAdı.toLowerCase()) {
-      // Input'ta yazılı isimle eşleşen kayıtlı okul var mı?
+    const okulAdi = qs("#inp-okul").value.trim();
+    if (!okulAdi) throw new Error("Okul adı girin");
+
+    if (!S.selOkul || String(S.selOkul.school_name || "").toLowerCase() !== okulAdi.toLowerCase()) {
       const match = S.schools.find(s =>
-        s.city === S.selSehir && s.district === S.selIlce &&
-        s.school_name.toLowerCase() === okulAdı.toLowerCase()
+        s.city === S.selSehir &&
+        s.district === S.selIlce &&
+        String(s.school_name || "").toLowerCase() === okulAdi.toLowerCase()
       );
-      S.selOkul = match || { school_id:null, school_name:okulAdı, kurum_kodu: qs("#inp-kurum").value.trim() };
+      S.selOkul = match || { school_id:null, school_name:okulAdi, kurum_kodu: qs("#inp-kurum").value.trim() };
     }
 
-    const adet = parseInt(qs("#inp-adet").value)||1;
+    const adet = parseInt(qs("#inp-adet").value, 10) || 1;
     const notlar = qs("#inp-not").value.trim();
     const kurum = qs("#inp-kurum").value.trim();
-    if(!S.selKaynak) throw new Error("Kaynak seçin (Sınıftan / Yedek)");
-    const btn = qs("#kayitBtn"); btn.disabled = true; btn.textContent = "Kaydediliyor...";
+
+    btn.disabled = true; btn.textContent = "Kaydediliyor...";
+
     let school = S.selOkul;
-    if(!school.school_id){
-      const sr = await apiPost({action:"addSchool", city:S.selSehir, district:S.selIlce, school_name:school.school_name, kurum_kodu:kurum});
+    if (!school.school_id) {
+      const sr = await apiPost({
+        action: "addSchool",
+        city: S.selSehir,
+        district: S.selIlce,
+        school_name: school.school_name,
+        kurum_kodu: kurum
+      });
       school = sr.data;
       S.schools.unshift(school);
       markFresh("schools");
     }
-    const rr = await apiPost({action:"addRecord", school_id:school.school_id, city:S.selSehir, district:S.selIlce, school_name:school.school_name, kurum_kodu:school.kurum_kodu || kurum, faz:S.selFaz, adet, personel, notlar, kaynak:S.selKaynak});
-    const newRec = {...rr.data, school_id:school.school_id, city:S.selSehir, district:S.selIlce, school_name:school.school_name, kurum_kodu:school.kurum_kodu || kurum, faz:S.selFaz, adet, personel, notlar, kaynak:S.selKaynak, durum:"bekliyor"};
-    S.records.unshift(newRec);
+
+    const rr = await apiPost({
+      action: "addRecord",
+      school_id: school.school_id,
+      city: S.selSehir,
+      district: S.selIlce,
+      school_name: school.school_name,
+      kurum_kodu: school.kurum_kodu || kurum,
+      faz: S.selFaz,
+      adet,
+      personel,
+      notlar,
+      kaynak: S.selKaynak
+    });
+
+    const created = rr.data || {};
+    S.records.unshift({
+      record_id: created.record_id || ("tmp_" + Date.now()),
+      school_id: school.school_id,
+      city: S.selSehir,
+      district: S.selIlce,
+      school_name: school.school_name,
+      kurum_kodu: school.kurum_kodu || kurum,
+      faz: S.selFaz,
+      adet,
+      personel,
+      notlar,
+      kaynak: S.selKaynak,
+      tarih: created.tarih || new Date().toLocaleString("tr-TR"),
+      durum: created.durum || "bekliyor",
+      toplam_teslim: created.toplam_teslim || 0,
+      kalan_adet: created.kalan_adet ?? adet
+    });
     markFresh("records");
-    S.dashboard = null; S.cacheAt.dashboard = 0;
+    rebuildDerived();
+
     toast(`Kayıt oluşturuldu ✓ — ${school.school_name}`, "success");
     resetKayitForm();
-  }catch(e){ toast(e.message,"error"); }
-  finally{ const btn = qs("#kayitBtn"); btn.disabled=false; btn.textContent="💾 Kayıt Oluştur"; }
+    if (pageIs("dashboard")) renderDashboard();
+    if (pageIs("okullar")) renderOkullar();
+    if (pageIs("kayitlar")) renderKayitlar();
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "💾 Kayıt Oluştur";
+  }
 }
-function resetKayitForm(){
-  S.selSehir=""; S.selIlce=""; S.selOkul=null; S.selFaz=null; S.selKaynak=null;
-  ["#inp-sehir","#inp-ilce","#inp-okul","#inp-kurum","#inp-not"].forEach(id=>{ const el=qs(id); el.value=""; });
-  qs("#inp-ilce").disabled=true; qs("#inp-okul").disabled=true; qs("#inp-adet").value=1;
-  if(S.personnel) qs("#inp-personel").value = S.personnel;
-  [1,2,3].forEach(i=>qs("#faz"+i).className="faz-btn");
-  qs("#kaynak-sinif").className="faz-btn"; qs("#kaynak-sinif").style="";
-  qs("#kaynak-yedek").className="faz-btn"; qs("#kaynak-yedek").style="";
+function resetKayitForm() {
+  S.selSehir = ""; S.selIlce = ""; S.selOkul = null; S.selFaz = null; S.selKaynak = null;
+  ["#inp-sehir","#inp-ilce","#inp-okul","#inp-kurum","#inp-not"].forEach(id => { const el = qs(id); if (el) el.value = ""; });
+  qs("#inp-ilce").disabled = true;
+  qs("#inp-okul").disabled = true;
+  qs("#inp-adet").value = 1;
+  if (S.personnel) qs("#inp-personel").value = S.personnel;
+  [1,2,3].forEach(i => qs("#faz"+i).className = "faz-btn");
+  qs("#kaynak-sinif").className = "faz-btn"; qs("#kaynak-sinif").removeAttribute("style");
+  qs("#kaynak-yedek").className = "faz-btn"; qs("#kaynak-yedek").removeAttribute("style");
 }
-function openTeslimModal(recordId){
+
+function openTeslimModal(recordId) {
   const rec = S.records.find(r => String(r.record_id) === String(recordId));
-  if(!rec) return;
+  if (!rec) return;
   S.teslimRec = rec;
   qs("#teslimInfo").innerHTML = `<div><strong>${h(rec.school_name)}</strong></div><div style="margin-top:6px;color:var(--text2)">Faz ${h(rec.faz)} · ${h(rec.adet)} adet · ${h(rec.tarih)}</div>`;
   qs("#teslim-adet").value = 1;
-  qs("#teslim-adet").max = rec.kalan_adet || rec.adet;
+  qs("#teslim-adet").max = String(Math.max(1, Number(rec.kalan_adet ?? rec.adet ?? 1)));
   qs("#teslim-personel").value = S.personnel || "";
   fillPersonnelDropdowns();
   qs("#teslim-not").value = "";
   openModal("teslimModal");
 }
-async function submitTeslim(){
-  try{
-    const rec=S.teslimRec;
-    if(!rec) throw new Error("Kayıt seçili değil");
-    const teslim_adet=parseInt(qs("#teslim-adet").value)||1;
-    const personel=qs("#teslim-personel").value.trim();
-    const notlar=qs("#teslim-not").value.trim();
-    if(!personel) throw new Error("Personel seçin");
-    const btn=qs("#teslimBtn"); btn.disabled=true; btn.textContent="Kaydediliyor...";
-    const res=await apiPost({action:"addDelivery", record_id:rec.record_id, school_id:rec.school_id, school_name:rec.school_name, teslim_adet, personel, notlar});
-    rec.toplam_teslim = res.data.toplamTeslim;
-    rec.kalan_adet = Math.max(0, (Number(rec.adet)||0) - (Number(res.data.toplamTeslim)||0));
-    rec.durum = res.data.yeniDurum;
+async function submitTeslim() {
+  const btn = qs("#teslimBtn");
+  try {
+    const rec = S.teslimRec;
+    if (!rec) throw new Error("Kayıt seçili değil");
+    const teslim_adet = parseInt(qs("#teslim-adet").value, 10) || 1;
+    const personel = qs("#teslim-personel").value.trim();
+    const notlar = qs("#teslim-not").value.trim();
+    if (!personel) throw new Error("Personel seçin");
+
+    btn.disabled = true; btn.textContent = "Kaydediliyor...";
+    const res = await apiPost({
+      action: "addDelivery",
+      record_id: rec.record_id,
+      school_id: rec.school_id,
+      school_name: rec.school_name,
+      teslim_adet,
+      personel,
+      notlar
+    });
+
+    rec.toplam_teslim = Number(res.data?.toplamTeslim || 0);
+    rec.kalan_adet = Math.max(0, Number(rec.adet || 0) - rec.toplam_teslim);
+    rec.durum = res.data?.yeniDurum || (rec.kalan_adet > 0 ? "kismi" : "teslim");
+
     markFresh("records");
-    S.dashboard = null; S.cacheAt.dashboard = 0;
+    rebuildDerived();
+
     closeModal("teslimModal");
-    renderKayitlar();
-    if(qs("#page-okullar").classList.contains("active")) renderOkullar();
-    toast("Teslim kaydedildi","success");
-  }catch(e){ toast(e.message,"error"); }
-  finally{ const btn=qs("#teslimBtn"); btn.disabled=false; btn.textContent="✅ Teslimi Onayla"; }
+    if (pageIs("kayitlar")) renderKayitlar();
+    if (pageIs("dashboard")) renderDashboard();
+    if (pageIs("okullar")) { renderOkullar(); refreshSchoolDetail(rec.school_id); }
+    toast("Teslim kaydedildi", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "✅ Teslimi Onayla";
+  }
 }
 
-function openPersonnelModal(){ renderPersonnelList(); openModal("personnelModal"); }
-function renderPersonnelList(){
-  const root=qs("#personnelList");
-  if(!S.personnelList.length){ root.innerHTML = `<div class="empty"><div class="empty-s">Henüz personel yok.</div></div>`; return; }
-  root.innerHTML = S.personnelList.map(p=>`<div class="school-card" onclick="selectPersonnel('${h(p.isim)}')"><div class="sc-icon">${h((p.isim||'?').charAt(0).toUpperCase())}</div><div class="sc-info"><div class="sc-name">${h(p.isim)}</div></div>${p.isim===S.personnel?'<span style="color:var(--green)">✓ Aktif</span>':''}</div>`).join("");
+function openPersonnelModal() { renderPersonnelList(); openModal("personnelModal"); }
+function closeModal(id) { qs("#"+id)?.classList.remove("open"); }
+function openModal(id) { qs("#"+id)?.classList.add("open"); }
+function renderPersonnelList() {
+  const root = qs("#personnelList");
+  if (!S.personnelList.length) {
+    root.innerHTML = `<div class="empty"><div class="empty-s">Henüz personel yok.</div></div>`;
+    return;
+  }
+  root.innerHTML = S.personnelList.map(p => `<div class="school-card" onclick="selectPersonnel(${jsonq(p.isim)})">
+    <div class="sc-icon">${h(String(p.isim || "?").charAt(0).toUpperCase())}</div>
+    <div class="sc-info"><div class="sc-name">${h(p.isim)}</div></div>
+    ${p.isim === S.personnel ? '<span style="color:var(--green)">✓ Aktif</span>' : ''}
+  </div>`).join("");
 }
-function selectPersonnel(name){
+function selectPersonnel(name, close = true) {
   S.personnel = name;
-  localStorage.setItem("ops_personnel",name);
-  qs("#topName").textContent = name;
-  qs("#topAvatar").textContent = name.charAt(0).toUpperCase();
-  if(qs("#inp-personel")) qs("#inp-personel").value = name;
-  closeModal("personnelModal");
+  localStorage.setItem("ops_personnel", name);
+  if (qs("#topName")) qs("#topName").textContent = name;
+  if (qs("#topAvatar")) qs("#topAvatar").textContent = String(name).charAt(0).toUpperCase();
+  if (qs("#inp-personel")) qs("#inp-personel").value = name;
+  if (close) closeModal("personnelModal");
 }
-function renderPersonnelMgmt(){
-  const c=qs("#personnelMgmtList");
-  if(!S.personnelList.length){ c.innerHTML = `<div style="color:var(--text3);font-size:13px">Henüz personel yok</div>`; return; }
-  c.innerHTML = S.personnelList.map(p=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm)"><div class="p-avatar" style="width:28px;height:28px;font-size:11px">${h(p.isim.charAt(0).toUpperCase())}</div><span style="flex:1;font-size:14px">${h(p.isim)}</span><span style="font-size:11px;color:var(--text3)">${h(p.created_at||"")}</span></div>`).join("");
+function renderPersonnelMgmt() {
+  const root = qs("#personnelMgmtList");
+  if (!S.personnelList.length) {
+    root.innerHTML = `<div style="color:var(--text3);font-size:13px">Henüz personel yok</div>`;
+    return;
+  }
+  root.innerHTML = S.personnelList.map(p => `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm)">
+    <div class="p-avatar" style="width:28px;height:28px;font-size:11px">${h(String(p.isim || "?").charAt(0).toUpperCase())}</div>
+    <span style="flex:1;font-size:14px">${h(p.isim)}</span>
+    <span style="font-size:11px;color:var(--text3)">${h(p.created_at || "")}</span>
+  </div>`).join("");
 }
-async function addNewPersonnel(){
-  try{
+async function addNewPersonnel() {
+  try {
     const isim = qs("#newPersonnelInp").value.trim();
-    if(!isim) throw new Error("İsim girin");
-    
-    const res = await apiPost({action:"addPersonnel", isim});
-    if(!S.personnelList.find(p => p.isim.toLowerCase() === res.data.isim.toLowerCase())) S.personnelList.push(res.data);
-    S.personnelList.sort((a,b)=>String(a.isim).localeCompare(String(b.isim),'tr'));
+    if (!isim) throw new Error("İsim girin");
+    if (S.personnelList.some(p => String(p.isim || "").toLowerCase() === isim.toLowerCase())) throw new Error("Bu personel zaten var");
+
+    const res = await apiPost({ action: "addPersonnel", isim });
+    S.personnelList.push(res.data);
+    S.personnelList.sort((a,b) => String(a.isim || "").localeCompare(String(b.isim || ""), "tr"));
     markFresh("personnel");
-    qs("#newPersonnelInp").value="";
-    renderPersonnelMgmt(); fillPersonnelDropdowns();
-    toast("Personel eklendi","success");
-  }catch(e){ toast(e.message,"error"); }
+    fillPersonnelDropdowns();
+    renderPersonnelMgmt();
+    qs("#newPersonnelInp").value = "";
+    toast("Personel eklendi", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  }
 }
 
-function confirmDeleteRecord(recordId, schoolName){
+function openEditSchoolModal(sid) {
+  const school = S.schools.find(s => String(s.school_id) === String(sid));
+  if (!school) return;
+  qs("#edit-school-id").value = school.school_id;
+  qs("#edit-school-name").value = school.school_name || "";
+  qs("#edit-school-kurum").value = school.kurum_kodu || "";
+  openModal("editSchoolModal");
+}
+async function saveEditSchool() {
+  const btn = qs("#editSchoolBtn");
+  try {
+    const sid = qs("#edit-school-id").value;
+    const school_name = qs("#edit-school-name").value.trim();
+    const kurum_kodu = qs("#edit-school-kurum").value.trim();
+    if (!school_name) throw new Error("Okul adı boş olamaz");
+
+    btn.disabled = true; btn.textContent = "Kaydediliyor...";
+    await apiPost({ action:"updateSchool", school_id:sid, school_name, kurum_kodu });
+
+    const school = S.schools.find(s => String(s.school_id) === String(sid));
+    if (school) { school.school_name = school_name; school.kurum_kodu = kurum_kodu; }
+    S.records.forEach(r => {
+      if (String(r.school_id) === String(sid)) { r.school_name = school_name; r.kurum_kodu = kurum_kodu; }
+    });
+
+    rebuildDerived();
+    closeModal("editSchoolModal");
+    if (pageIs("okullar")) renderOkullar();
+    if (pageIs("kayitlar")) renderKayitlar();
+    toast("Okul bilgileri güncellendi", "success");
+  } catch (e) {
+    toast("Hata: " + e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "💾 Kaydet";
+  }
+}
+
+let erFaz = null;
+let erKaynak = null;
+
+function openEditRecordModal(recordId) {
+  const rec = S.records.find(r => String(r.record_id) === String(recordId));
+  if (!rec) return toast("Kayıt bulunamadı", "error");
+
+  erFaz = Number(rec.faz);
+  erKaynak = rec.kaynak || null;
+  qs("#er-record-id").value = rec.record_id;
+  qs("#er-school-info").innerHTML = `<strong>${h(rec.school_name)}</strong> · ${h(rec.city)} / ${h(rec.district)} · <span class="badge b-f${h(rec.faz)}">FAZ ${h(rec.faz)}</span>`;
+  qs("#er-adet").value = rec.adet;
+  qs("#er-personel").value = rec.personel || "";
+  qs("#er-not").value = rec.notlar || "";
+
+  [1,2,3].forEach(i => {
+    const b = qs("#er-faz"+i);
+    b.className = "faz-btn";
+    if (i === erFaz) b.classList.add("a"+i);
+  });
+
+  const sinif = qs("#er-kaynak-sinif"), yedek = qs("#er-kaynak-yedek");
+  sinif.className = "faz-btn"; sinif.removeAttribute("style");
+  yedek.className = "faz-btn"; yedek.removeAttribute("style");
+  if (erKaynak === "sinif") sinif.classList.add("a1");
+  else if (erKaynak === "yedek") { yedek.style.borderColor="var(--orange)"; yedek.style.background="rgba(245,158,11,.14)"; yedek.style.color="var(--orange)"; }
+
+  qs("#sd-er-p").innerHTML = S.personnelList.length
+    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('er-p', ${jsonq(p.isim)})">${h(p.isim)}</div>`).join("")
+    : `<div class="sd-empty">Personel yok</div>`;
+  openModal("editRecordModal");
+}
+function erPickFaz(n) {
+  erFaz = n;
+  [1,2,3].forEach(i => {
+    const b = qs("#er-faz"+i);
+    b.className = "faz-btn";
+    if (i === n) b.classList.add("a"+n);
+  });
+}
+function erPickKaynak(k) {
+  erKaynak = k;
+  const sinif = qs("#er-kaynak-sinif"), yedek = qs("#er-kaynak-yedek");
+  sinif.className = "faz-btn"; sinif.removeAttribute("style");
+  yedek.className = "faz-btn"; yedek.removeAttribute("style");
+  if (k === "sinif") sinif.classList.add("a1");
+  else { yedek.style.borderColor="var(--orange)"; yedek.style.background="rgba(245,158,11,.14)"; yedek.style.color="var(--orange)"; }
+}
+function erChangeAdet(d) {
+  const inp = qs("#er-adet");
+  inp.value = Math.max(1, Math.min(99, (parseInt(inp.value,10) || 1) + d));
+}
+async function saveEditRecord() {
+  const btn = qs("#editRecordBtn");
+  try {
+    const record_id = qs("#er-record-id").value;
+    const adet = parseInt(qs("#er-adet").value, 10) || 1;
+    const personel = qs("#er-personel").value.trim();
+    const notlar = qs("#er-not").value.trim();
+    if (!erFaz) throw new Error("Faz seçin");
+    if (!erKaynak) throw new Error("Kaynak seçin");
+    if (!personel) throw new Error("Personel seçin");
+
+    btn.disabled = true; btn.textContent = "Kaydediliyor...";
+    await apiPost({ action:"updateRecord", record_id, faz:erFaz, adet, personel, notlar, kaynak:erKaynak });
+
+    const rec = S.records.find(r => String(r.record_id) === String(record_id));
+    if (rec) {
+      rec.faz = erFaz;
+      rec.adet = adet;
+      rec.personel = personel;
+      rec.notlar = notlar;
+      rec.kaynak = erKaynak;
+      const toplamTeslim = Number(rec.toplam_teslim || 0);
+      rec.kalan_adet = Math.max(0, adet - toplamTeslim);
+      rec.durum = rec.kalan_adet === 0 ? "teslim" : toplamTeslim > 0 ? "kismi" : "bekliyor";
+    }
+
+    rebuildDerived();
+    closeModal("editRecordModal");
+    if (pageIs("kayitlar")) renderKayitlar();
+    if (pageIs("dashboard")) renderDashboard();
+    if (pageIs("okullar") && rec) { renderOkullar(); refreshSchoolDetail(rec.school_id); }
+    toast("Kayıt güncellendi ✓", "success");
+  } catch (e) {
+    toast("Hata: " + e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "💾 Kaydet";
+  }
+}
+
+function confirmDeleteRecord(recordId, schoolName) {
   qs("#del-record-id").value = recordId;
   const rec = S.records.find(r => String(r.record_id) === String(recordId));
   qs("#del-record-info").innerHTML = rec
@@ -1036,119 +1366,66 @@ function confirmDeleteRecord(recordId, schoolName){
     : h(schoolName);
   openModal("confirmDeleteModal");
 }
-async function executeDeleteRecord(){
-  const rid = qs("#del-record-id").value;
-  const btn = qs("#confirmDeleteBtn"); btn.disabled=true; btn.textContent="Siliniyor...";
-  try{
-    await apiPost({action:"deleteRecord", record_id:rid});
-    // Local state'den kaldır
-    const idx = S.records.findIndex(r=>String(r.record_id)===String(rid));
-    if(idx>=0) S.records.splice(idx,1);
-    S.cacheAt.records=0;
+async function executeDeleteRecord() {
+  const btn = qs("#confirmDeleteBtn");
+  try {
+    const record_id = qs("#del-record-id").value;
+    btn.disabled = true; btn.textContent = "Siliniyor...";
+    await apiPost({ action: "deleteRecord", record_id });
+
+    const rec = S.records.find(r => String(r.record_id) === String(record_id));
+    S.records = S.records.filter(r => String(r.record_id) !== String(record_id));
+    rebuildDerived();
+
     closeModal("confirmDeleteModal");
-    renderKayitlar();
-    renderDashboard();
-    const openDetail = qs(".school-detail.open");
-    if(openDetail) refreshSchoolDetail(openDetail.id.replace("scd-",""));
-    toast("Kayıt silindi","success");
-  }catch(e){ toast("Hata: "+e.message,"error"); }
-  finally{ btn.disabled=false; btn.textContent="🗑️ Evet, Sil"; }
-}
-function closeModal(id){ qs("#"+id).classList.remove("open"); }
-function durumBadge(d){ if(d==="teslim") return `<span class="badge b-done">✓ Teslim</span>`; if(d==="kismi") return `<span class="badge b-part">⊕ Kısmi</span>`; return `<span class="badge b-wait">⏳ Bekliyor</span>`; }
-
-// ── KAYIT DÜZENLEME ──
-let erFaz = null;
-let erKaynak = null;
-
-function openEditRecordModal(recordId){
-  const rec = S.records.find(r => String(r.record_id) === String(recordId));
-  if(!rec){ toast("Kayıt bulunamadı","error"); return; }
-  erFaz = Number(rec.faz); erKaynak = rec.kaynak || null;
-  qs("#er-record-id").value = rec.record_id;
-  qs("#er-school-info").innerHTML = `<strong>${h(rec.school_name)}</strong> · ${h(rec.city)} / ${h(rec.district)} · <span class="badge b-f${h(rec.faz)}">FAZ ${h(rec.faz)}</span>`;
-  qs("#er-adet").value = rec.adet;
-  qs("#er-personel").value = rec.personel || "";
-  qs("#er-not").value = rec.notlar || "";
-  // Faz butonları
-  [1,2,3].forEach(i=>{ const b=qs("#er-faz"+i); b.className="faz-btn"; if(i===erFaz) b.classList.add("a"+i); });
-  // Kaynak butonları
-  const bs=qs("#er-kaynak-sinif"); const by=qs("#er-kaynak-yedek");
-  bs.className="faz-btn"; bs.removeAttribute("style");
-  by.className="faz-btn"; by.removeAttribute("style");
-  if(erKaynak==="sinif") bs.classList.add("a1");
-  else if(erKaynak==="yedek"){ by.style.borderColor="var(--orange)"; by.style.background="rgba(245,158,11,.14)"; by.style.color="var(--orange)"; }
-  // Personel dropdown
-  qs("#sd-er-p").innerHTML = S.personnelList.map(p=>`<div class="sd-item" onclick="sdPick('er-p','${h(p.isim)}')">${h(p.isim)}</div>`).join("") || `<div class="sd-empty">Personel yok</div>`;
-  openModal("editRecordModal");
-}
-function erPickFaz(n){
-  erFaz=n; [1,2,3].forEach(i=>{const b=qs("#er-faz"+i); b.className="faz-btn"; if(i===n) b.classList.add("a"+n);});
-}
-function erPickKaynak(k){
-  erKaynak=k;
-  const bs=qs("#er-kaynak-sinif"); const by=qs("#er-kaynak-yedek");
-  bs.className="faz-btn"; bs.removeAttribute("style");
-  by.className="faz-btn"; by.removeAttribute("style");
-  if(k==="sinif") bs.classList.add("a1");
-  else { by.style.borderColor="var(--orange)"; by.style.background="rgba(245,158,11,.14)"; by.style.color="var(--orange)"; }
-}
-function erChangeAdet(d){ const inp=qs("#er-adet"); inp.value=Math.max(1,Math.min(99,(parseInt(inp.value)||1)+d)); }
-async function saveEditRecord(){
-  const rid = qs("#er-record-id").value;
-  if(!erFaz){ toast("Faz seçin","error"); return; }
-  if(!erKaynak){ toast("Kaynak seçin","error"); return; }
-  const adet = parseInt(qs("#er-adet").value)||1;
-  const personel = qs("#er-personel").value.trim();
-  const notlar = qs("#er-not").value.trim();
-  if(!personel){ toast("Personel seçin","error"); return; }
-  const btn=qs("#editRecordBtn"); btn.disabled=true; btn.textContent="Kaydediliyor...";
-  try{
-    await apiPost({action:"updateRecord", record_id:rid, faz:erFaz, adet, personel, notlar, kaynak:erKaynak});
-    // Local state güncelle
-    const idx = S.records.findIndex(r=>String(r.record_id)===String(rid));
-    if(idx>=0){ Object.assign(S.records[idx], {faz:erFaz, adet, personel, notlar, kaynak:erKaynak}); }
-    S.cacheAt.records=0;
-    closeModal("editRecordModal");
-    renderKayitlar();
-    renderDashboard();
-    const openDetail = qs(".school-detail.open");
-    if(openDetail) refreshSchoolDetail(openDetail.id.replace("scd-",""));
-    toast("Kayıt güncellendi ✓","success");
-  }catch(e){ toast("Hata: "+e.message,"error"); }
-  finally{ btn.disabled=false; btn.textContent="💾 Kaydet"; }
+    if (pageIs("kayitlar")) renderKayitlar();
+    if (pageIs("dashboard")) renderDashboard();
+    if (pageIs("okullar")) { renderOkullar(); if (rec) refreshSchoolDetail(rec.school_id); }
+    toast("Kayıt silindi", "success");
+  } catch (e) {
+    toast("Hata: " + e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🗑️ Evet, Sil";
+  }
 }
 
-function loadAyarlar(){ renderPersonnelMgmt(); qs("#connStatus").innerHTML = `<span style="color:var(--green)">● Bağlı</span>`; }
-async function saveConfig(){
-  const url = qs("#cfg-url").value.trim();
-  if(!url){ toast("URL girin","error"); return; }
-  const old = SCRIPT_URL;
-  try{
-    SCRIPT_URL = url;
-    await api({action:"ping"});
-    localStorage.setItem("ops_script_url",url);
-    await ensureBaseData(true);
+function durumBadge(d) {
+  if (d === "teslim") return `<span class="badge b-done">✓ Teslim</span>`;
+  if (d === "kismi") return `<span class="badge b-part">⊕ Kısmi</span>`;
+  return `<span class="badge b-wait">⏳ Bekliyor</span>`;
+}
+function loadAyarlar() { renderPersonnelMgmt(); }
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") qsa(".modal-ov.open").forEach(m => m.classList.remove("open"));
+});
+qsa(".modal-ov").forEach(ov => ov.addEventListener("click", e => {
+  if (e.target === ov) ov.classList.remove("open");
+}));
+
+(async function init() {
+  buildCityTabs("#okulCityTabs", "setOkulCity", S.okulCity);
+  buildCityTabs("#recCityTabs", "setRecCity", S.recCity);
+
+  if (S.personnel) {
+    qs("#topName").textContent = S.personnel;
+    qs("#topAvatar").textContent = String(S.personnel).charAt(0).toUpperCase();
+    if (qs("#inp-personel")) qs("#inp-personel").value = S.personnel;
+  }
+
+  try {
+    showLoader("Veriler hazırlanıyor...");
+    await Promise.all([loadPersonnel(), loadSchools(), loadRecords()]);
     fillPersonnelDropdowns();
-    toast("Bağlantı kaydedildi","success");
-  }catch(e){
-    SCRIPT_URL = old;
-    toast("Kaydedilemedi: "+e.message,"error");
+    renderDashboard();
+  } catch (e) {
+    toast("Başlangıç verileri yüklenemedi: " + e.message, "error");
+  } finally {
+    hideLoader();
   }
-}
-
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") qsa(".modal-ov.open").forEach(m=>m.classList.remove("open")); });
-qsa(".modal-ov").forEach(ov=>ov.addEventListener("click",e=>{ if(e.target===ov) ov.classList.remove("open"); }));
-
-(async function init(){
-  buildCityTabs("#okulCityTabs","setOkulCity");
-  buildCityTabs("#recCityTabs","setRecCity");
-  if(S.personnel){ qs("#topName").textContent=S.personnel; qs("#topAvatar").textContent=S.personnel.charAt(0).toUpperCase(); qs("#inp-personel").value=S.personnel; }
-  if(SCRIPT_URL){
-    try{ await Promise.all([loadPersonnel(), loadSchools()]); fillPersonnelDropdowns(); }catch(e){}
-  }
-  loadDashboard();
 })();
+
 </script>
 </body>
 </html>
