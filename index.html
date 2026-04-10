@@ -727,50 +727,52 @@ async function loadDashboard(force=false){
   }catch(e){ toast("Ana sayfa yüklenemedi: "+e.message,"error"); }
 }
 function renderDashboard(){
-  const now = new Date();
+  // ── TEK GEÇİŞTE TÜM İSTATİSTİKLER ──
+  const cityAgg = {}; // city → {bek,tes,top,f1,f2,f3}
+  CITIES.forEach(c => { cityAgg[c]={bek:0,tes:0,top:0,f1:0,f2:0,f3:0}; });
 
-  // Bekleyen kayıtlar (teslim edilmemiş)
-  const bekleyen = S.records.filter(r => r.durum !== "teslim");
+  let faz1=0, faz2=0, faz3=0, teslimToplam=0, sinif=0, yedek=0;
+  const borcluSet = new Set();
 
-  // Faz bazında bekleyen ADET (kalan_adet varsa onu, yoksa adet'i kullan)
-  const faz1Adet = bekleyen.filter(r=>String(r.faz)==="1").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
-  const faz2Adet = bekleyen.filter(r=>String(r.faz)==="2").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
-  const faz3Adet = bekleyen.filter(r=>String(r.faz)==="3").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
+  for(const r of S.records){
+    const adet = Number(r.kalan_adet||r.adet||0);
+    const ham  = Number(r.adet||0);
+    const tt   = Number(r.toplam_teslim||0);
+    const bek  = r.durum !== "teslim";
+    teslimToplam += tt;
+    const c = cityAgg[r.city];
+    if(c) { c.top++; if(bek) c.bek++; else c.tes++; }
+    if(bek){
+      borcluSet.add(r.school_id);
+      const faz = String(r.faz);
+      if(faz==="1"){ faz1+=adet; if(c) c.f1+=adet; }
+      else if(faz==="2"){ faz2+=adet; if(c) c.f2+=adet; }
+      else if(faz==="3"){ faz3+=adet; if(c) c.f3+=adet; }
+      if(r.kaynak==="sinif") sinif+=adet;
+      else if(r.kaynak==="yedek") yedek+=adet;
+    }
+  }
 
-  // Toplam teslim edilen adet (teslim + kısmi teslim edilenler)
-  const teslimAdet = S.records.reduce((s,r)=>s+Number(r.toplam_teslim||0),0);
-
-  // Bekleyen kaydı olan benzersiz okul sayısı
-  const borcluOkullar = new Set(bekleyen.map(r=>r.school_id)).size;
-
-  const sinifAdet = bekleyen.filter(r=>r.kaynak==="sinif").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
-  const yedekAdet = bekleyen.filter(r=>r.kaynak==="yedek").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
-
-  qs("#s-faz1").textContent   = faz1Adet;
-  qs("#s-faz2").textContent   = faz2Adet;
-  qs("#s-faz3").textContent   = faz3Adet;
-  qs("#s-teslim").textContent = teslimAdet;
-  qs("#s-borclu").textContent = borcluOkullar;
-  qs("#s-sinif").textContent  = sinifAdet;
-  qs("#s-yedek").textContent  = yedekAdet;
+  qs("#s-faz1").textContent   = faz1;
+  qs("#s-faz2").textContent   = faz2;
+  qs("#s-faz3").textContent   = faz3;
+  qs("#s-teslim").textContent = teslimToplam;
+  qs("#s-borclu").textContent = borcluSet.size;
+  qs("#s-sinif").textContent  = sinif;
+  qs("#s-yedek").textContent  = yedek;
 
   // Şehir kartları
   const grid = qs("#citySummaryGrid");
   grid.className = "stats-grid";
   grid.innerHTML = CITIES.map(c => {
-    const cRecs = S.records.filter(r => r.city === c);
-    const cBek  = cRecs.filter(r => r.durum !== "teslim");
-    const cTes  = cRecs.filter(r => r.durum === "teslim");
-    const f1 = cBek.filter(r=>String(r.faz)==="1").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
-    const f2 = cBek.filter(r=>String(r.faz)==="2").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
-    const f3 = cBek.filter(r=>String(r.faz)==="3").reduce((s,r)=>s+Number(r.kalan_adet||r.adet||0),0);
+    const a = cityAgg[c]||{bek:0,tes:0,top:0,f1:0,f2:0,f3:0};
     return `<div class="stat-card sc-blue" style="cursor:pointer" onclick="showPage('okullar');setOkulCityByName('${h(c)}')">
       <div class="stat-label">${h(c)}</div>
-      <div class="stat-sub">Bekleyen: ${cBek.length} · Teslim: ${cTes.length} · Toplam: ${cRecs.length}</div>
+      <div class="stat-sub">Bekleyen: ${a.bek} · Teslim: ${a.tes} · Toplam: ${a.top}</div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-        <span class="badge b-f1">F1 ${f1}</span>
-        <span class="badge b-f2">F2 ${f2}</span>
-        <span class="badge b-f3">F3 ${f3}</span>
+        <span class="badge b-f1">F1 ${a.f1}</span>
+        <span class="badge b-f2">F2 ${a.f2}</span>
+        <span class="badge b-f3">F3 ${a.f3}</span>
       </div>
     </div>`;
   }).join("");
@@ -805,7 +807,13 @@ function renderOkullar(){
     </div><div class="school-detail" id="scd-${h(s.school_id)}"></div>`;
   }).join("");
 }
-function toggleSchoolDetail(sid){
+function refreshSchoolDetail(sid){
+  const detail = qs("#scd-"+CSS.escape(sid));
+  if(!detail || !detail.classList.contains("open")) return;
+  // detayı kapat ve tekrar aç — içerik güncel data ile yeniden render edilir
+  detail.classList.remove("open");
+  toggleSchoolDetail(sid);
+}
   const detail=qs("#scd-"+CSS.escape(sid));
   const card=qs("#sc-"+CSS.escape(sid));
   const arr=qs("#sc-arr-"+CSS.escape(sid));
@@ -830,8 +838,8 @@ function toggleSchoolDetail(sid){
       <td>${h(r.tarih)}</td>
       <td>${durumBadge(r.durum)}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
-      <td style="display:flex;gap:5px;flex-wrap:wrap">
-        ${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal('${h(r.record_id)}')">📦 Teslim</button>` : ""}
+      <td style="white-space:nowrap">
+        ${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal('${h(r.record_id)}')">📦 Teslim</button> ` : ""}
         <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditRecordModal('${h(r.record_id)}')">✏️</button>
         <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteRecord('${h(r.record_id)}','${h(r.school_name)}')">🗑️</button>
       </td>
@@ -891,8 +899,8 @@ function renderKayitlar(){
     <td>${h(r.tarih)}</td>
     <td>${durumBadge(r.durum)}</td>
     <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
-    <td style="display:flex;gap:5px;flex-wrap:wrap">
-      ${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal('${h(r.record_id)}')">📦</button>` : `<span style="color:var(--green);font-size:12px">✓</span>`}
+    <td style="white-space:nowrap">
+      ${r.durum!=="teslim" ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal('${h(r.record_id)}')">📦</button> ` : `<span style="color:var(--green);font-size:12px">✓ </span>`}
       <button class="btn btn-secondary btn-sm" onclick="openEditRecordModal('${h(r.record_id)}')">✏️</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDeleteRecord('${h(r.record_id)}','${h(r.school_name)}')">🗑️</button>
     </td>
@@ -1039,9 +1047,8 @@ async function executeDeleteRecord(){
     closeModal("confirmDeleteModal");
     renderKayitlar();
     renderDashboard();
-    // Okul detayı açıksa yenile
     const openDetail = qs(".school-detail.open");
-    if(openDetail){ const sid=openDetail.id.replace("scd-",""); toggleSchoolDetail(sid); toggleSchoolDetail(sid); }
+    if(openDetail) refreshSchoolDetail(openDetail.id.replace("scd-",""));
     toast("Kayıt silindi","success");
   }catch(e){ toast("Hata: "+e.message,"error"); }
   finally{ btn.disabled=false; btn.textContent="🗑️ Evet, Sil"; }
@@ -1104,9 +1111,8 @@ async function saveEditRecord(){
     closeModal("editRecordModal");
     renderKayitlar();
     renderDashboard();
-    // Okul detayı açıksa yenile
     const openDetail = qs(".school-detail.open");
-    if(openDetail){ const sid=openDetail.id.replace("scd-",""); toggleSchoolDetail(sid); toggleSchoolDetail(sid); }
+    if(openDetail) refreshSchoolDetail(openDetail.id.replace("scd-",""));
     toast("Kayıt güncellendi ✓","success");
   }catch(e){ toast("Hata: "+e.message,"error"); }
   finally{ btn.disabled=false; btn.textContent="💾 Kaydet"; }
