@@ -152,6 +152,30 @@ tr:hover td{background:rgba(255,255,255,.018)}
 .spin-sm{width:16px;height:16px;border-width:2px;border-top-color:#fff}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loader-txt{font-family:'Space Mono',monospace;font-size:13px;color:var(--text2)}
+
+.dashboard-hero{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:22px}
+.hero-card{background:linear-gradient(135deg,rgba(79,142,247,.14),rgba(124,58,237,.08));border:1px solid rgba(79,142,247,.22);border-radius:var(--r);padding:22px}
+.hero-title{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.7px;color:var(--text2);margin-bottom:10px}
+.hero-value{font-family:'Space Mono',monospace;font-size:44px;font-weight:700;line-height:1;margin-bottom:10px}
+.hero-meta{display:flex;gap:10px;flex-wrap:wrap}
+.hero-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.03);font-size:12px;color:var(--text2)}
+.insight-list{display:grid;gap:10px}
+.insight-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm)}
+.insight-label{font-size:12px;color:var(--text2)}
+.insight-value{font-family:'Space Mono',monospace;font-size:16px;font-weight:700}
+.dashboard-split{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+.city-list{display:grid;gap:10px}
+.city-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;transition:all .18s}
+.city-row:hover{border-color:var(--accent);transform:translateY(-1px)}
+.city-main{min-width:0}.city-name{font-weight:600;font-size:14px;margin-bottom:3px}.city-sub{font-size:12px;color:var(--text2)}
+.city-metrics{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.mini-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--border);font-size:11px;color:var(--text2)}
+.activity-list{display:grid;gap:10px}
+.activity-item{padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm)}
+.activity-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.activity-title{font-weight:600;font-size:13px}.activity-sub{font-size:12px;color:var(--text2)}
+@media(max-width:900px){.dashboard-hero,.dashboard-split{grid-template-columns:1fr}.hero-value{font-size:36px}}
+
 .mobile-nav{display:none}
 @media(max-width:768px){
   .topbar{padding:11px 15px}.topbar-nav{display:none}.page{padding:14px;padding-bottom:90px}
@@ -192,46 +216,57 @@ tr:hover td{background:rgba(255,255,255,.018)}
 
 <div id="page-dashboard" class="page active">
   <div class="page-header"><div class="page-title">// ANA SAYFA</div><div class="page-sub" id="dashDate">—</div></div>
-  <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
-    <div class="stat-card sc-blue">
-      <div class="stat-label">FAZ 1 — Bekleyen</div>
-      <div class="stat-value" id="s-faz1">—</div>
-      <div class="stat-sub">Teslim edilmemiş adet</div>
+  <div class="dashboard-hero">
+    <div class="hero-card">
+      <div class="hero-title">BEKLEYEN OPS</div>
+      <div class="hero-value" id="s-bekleyen-total">—</div>
+      <div class="hero-meta">
+        <span class="hero-pill">🏫 Borçlu okul: <strong id="s-borclu">—</strong></span>
+        <span class="hero-pill">📦 Yedek: <strong id="s-yedek">—</strong></span>
+        <span class="hero-pill">🏫 Sınıf: <strong id="s-sinif">—</strong></span>
+      </div>
     </div>
-    <div class="stat-card sc-purple">
-      <div class="stat-label">FAZ 2 — Bekleyen</div>
-      <div class="stat-value" id="s-faz2">—</div>
-      <div class="stat-sub">Teslim edilmemiş adet</div>
-    </div>
-    <div class="stat-card sc-orange">
-      <div class="stat-label">FAZ 3 — Bekleyen</div>
-      <div class="stat-value" id="s-faz3">—</div>
-      <div class="stat-sub">Teslim edilmemiş adet</div>
-    </div>
-    <div class="stat-card sc-green">
-      <div class="stat-label">Toplam Teslim Edilen</div>
-      <div class="stat-value" id="s-teslim">—</div>
-      <div class="stat-sub">Tüm zamanlar</div>
-    </div>
-    <div class="stat-card sc-red">
-      <div class="stat-label">Borçlu Okul</div>
-      <div class="stat-value" id="s-borclu">—</div>
-      <div class="stat-sub">Bekleyen kaydı olan okul</div>
-    </div>
-    <div class="stat-card sc-cyan">
-      <div class="stat-label">🏫 Sınıftan Alınan</div>
-      <div class="stat-value" id="s-sinif">—</div>
-      <div class="stat-sub">Bekleyen adet</div>
-    </div>
-    <div class="stat-card" style="border-top:3px solid #a16207;background:var(--surface)">
-      <div class="stat-label" style="color:var(--text2)">📦 Yedekten Alınan</div>
-      <div class="stat-value" id="s-yedek">—</div>
-      <div class="stat-sub">Bekleyen adet</div>
+    <div class="section" style="margin-bottom:0">
+      <div class="section-head"><div class="section-title">HIZLI ÖZET</div><button class="btn btn-secondary btn-sm" onclick="loadDashboard(true)">↻ Yenile</button></div>
+      <div class="section-body insight-list">
+        <div class="insight-item"><span class="insight-label">Bugün açılan kayıt</span><span class="insight-value" id="s-today-records">—</span></div>
+        <div class="insight-item"><span class="insight-label">Bugün alınan cihaz</span><span class="insight-value" id="s-today-ops">—</span></div>
+        <div class="insight-item"><span class="insight-label">Toplam teslim edilen</span><span class="insight-value" id="s-teslim">—</span></div>
+        <div class="insight-item"><span class="insight-label">En yoğun şehir</span><span class="insight-value" id="s-top-city">—</span></div>
+      </div>
     </div>
   </div>
-  <div class="section">
-    <div class="section-head"><div class="section-title">📍 ŞEHİR BAZINDA DURUM</div><button class="btn btn-secondary btn-sm" onclick="loadDashboard(true)">↻ Yenile</button></div>
-    <div class="section-body"><div id="citySummaryGrid"></div></div>
+
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <div class="stat-card sc-blue">
+      <div class="stat-label">Faz Dağılımı</div>
+      <div class="stat-sub" id="s-faz-summary">F1 — · F2 — · F3 —</div>
+    </div>
+    <div class="stat-card sc-green">
+      <div class="stat-label">Kaynak Dağılımı</div>
+      <div class="stat-sub" id="s-kaynak-summary">Sınıf — · Yedek —</div>
+    </div>
+    <div class="stat-card sc-purple">
+      <div class="stat-label">Açık Kayıt</div>
+      <div class="stat-value" id="s-open-records">—</div>
+      <div class="stat-sub">Bekleyen veya kısmi teslim</div>
+    </div>
+    <div class="stat-card sc-orange">
+      <div class="stat-label">Toplam Kayıt</div>
+      <div class="stat-value" id="s-total-records">—</div>
+      <div class="stat-sub">Sistemdeki tüm işlem sayısı</div>
+    </div>
+  </div>
+
+  <div class="dashboard-split">
+    <div class="section">
+      <div class="section-head"><div class="section-title">📍 ŞEHİR BAZINDA DURUM</div></div>
+      <div class="section-body"><div id="citySummaryGrid" class="city-list"></div></div>
+    </div>
+    <div class="section">
+      <div class="section-head"><div class="section-title">🕒 SON HAREKETLER</div></div>
+      <div class="section-body"><div id="recentActivity" class="activity-list"></div></div>
+    </div>
   </div>
 </div>
 
@@ -608,47 +643,109 @@ function calcRemaining(record) {
   return Math.max(0, rawKalan);
 }
 
+function parseTRDate(value){
+  const s=String(value||'').trim();
+  let m=s.match(/^(\d{2})\.(\d{2})\.(\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?/);
+  if(m) return new Date(Number(m[3]), Number(m[2])-1, Number(m[1]), Number(m[4]||0), Number(m[5]||0), Number(m[6]||0));
+  const d=new Date(s);
+  return Number.isNaN(d.getTime())?null:d;
+}
+function isSameDay(a,b){
+  return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
 function rebuildDerived() {
   const schoolStats = {};
   const cityAgg = {};
   const borcluSet = new Set();
-  for (const c of CITIES) cityAgg[c] = { bek:0, tes:0, top:0, f1:0, f2:0, f3:0 };
+  const today = new Date();
+  const recent = [];
+  for (const c of CITIES) cityAgg[c] = { bekleyenOps:0, borcluOkul:new Set(), kayit:0, teslimKayit:0 };
 
   let faz1 = 0, faz2 = 0, faz3 = 0, teslimToplam = 0, sinif = 0, yedek = 0;
+  let openRecords = 0, todayRecords = 0, todayOps = 0;
 
   for (const r of S.records) {
-    const schoolId = String(r.school_id ?? "");
-    const city = r.city || "";
+    const schoolId = String(r.school_id ?? '');
+    const city = r.city || '';
     const adet = Number(r.adet || 0);
     const toplamTeslim = Number(r.toplam_teslim || 0);
     const kalan = calcRemaining(r);
-    const isBekleyen = (r.durum || "bekliyor") !== "teslim" && kalan > 0;
+    const isBekleyen = (r.durum || 'bekliyor') !== 'teslim' && kalan > 0;
+    const dt = parseTRDate(r.tarih);
 
     if (!schoolStats[schoolId]) schoolStats[schoolId] = { bekleyen:0, toplam:0 };
     schoolStats[schoolId].toplam += 1;
     if (isBekleyen) schoolStats[schoolId].bekleyen += 1;
 
     if (cityAgg[city]) {
-      cityAgg[city].top += 1;
-      if (isBekleyen) cityAgg[city].bek += 1;
-      else cityAgg[city].tes += 1;
+      cityAgg[city].kayit += 1;
+      if ((r.durum || 'bekliyor') === 'teslim') cityAgg[city].teslimKayit += 1;
+      if (isBekleyen) {
+        cityAgg[city].bekleyenOps += kalan;
+        cityAgg[city].borcluOkul.add(schoolId);
+      }
     }
 
     teslimToplam += toplamTeslim;
 
     if (isBekleyen) {
+      openRecords += 1;
       borcluSet.add(schoolId);
-      const faz = String(r.faz || "");
-      if (faz === "1") { faz1 += kalan; if (cityAgg[city]) cityAgg[city].f1 += kalan; }
-      else if (faz === "2") { faz2 += kalan; if (cityAgg[city]) cityAgg[city].f2 += kalan; }
-      else if (faz === "3") { faz3 += kalan; if (cityAgg[city]) cityAgg[city].f3 += kalan; }
+      const faz = String(r.faz || '');
+      if (faz === '1') faz1 += kalan;
+      else if (faz === '2') faz2 += kalan;
+      else if (faz === '3') faz3 += kalan;
 
-      if (r.kaynak === "sinif") sinif += kalan;
-      else if (r.kaynak === "yedek") yedek += kalan;
+      if (r.kaynak === 'sinif') sinif += kalan;
+      else if (r.kaynak === 'yedek') yedek += kalan;
     }
+
+    if (isSameDay(dt, today)) {
+      todayRecords += 1;
+      todayOps += adet;
+    }
+
+    recent.push({
+      school_name: r.school_name || '-',
+      city: city || '-',
+      personel: r.personel || '-',
+      adet,
+      tarih: r.tarih || '-',
+      durum: r.durum || 'bekliyor'
+    });
   }
 
-  S.derived = { schoolStats, cityAgg, faz1, faz2, faz3, teslimToplam, sinif, yedek, borcluCount: borcluSet.size };
+  const cityRows = CITIES.map(c => ({
+    city: c,
+    bekleyenOps: cityAgg[c].bekleyenOps,
+    borcluOkul: cityAgg[c].borcluOkul.size,
+    kayit: cityAgg[c].kayit,
+    teslimKayit: cityAgg[c].teslimKayit,
+  })).sort((a,b) => b.bekleyenOps - a.bekleyenOps || b.borcluOkul - a.borcluOkul || a.city.localeCompare(b.city,'tr'));
+
+  recent.sort((a,b) => {
+    const da = parseTRDate(a.tarih)?.getTime() || 0;
+    const db = parseTRDate(b.tarih)?.getTime() || 0;
+    return db - da;
+  });
+
+  S.derived = {
+    schoolStats,
+    cityRows,
+    faz1, faz2, faz3,
+    toplamBekleyen: faz1 + faz2 + faz3,
+    teslimToplam,
+    sinif,
+    yedek,
+    borcluCount: borcluSet.size,
+    openRecords,
+    totalRecords: S.records.length,
+    todayRecords,
+    todayOps,
+    topCity: cityRows[0]?.city || '-',
+    recent: recent.slice(0, 6)
+  };
 }
 
 async function loadPersonnel(force = false) {
@@ -864,28 +961,44 @@ async function loadDashboard(force = false) {
 function renderDashboard() {
   if (!S.derived) rebuildDerived();
   const d = S.derived;
-  qs("#s-faz1").textContent = d.faz1;
-  qs("#s-faz2").textContent = d.faz2;
-  qs("#s-faz3").textContent = d.faz3;
-  qs("#s-teslim").textContent = d.teslimToplam;
-  qs("#s-borclu").textContent = d.borcluCount;
-  qs("#s-sinif").textContent = d.sinif;
-  qs("#s-yedek").textContent = d.yedek;
+  qs('#s-bekleyen-total').textContent = d.toplamBekleyen;
+  qs('#s-borclu').textContent = d.borcluCount;
+  qs('#s-yedek').textContent = d.yedek;
+  qs('#s-sinif').textContent = d.sinif;
+  qs('#s-teslim').textContent = d.teslimToplam;
+  qs('#s-today-records').textContent = d.todayRecords;
+  qs('#s-today-ops').textContent = d.todayOps;
+  qs('#s-top-city').textContent = d.topCity;
+  qs('#s-open-records').textContent = d.openRecords;
+  qs('#s-total-records').textContent = d.totalRecords;
+  qs('#s-faz-summary').textContent = `F1 ${d.faz1} · F2 ${d.faz2} · F3 ${d.faz3}`;
+  qs('#s-kaynak-summary').textContent = `Sınıf ${d.sinif} · Yedek ${d.yedek}`;
 
-  const grid = qs("#citySummaryGrid");
-  grid.className = "stats-grid";
-  grid.innerHTML = CITIES.map(c => {
-    const a = d.cityAgg[c] || {bek:0, tes:0, top:0, f1:0, f2:0, f3:0};
-    return `<div class="stat-card sc-blue" style="cursor:pointer" onclick="showPage('okullar');setOkulCityByName(${sq(c)})">
-      <div class="stat-label">${h(c)}</div>
-      <div class="stat-sub">Bekleyen: ${a.bek} · Teslim: ${a.tes} · Toplam: ${a.top}</div>
-      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-        <span class="badge b-f1">F1 ${a.f1}</span>
-        <span class="badge b-f2">F2 ${a.f2}</span>
-        <span class="badge b-f3">F3 ${a.f3}</span>
+  const grid = qs('#citySummaryGrid');
+  grid.innerHTML = d.cityRows.map(row => `
+    <div class="city-row" onclick="showPage('okullar');setOkulCityByName(${sq(row.city)})">
+      <div class="city-main">
+        <div class="city-name">${h(row.city)}</div>
+        <div class="city-sub">Toplam kayıt: ${row.kayit} · Teslim edilen kayıt: ${row.teslimKayit}</div>
       </div>
-    </div>`;
-  }).join("");
+      <div class="city-metrics">
+        <span class="mini-badge">Bekleyen ops: ${row.bekleyenOps}</span>
+        <span class="mini-badge">Borçlu okul: ${row.borcluOkul}</span>
+      </div>
+    </div>
+  `).join('') || `<div class="empty"><div class="empty-s">Şehir verisi yok</div></div>`;
+
+  const recent = qs('#recentActivity');
+  recent.innerHTML = d.recent.length ? d.recent.map(item => `
+    <div class="activity-item">
+      <div class="activity-top">
+        <div class="activity-title">${h(item.school_name)}</div>
+        ${durumBadge(item.durum)}
+      </div>
+      <div class="activity-sub">${h(item.city)} · ${h(item.personel)} · ${item.adet} adet</div>
+      <div class="activity-sub">${h(item.tarih)}</div>
+    </div>
+  `).join('') : `<div class="empty"><div class="empty-s">Henüz hareket yok</div></div>`;
 }
 
 async function loadOkullar(force = false) {
