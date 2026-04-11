@@ -539,7 +539,8 @@ const pageIs = id => qs("#page-"+id)?.classList.contains("active");
 const h = v => String(v ?? "").replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const isFresh = key => (Date.now() - (S.cacheAt[key] || 0)) < CACHE_TTL[key];
 const markFresh = key => { S.cacheAt[key] = Date.now(); };
-const jsonq = value => JSON.stringify(String(value ?? ""));
+// q(): onclick attr içinde güvenli string — tek tırnak, html escape yok
+const q = v => "'" + String(v ?? "").replace(/\\/g,"&#92;").replace(/'/g,"&#39;") + "'";
 
 function toast(msg, type="info") {
   const w = qs("#toastWrap");
@@ -677,7 +678,7 @@ function buildCityTabs(targetId, clickFnName, selectedValue) {
   const cities = ["all", ...CITIES];
   root.innerHTML = cities.map(c => {
     const label = c === "all" ? "Tümü" : c;
-    return `<div class="city-tab ${selectedValue===c ? 'active' : ''}" data-city="${h(c)}" onclick="${clickFnName}(this, ${jsonq(c)})">${h(label)}</div>`;
+    return `<div class="city-tab ${selectedValue===c ? 'active' : ''}" data-city="${h(c)}" onclick="${clickFnName}(this, ${q(c)})">${h(label)}</div>`;
   }).join("");
 }
 
@@ -718,14 +719,14 @@ function sdFilter(ns) {
   if (ns === "personel" || ns === "teslim-p" || ns === "er-p") {
     const items = S.personnelList.filter(p => String(p.isim || "").toLowerCase().includes(q));
     list.innerHTML = items.length
-      ? items.map(p => `<div class="sd-item" onclick="sdPick(${jsonq(ns)}, ${jsonq(p.isim)})">${h(p.isim)}</div>`).join("")
+      ? items.map(p => `<div class="sd-item" onclick="sdPick(${q(ns)}, ${q(p.isim)})">${h(p.isim)}</div>`).join("")
       : `<div class="sd-empty">Personel bulunamadı</div>`;
     return;
   }
   if (ns === "sehir") {
     const items = CITIES.filter(c => c.toLowerCase().includes(q));
     list.innerHTML = items.length
-      ? items.map(c => `<div class="sd-item" onclick="sdPick('sehir', ${jsonq(c)})">${h(c)}</div>`).join("")
+      ? items.map(c => `<div class="sd-item" onclick="sdPick('sehir', ${q(c)})">${h(c)}</div>`).join("")
       : `<div class="sd-empty">Sonuç yok</div>`;
     return;
   }
@@ -733,7 +734,7 @@ function sdFilter(ns) {
     if (!S.selSehir) { list.innerHTML = `<div class="sd-empty">Önce şehir seçin</div>`; return; }
     const items = (DISTRICTS[S.selSehir] || []).filter(d => d.toLowerCase().includes(q));
     list.innerHTML = items.length
-      ? items.map(d => `<div class="sd-item" onclick="sdPick('ilce', ${jsonq(d)})">${h(d)}</div>`).join("")
+      ? items.map(d => `<div class="sd-item" onclick="sdPick('ilce', ${q(d)})">${h(d)}</div>`).join("")
       : `<div class="sd-empty">Sonuç yok</div>`;
     return;
   }
@@ -744,7 +745,7 @@ function sdFilter(ns) {
       s.district === S.selIlce &&
       String(s.school_name || "").toLowerCase().includes(q)
     );
-    let html = matches.map(s => `<div class="sd-item" onclick="sdPickOkul(${jsonq(s.school_id)})">${h(s.school_name)}${s.kurum_kodu ? ` <span style="color:var(--text3);font-size:11px">(${h(s.kurum_kodu)})</span>` : ""}</div>`).join("");
+    let html = matches.map(s => `<div class="sd-item" onclick="sdPickOkul(${q(s.school_id)})">${h(s.school_name)}${s.kurum_kodu ? ` <span style="color:var(--text3);font-size:11px">(${h(s.kurum_kodu)})</span>` : ""}</div>`).join("");
     const typed = inp.value.trim();
     if (typed && !matches.some(s => String(s.school_name || "").toLowerCase() === typed.toLowerCase())) {
       html += `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ "${h(typed)}" olarak ekle</div>`;
@@ -820,11 +821,11 @@ function changeTeslimAdet(d) {
 
 function fillPersonnelDropdowns() {
   const items = S.personnelList.length
-    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('personel', ${jsonq(p.isim)})">${h(p.isim)}</div>`).join("")
+    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('personel', ${q(p.isim)})">${h(p.isim)}</div>`).join("")
     : `<div class="sd-empty">Önce personel ekleyin</div>`;
   if (qs("#sd-personel")) qs("#sd-personel").innerHTML = items;
   if (qs("#sd-teslim-p")) qs("#sd-teslim-p").innerHTML = S.personnelList.length
-    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('teslim-p', ${jsonq(p.isim)})">${h(p.isim)}</div>`).join("")
+    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('teslim-p', ${q(p.isim)})">${h(p.isim)}</div>`).join("")
     : `<div class="sd-empty">Personel yok</div>`;
   if (S.personnel && qs("#inp-personel")) qs("#inp-personel").value = S.personnel;
 }
@@ -858,7 +859,7 @@ function renderDashboard() {
   grid.className = "stats-grid";
   grid.innerHTML = CITIES.map(c => {
     const a = d.cityAgg[c] || {bek:0, tes:0, top:0, f1:0, f2:0, f3:0};
-    return `<div class="stat-card sc-blue" style="cursor:pointer" onclick="showPage('okullar');setOkulCityByName(${jsonq(c)})">
+    return `<div class="stat-card sc-blue" style="cursor:pointer" onclick="showPage('okullar');setOkulCityByName(${q(c)})">
       <div class="stat-label">${h(c)}</div>
       <div class="stat-sub">Bekleyen: ${a.bek} · Teslim: ${a.tes} · Toplam: ${a.top}</div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
@@ -910,7 +911,7 @@ function renderOkullar() {
   const schoolStats = (S.derived || {}).schoolStats || {};
   root.innerHTML = schools.map(s => {
     const st = schoolStats[String(s.school_id)] || {bekleyen:0, toplam:0};
-    return `<div class="school-card" id="sc-${h(s.school_id)}" onclick="toggleSchoolDetail(${jsonq(s.school_id)})">
+    return `<div class="school-card" id="sc-${h(s.school_id)}" onclick="toggleSchoolDetail(${q(s.school_id)})">
       <div class="sc-icon">🏫</div>
       <div class="sc-info"><div class="sc-name">${h(s.school_name)}</div><div class="sc-meta">${h(s.city)} › ${h(s.district)}${s.kurum_kodu ? ` · Kod: ${h(s.kurum_kodu)}` : ""}</div></div>
       <div class="sc-stats"><div class="sc-stat"><div class="sc-stat-v" style="color:var(--orange)">${st.bekleyen}</div><div class="sc-stat-l">Bekleyen</div></div><div class="sc-stat"><div class="sc-stat-v">${st.toplam}</div><div class="sc-stat-l">Toplam</div></div></div>
@@ -945,7 +946,7 @@ function toggleSchoolDetail(sid) {
   const recs = S.records.filter(r => String(r.school_id) === sid);
   const schoolInfo = `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
     <div style="font-size:13px;color:var(--text2)">${h(school?.school_name||"")} <span style="color:var(--text3)">·</span> ${h(school?.city||"")} / ${h(school?.district||"")}${school?.kurum_kodu ? ` <span style="color:var(--text3)">·</span> Kod: ${h(school.kurum_kodu)}` : ""}</div>
-    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditSchoolModal(${jsonq(sid)})">✏️ Okul Bilgilerini Düzenle</button>
+    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditSchoolModal(${q(sid)})">✏️ Okul Bilgilerini Düzenle</button>
   </div>`;
 
   if (!recs.length) {
@@ -963,9 +964,9 @@ function toggleSchoolDetail(sid) {
       <td>${durumBadge(r.durum)}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
       <td style="white-space:nowrap">
-        ${(r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal(${jsonq(r.record_id)})">📦 Teslim</button> ` : ""}
-        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditRecordModal(${jsonq(r.record_id)})">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteRecord(${jsonq(r.record_id)}, ${jsonq(r.school_name)})">🗑️</button>
+        ${(r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal(${q(r.record_id)})">📦 Teslim</button> ` : ""}
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditRecordModal(${q(r.record_id)})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteRecord(${q(r.record_id)}, ${q(r.school_name)})">🗑️</button>
       </td>
     </tr>`).join("")
   }</tbody></table></div>`;
@@ -1013,9 +1014,9 @@ function renderKayitlar() {
     <td>${durumBadge(r.durum)}</td>
     <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
     <td style="white-space:nowrap">
-      ${(r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal(${jsonq(r.record_id)})">📦</button> ` : `<span style="color:var(--green);font-size:12px">✓ </span>`}
-      <button class="btn btn-secondary btn-sm" onclick="openEditRecordModal(${jsonq(r.record_id)})">✏️</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteRecord(${jsonq(r.record_id)}, ${jsonq(r.school_name)})">🗑️</button>
+      ${(r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal(${q(r.record_id)})">📦</button> ` : `<span style="color:var(--green);font-size:12px">✓ </span>`}
+      <button class="btn btn-secondary btn-sm" onclick="openEditRecordModal(${q(r.record_id)})">✏️</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteRecord(${q(r.record_id)}, ${q(r.school_name)})">🗑️</button>
     </td>
   </tr>`).join("");
 }
@@ -1183,7 +1184,7 @@ function renderPersonnelList() {
     root.innerHTML = `<div class="empty"><div class="empty-s">Henüz personel yok.</div></div>`;
     return;
   }
-  root.innerHTML = S.personnelList.map(p => `<div class="school-card" onclick="selectPersonnel(${jsonq(p.isim)})">
+  root.innerHTML = S.personnelList.map(p => `<div class="school-card" onclick="selectPersonnel(${q(p.isim)})">
     <div class="sc-icon">${h(String(p.isim || "?").charAt(0).toUpperCase())}</div>
     <div class="sc-info"><div class="sc-name">${h(p.isim)}</div></div>
     ${p.isim === S.personnel ? '<span style="color:var(--green)">✓ Aktif</span>' : ''}
@@ -1294,7 +1295,7 @@ function openEditRecordModal(recordId) {
   else if (erKaynak === "yedek") { yedek.style.borderColor="var(--orange)"; yedek.style.background="rgba(245,158,11,.14)"; yedek.style.color="var(--orange)"; }
 
   qs("#sd-er-p").innerHTML = S.personnelList.length
-    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('er-p', ${jsonq(p.isim)})">${h(p.isim)}</div>`).join("")
+    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('er-p', ${q(p.isim)})">${h(p.isim)}</div>`).join("")
     : `<div class="sd-empty">Personel yok</div>`;
   openModal("editRecordModal");
 }
