@@ -221,11 +221,11 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div class="hero-title">BEKLEYEN OPS</div>
       <div class="hero-value" id="s-bekleyen-total">—</div>
       <div class="hero-meta">
-        <span class="hero-pill">🏫 Borçlu okul: <strong id="s-borclu">—</strong></span>
+        <span class="hero-pill">🏫 Bekleyen okul: <strong id="s-borclu">—</strong></span>
         <span class="hero-pill">📦 Yedek: <strong id="s-yedek">—</strong></span>
         <span class="hero-pill">🏫 Sınıf: <strong id="s-sinif">—</strong></span>
       </div>
-    </div>
+    </div>      
     <div class="section" style="margin-bottom:0">
       <div class="section-head"><div class="section-title">HIZLI ÖZET</div><button class="btn btn-secondary btn-sm" onclick="loadDashboard(true)">↻ Yenile</button></div>
       <div class="section-body insight-list">
@@ -983,7 +983,7 @@ function renderDashboard() {
       </div>
       <div class="city-metrics">
         <span class="mini-badge">Bekleyen ops: ${row.bekleyenOps}</span>
-        <span class="mini-badge">Borçlu okul: ${row.borcluOkul}</span>
+        <span class="mini-badge">Bekleyen okul: ${row.borcluOkul}</span>
       </div>
     </div>
   `).join('') || `<div class="empty"><div class="empty-s">Şehir verisi yok</div></div>`;
