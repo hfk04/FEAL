@@ -377,7 +377,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
   </div>
   <div class="section"><div class="section-body" style="padding:0"><div class="table-wrap"><table>
     <thead><tr><th>Okul</th><th>Şehir / İlçe</th><th>Faz</th><th>Kaynak</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead>
-    <tbody id="kayitlarTbl"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Yükleniyor...</td></tr></tbody>
+    <tbody id="kayitlarTbl"><tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text3)">Yükleniyor...</td></tr></tbody>
   </table></div></div></div>
 </div>
 
@@ -949,7 +949,7 @@ async function loadDashboard(force = false) {
   try {
     if (force || !S.records.length || !isFresh("records")) {
       showLoader("Ana sayfa yükleniyor...");
-      await Promise.all([loadRecords(force), loadSchools(force)]);
+      await loadRecords(force);
     }
     renderDashboard();
   } catch (e) {
@@ -1547,7 +1547,7 @@ qsa(".modal-ov").forEach(ov => ov.addEventListener("click", e => {
 
   try {
     showLoader("Veriler hazırlanıyor...");
-    await Promise.all([loadPersonnel(), loadSchools(), loadRecords()]);
+    await Promise.all([loadPersonnel(), loadRecords()]);
     fillPersonnelDropdowns();
     renderDashboard();
   } catch (e) {
