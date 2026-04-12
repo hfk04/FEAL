@@ -190,6 +190,30 @@ tr:hover td{background:rgba(255,255,255,.018)}
   .mob-btn.mob-add{color:#fff}
   .mob-btn.mob-add .mob-ico{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(79,142,247,.45);margin-top:-12px}
 }
+
+/* ── SCHOOL TIMELINE ── */
+.school-detail-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.sdh-info{font-size:13px;color:var(--text2)}
+.school-timeline{display:flex;flex-direction:column;gap:0}
+.tl-event{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s}
+.tl-event:last-child{border-bottom:none}
+.tl-event:hover{background:rgba(255,255,255,.02)}
+.tl-alim{border-left:3px solid rgba(79,142,247,.4)}
+.tl-teslim{border-left:3px solid rgba(34,197,94,.4);background:rgba(34,197,94,.025)}
+.tl-icon{font-size:18px;flex-shrink:0;margin-top:2px;width:24px;text-align:center}
+.tl-body{flex:1;min-width:0}
+.tl-row-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px}
+.tl-row-bot{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text2)}
+.tl-type-label{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.8px;padding:2px 7px;border-radius:4px}
+.alim-label{background:rgba(79,142,247,.15);color:var(--accent)}
+.teslim-label{background:rgba(34,197,94,.15);color:var(--green)}
+.tl-adet{font-family:'Space Mono',monospace;font-size:14px}
+.tl-actions{display:flex;gap:5px;flex-shrink:0;align-items:flex-start;padding-top:2px}
+.timeline-loading{padding:24px;text-align:center}
+.school-card-borç .sc-name{color:var(--text)}
+.school-card-clean{opacity:.75}
+.school-card-clean .sc-icon{filter:grayscale(1)}
+
 </style>
 </head>
 <body>
@@ -204,7 +228,6 @@ tr:hover td{background:rgba(255,255,255,.018)}
     <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard')">📊 Dashboard</button>
     <button class="nav-btn" data-page="kayit" onclick="showPage('kayit')">➕ Yeni Kayıt</button>
     <button class="nav-btn" data-page="okullar" onclick="showPage('okullar')">🏫 Okullar</button>
-    <button class="nav-btn" data-page="kayitlar" onclick="showPage('kayitlar')">📋 Kayıtlar</button>
     <button class="nav-btn" data-page="ayarlar" onclick="showPage('ayarlar')">⚙️ Ayarlar</button>
   </nav>
   <div class="personnel-chip" onclick="openPersonnelModal()">
@@ -352,33 +375,10 @@ tr:hover td{background:rgba(255,255,255,.018)}
 </div>
 
 <div id="page-okullar" class="page">
-  <div class="page-header"><div class="page-title">// OKULLAR</div><div class="page-sub">Şehir ve ilçeye göre okullar</div></div>
+  <div class="page-header"><div class="page-title">// OKULLAR & KAYITLAR</div><div class="page-sub">Ops borcunuz olan okullar üstte · tıklayın tüm işlem geçmişini görün</div></div>
   <div class="city-tabs" id="okulCityTabs"></div>
   <div style="position:relative;margin-bottom:18px"><input type="text" id="okulSearch" placeholder="Okul adı veya ilçe ara..." oninput="renderOkullar()"></div>
   <div id="okullarList"><div class="empty"><div class="empty-s">Yükleniyor...</div></div></div>
-</div>
-
-<div id="page-kayitlar" class="page">
-  <div class="page-header"><div class="page-title">// TÜM KAYITLAR</div><div class="page-sub">Ops alım ve teslim geçmişi</div></div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center">
-    <div class="city-tabs" style="margin-bottom:0" id="recCityTabs"></div>
-    <select id="recDurumFilter" onchange="renderKayitlar()" style="width:auto;padding:7px 13px;font-size:13px">
-      <option value="all">Tüm Durumlar</option>
-      <option value="bekliyor">Bekliyor</option>
-      <option value="kismi">Kısmi Teslim</option>
-      <option value="teslim">Teslim Edildi</option>
-    </select>
-    <select id="recFazFilter" onchange="renderKayitlar()" style="width:auto;padding:7px 13px;font-size:13px">
-      <option value="all">Tüm Fazlar</option>
-      <option value="1">Faz 1</option><option value="2">Faz 2</option><option value="3">Faz 3</option>
-    </select>
-    <div style="flex:1;min-width:180px"><input type="text" id="recSearch" placeholder="Okul veya kurum kodu ara..." oninput="renderKayitlar()"></div>
-    <button class="btn btn-secondary btn-sm" onclick="loadRecords(true)">↻ Yenile</button>
-  </div>
-  <div class="section"><div class="section-body" style="padding:0"><div class="table-wrap"><table>
-    <thead><tr><th>Okul</th><th>Şehir / İlçe</th><th>Faz</th><th>Kaynak</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead>
-    <tbody id="kayitlarTbl"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Yükleniyor...</td></tr></tbody>
-  </table></div></div></div>
 </div>
 
 <div id="page-ayarlar" class="page">
@@ -529,9 +529,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
 </div>
 <nav class="mobile-nav">
   <button class="mob-btn active" id="mob-dashboard" onclick="showPage('dashboard')"><span class="mob-ico">📊</span><span>Özet</span></button>
-  <button class="mob-btn" id="mob-okullar" onclick="showPage('okullar')"><span class="mob-ico">🏫</span><span>Okullar</span></button>
+  <button class="mob-btn" id="mob-okullar" style="flex:1.5" onclick="showPage('okullar')"><span class="mob-ico">🏫</span><span>Okullar</span></button>
   <button class="mob-btn mob-add" id="mob-kayit" onclick="showPage('kayit')"><span class="mob-ico">➕</span><span>Ekle</span></button>
-  <button class="mob-btn" id="mob-kayitlar" onclick="showPage('kayitlar')"><span class="mob-ico">📋</span><span>Kayıtlar</span></button>
   <button class="mob-btn" id="mob-ayarlar" onclick="showPage('ayarlar')"><span class="mob-ico">⚙️</span><span>Ayarlar</span></button>
 </nav>
 </div>
@@ -557,6 +556,7 @@ const S = {
   records: [],
   cacheAt: { dashboard:0, schools:0, personnel:0, records:0 },
   pending: { schools:null, personnel:null, records:null },
+  deliveriesBySchool: {},  // school_id → delivery[]
   derived: null,
   selFaz: null,
   selKaynak: null,
@@ -653,16 +653,6 @@ function parseTRDate(value){
 function isSameDay(a,b){
   return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
 }
-function formatTarih(val) {
-  const d = parseTRDate(val);
-  if (!d) return String(val || '—');
-  const dd = String(d.getDate()).padStart(2,'0');
-  const mm = String(d.getMonth()+1).padStart(2,'0');
-  const yyyy = d.getFullYear();
-  const HH = String(d.getHours()).padStart(2,'0');
-  const MM = String(d.getMinutes()).padStart(2,'0');
-  return `${dd}.${mm}.${yyyy} ${HH}:${MM}`;
-}
 
 function rebuildDerived() {
   const schoolStats = {};
@@ -684,8 +674,11 @@ function rebuildDerived() {
     const isBekleyen = (r.durum || 'bekliyor') !== 'teslim' && kalan > 0;
     const dt = parseTRDate(r.tarih);
 
-    if (!schoolStats[schoolId]) schoolStats[schoolId] = { bekleyen:0, toplam:0 };
+    if (!schoolStats[schoolId]) schoolStats[schoolId] = { bekleyen:0, toplam:0, alinan:0, teslimAdet:0, kalan:0 };
     schoolStats[schoolId].toplam += 1;
+    schoolStats[schoolId].alinan += Number(r.adet || 0);
+    schoolStats[schoolId].teslimAdet += Number(r.toplam_teslim || 0);
+    schoolStats[schoolId].kalan += calcRemaining(r);
     if (isBekleyen) schoolStats[schoolId].bekleyen += 1;
 
     if (cityAgg[city]) {
@@ -721,7 +714,7 @@ function rebuildDerived() {
       city: city || '-',
       personel: r.personel || '-',
       adet,
-      tarih: formatTarih(r.tarih || ''),
+      tarih: r.tarih || '-',
       durum: r.durum || 'bekliyor'
     });
   }
@@ -1049,27 +1042,51 @@ function renderOkullar() {
   }
 
   const schoolStats = (S.derived || {}).schoolStats || {};
+
+  // Ops borcu olanlar üste, sonra alfabe
+  schools.sort((a, b) => {
+    const sa = schoolStats[String(a.school_id)] || {};
+    const sb = schoolStats[String(b.school_id)] || {};
+    const ka = sa.kalan || 0, kb = sb.kalan || 0;
+    if (kb !== ka) return kb - ka; // borcu fazla olan üste
+    return (a.school_name||"").localeCompare(b.school_name||"", "tr");
+  });
+
   root.innerHTML = schools.map(s => {
-    const st = schoolStats[String(s.school_id)] || {bekleyen:0, toplam:0};
-    return `<div class="school-card" id="sc-${h(s.school_id)}" onclick="toggleSchoolDetail(${sq(s.school_id)})">
-      <div class="sc-icon">🏫</div>
-      <div class="sc-info"><div class="sc-name">${h(s.school_name)}</div><div class="sc-meta">${h(s.city)} › ${h(s.district)}${s.kurum_kodu ? ` · Kod: ${h(s.kurum_kodu)}` : ""}</div></div>
-      <div class="sc-stats"><div class="sc-stat"><div class="sc-stat-v" style="color:var(--orange)">${st.bekleyen}</div><div class="sc-stat-l">Bekleyen</div></div><div class="sc-stat"><div class="sc-stat-v">${st.toplam}</div><div class="sc-stat-l">Toplam</div></div></div>
+    const st = schoolStats[String(s.school_id)] || {alinan:0, teslimAdet:0, kalan:0, bekleyen:0};
+    const hasBorç = st.kalan > 0;
+    return `<div class="school-card ${hasBorç ? "school-card-borç" : "school-card-clean"}" id="sc-${h(s.school_id)}" onclick="toggleSchoolDetail(${sq(s.school_id)})">
+      <div class="sc-icon">${hasBorç ? "🏫" : "✅"}</div>
+      <div class="sc-info">
+        <div class="sc-name">${h(s.school_name)}</div>
+        <div class="sc-meta">${h(s.city)} › ${h(s.district)}${s.kurum_kodu ? ` · Kod: ${h(s.kurum_kodu)}` : ""}</div>
+      </div>
+      <div class="sc-stats">
+        <div class="sc-stat"><div class="sc-stat-v" style="color:var(--accent)">${st.alinan||0}</div><div class="sc-stat-l">Alınan</div></div>
+        <div class="sc-stat"><div class="sc-stat-v" style="color:var(--green)">${st.teslimAdet||0}</div><div class="sc-stat-l">Teslim</div></div>
+        <div class="sc-stat"><div class="sc-stat-v" style="color:${hasBorç ? "var(--orange)" : "var(--text3)"}">${st.kalan||0}</div><div class="sc-stat-l">Kalan</div></div>
+      </div>
       <span id="sc-arr-${h(s.school_id)}" style="color:var(--text3);font-size:16px">›</span>
     </div><div class="school-detail" id="scd-${h(s.school_id)}"></div>`;
   }).join("");
 }
+
 function refreshSchoolDetail(sid) {
   const detail = qs("#scd-" + CSS.escape(String(sid)));
   if (!detail || !detail.classList.contains("open")) return;
+  // içeriği sıfırla, tekrar aç
+  const card = qs("#sc-" + CSS.escape(String(sid)));
+  const arr  = qs("#sc-arr-" + CSS.escape(String(sid)));
   detail.classList.remove("open");
-  toggleSchoolDetail(sid);
+  if (card) card.classList.remove("expanded");
+  if (arr)  arr.textContent = "›";
+  setTimeout(() => toggleSchoolDetail(sid), 50);
 }
 function toggleSchoolDetail(sid) {
   sid = String(sid);
   const detail = qs("#scd-" + CSS.escape(sid));
-  const card = qs("#sc-" + CSS.escape(sid));
-  const arr = qs("#sc-arr-" + CSS.escape(sid));
+  const card   = qs("#sc-" + CSS.escape(sid));
+  const arr    = qs("#sc-arr-" + CSS.escape(sid));
   if (!detail || !card || !arr) return;
   if (detail.classList.contains("open")) {
     detail.classList.remove("open");
@@ -1077,40 +1094,131 @@ function toggleSchoolDetail(sid) {
     arr.textContent = "›";
     return;
   }
-
   detail.classList.add("open");
   card.classList.add("expanded");
   arr.textContent = "⌄";
 
   const school = S.schools.find(s => String(s.school_id) === sid);
-  const recs = S.records.filter(r => String(r.school_id) === sid);
-  const schoolInfo = `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-    <div style="font-size:13px;color:var(--text2)">${h(school?.school_name||"")} <span style="color:var(--text3)">·</span> ${h(school?.city||"")} / ${h(school?.district||"")}${school?.kurum_kodu ? ` <span style="color:var(--text3)">·</span> Kod: ${h(school.kurum_kodu)}` : ""}</div>
-    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditSchoolModal(${sq(sid)})">✏️ Okul Bilgilerini Düzenle</button>
+  const schoolInfo = `<div class="school-detail-header">
+    <div class="sdh-info">${h(school?.school_name||"")} <span style="color:var(--text3)">·</span> ${h(school?.city||"")} / ${h(school?.district||"")}${school?.kurum_kodu ? ` <span style="color:var(--text3)">·</span> Kod: ${h(school.kurum_kodu)}` : ""}</div>
+    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditSchoolModal(${sq(sid)})">✏️ Düzenle</button>
   </div>`;
 
-  if (!recs.length) {
-    detail.innerHTML = schoolInfo + `<div class="empty"><div class="empty-s">Bu okul için kayıt yok</div></div>`;
+  detail.innerHTML = schoolInfo + `<div class="timeline-loading"><div class="spinner spin-sm"></div></div>`;
+
+  // Records + Deliveries paralel yükle
+  const recs = S.records.filter(r => String(r.school_id) === sid);
+
+  api({ action: "getDeliveries", school_id: sid })
+    .then(res => {
+      const deliveries = Array.isArray(res.data) ? res.data : [];
+      renderSchoolTimeline(detail, sid, school, recs, deliveries);
+    })
+    .catch(() => {
+      renderSchoolTimeline(detail, sid, school, recs, []);
+    });
+}
+
+function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
+  const school_info_html = detail.querySelector('.school-detail-header')?.outerHTML || '';
+
+  // Tüm olayları tek diziye al
+  const events = [];
+
+  recs.forEach(r => {
+    events.push({
+      type: 'alim',
+      date: parseTRDate(r.tarih),
+      tarih: r.tarih,
+      record_id: r.record_id,
+      school_name: r.school_name,
+      faz: r.faz,
+      adet: r.adet,
+      kalan: calcRemaining(r),
+      kaynak: r.kaynak,
+      personel: r.personel,
+      notlar: r.notlar,
+      durum: r.durum,
+    });
+  });
+
+  deliveries.forEach(d => {
+    events.push({
+      type: 'teslim',
+      date: parseTRDate(d.tarih),
+      tarih: d.tarih,
+      delivery_id: d.delivery_id,
+      record_id: d.record_id,
+      school_name: d.school_name,
+      teslim_adet: d.teslim_adet,
+      personel: d.personel,
+      notlar: d.notlar,
+    });
+  });
+
+  // En yeni en üste
+  events.sort((a, b) => {
+    const ta = a.date?.getTime() || 0;
+    const tb = b.date?.getTime() || 0;
+    return tb - ta;
+  });
+
+  if (!events.length) {
+    detail.innerHTML = school_info_html + `<div class="empty" style="padding:28px"><div class="empty-s">Bu okul için henüz işlem yok</div></div>`;
     return;
   }
 
-  detail.innerHTML = schoolInfo + `<div class="table-wrap"><table><thead><tr><th>Faz</th><th>Kaynak</th><th>Adet</th><th>Personel</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead><tbody>${
-    recs.map(r => `<tr style="${r.durum === 'teslim' ? 'opacity:0.6' : ''}">
-      <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
-      <td>${kaynakBadge(r.kaynak)}</td>
-      <td>${(() => { const k=calcRemaining(r); return k < Number(r.adet) ? `<span style="font-weight:700">${k}</span><span style="color:var(--text3);font-size:11px"> /${r.adet}</span>` : h(r.adet); })()}</td>
-      <td>${h(r.personel)}</td>
-      <td>${formatTarih(r.tarih)}</td>
-      <td>${durumBadge(r.durum)}</td>
-      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
-      <td style="white-space:nowrap">
-        ${(r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal(${sq(r.record_id)})">📦 Teslim</button> ` : ""}
-        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditRecordModal(${sq(r.record_id)})">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteRecord(${sq(r.record_id)}, ${sq(r.school_name)})">🗑️</button>
-      </td>
-    </tr>`).join("")
-  }</tbody></table></div>`;
+  const rows = events.map(ev => {
+    if (ev.type === 'alim') {
+      const kalanStr = ev.kalan < Number(ev.adet)
+        ? `<span style="font-weight:700">${ev.kalan}</span><span style="color:var(--text3);font-size:11px"> /${ev.adet}</span>`
+        : `<span style="font-weight:700">${ev.adet}</span>`;
+      const islemBtns = ev.durum !== 'teslim'
+        ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal(${sq(ev.record_id)})">📦 Teslim</button> `
+        : '';
+      return `<div class="tl-event tl-alim">
+        <div class="tl-icon">📥</div>
+        <div class="tl-body">
+          <div class="tl-row-top">
+            <span class="tl-type-label alim-label">ALIM</span>
+            <span class="badge b-f${h(ev.faz)}">FAZ ${h(ev.faz)}</span>
+            ${kaynakBadge(ev.kaynak)}
+            <span class="tl-adet">${kalanStr}</span>
+            ${durumBadge(ev.durum)}
+          </div>
+          <div class="tl-row-bot">
+            <span>👤 ${h(ev.personel)}</span>
+            <span>🕐 ${formatTarih(ev.tarih)}</span>
+            ${ev.notlar ? `<span>📝 ${h(ev.notlar)}</span>` : ''}
+          </div>
+        </div>
+        <div class="tl-actions">
+          ${islemBtns}
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditRecordModal(${sq(ev.record_id)})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteRecord(${sq(ev.record_id)}, ${sq(ev.school_name)})">🗑️</button>
+        </div>
+      </div>`;
+    } else {
+      return `<div class="tl-event tl-teslim">
+        <div class="tl-icon">📤</div>
+        <div class="tl-body">
+          <div class="tl-row-top">
+            <span class="tl-type-label teslim-label">TESLİM</span>
+            <span class="tl-adet"><span style="font-weight:700">${h(ev.teslim_adet)}</span> adet</span>
+          </div>
+          <div class="tl-row-bot">
+            <span>👤 ${h(ev.personel)}</span>
+            <span>🕐 ${formatTarih(ev.tarih)}</span>
+            ${ev.notlar ? `<span>📝 ${h(ev.notlar)}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }
+  }).join('');
+
+  detail.innerHTML = school_info_html + `<div class="school-timeline">${rows}</div>`;
 }
+
 
 function kaynakBadge(k) {
   if (k === "sinif") return `<span class="badge b-done">🏫 Sınıf</span>`;
@@ -1148,9 +1256,9 @@ function renderKayitlar() {
     <td>${h(r.city)}${r.district ? ` / ${h(r.district)}` : ""}</td>
     <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
     <td>${kaynakBadge(r.kaynak)}</td>
-    <td>${(() => { const k=calcRemaining(r); return k < Number(r.adet) ? `<span style="font-weight:700">${k}</span><span style="color:var(--text3);font-size:11px"> /${r.adet}</span>` : h(r.adet); })()}</td>
+    <td>${h(r.adet)}</td>
     <td>${h(r.personel)}</td>
-    <td>${formatTarih(r.tarih)}</td>
+    <td>${h(r.tarih)}</td>
     <td>${durumBadge(r.durum)}</td>
     <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
     <td style="white-space:nowrap">
