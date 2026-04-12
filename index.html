@@ -1117,15 +1117,15 @@ function toggleSchoolDetail(sid) {
     <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditSchoolModal(${sq(sid)})">✏️ Düzenle</button>
   </div>`;
 
-  // S.deliveries'den filtrele — API çağrısı yok, anında render
+  // Önce header'ı yaz, sonra timeline'ı render et
+  detail.innerHTML = schoolInfo;
+
   const recs = S.records.filter(r => String(r.school_id) === sid);
   const deliveries = S.deliveries.filter(d => String(d.school_id) === sid);
   renderSchoolTimeline(detail, sid, school, recs, deliveries);
 }
 
 function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
-  const school_info_html = detail.querySelector('.school-detail-header')?.outerHTML || '';
-
   // Tüm olayları tek diziye al
   const events = [];
 
@@ -1168,7 +1168,7 @@ function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
   });
 
   if (!events.length) {
-    detail.innerHTML = school_info_html + `<div class="empty" style="padding:28px"><div class="empty-s">Bu okul için henüz işlem yok</div></div>`;
+    detail.insertAdjacentHTML('beforeend', `<div class="empty" style="padding:28px"><div class="empty-s">Bu okul için henüz işlem yok</div></div>`);
     return;
   }
 
@@ -1220,7 +1220,7 @@ function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
     }
   }).join('');
 
-  detail.innerHTML = school_info_html + `<div class="school-timeline">${rows}</div>`;
+  detail.insertAdjacentHTML('beforeend', `<div class="school-timeline">${rows}</div>`);
 }
 
 
