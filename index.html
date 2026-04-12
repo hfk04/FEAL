@@ -537,7 +537,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 
 <script>
 
-const CACHE_TTL = { dashboard: 30000, schools: 180000, personnel: 180000, records: 60000 };
+const CACHE_TTL = { dashboard: 30000, schools: 180000, personnel: 180000, records: 60000, deliveries: 60000 };
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZXE4OxOawYB8XlDF6HpRMkBP1F3Zka80MUqoKFz5GTHMn0YrKEqr2wsOHeIth-UE/exec";
 
 const CITIES = ["İstanbul Avrupa","İstanbul Anadolu","Kocaeli","Yalova","Bursa"];
@@ -554,9 +554,9 @@ const S = {
   personnelList: [],
   schools: [],
   records: [],
-  cacheAt: { dashboard:0, schools:0, personnel:0, records:0 },
-  pending: { schools:null, personnel:null, records:null },
-  deliveriesBySchool: {},  // school_id → delivery[]
+  cacheAt: { dashboard:0, schools:0, personnel:0, records:0, deliveries:0 },
+  pending: { schools:null, personnel:null, records:null, deliveries:null },
+  deliveries: [],  // tüm teslim kayıtları
   derived: null,
   selFaz: null,
   selKaynak: null,
@@ -785,6 +785,19 @@ async function loadRecords(force = false) {
   }).finally(() => { S.pending.records = null; });
   return S.pending.records;
 }
+async function loadDeliveries(force = false) {
+  if (!force && isFresh("deliveries") && S.deliveries.length) return S.deliveries;
+  if (S.pending.deliveries) return S.pending.deliveries;
+  S.pending.deliveries = api({ action: "getDeliveries" }).then(r => {
+    S.deliveries = Array.isArray(r.data) ? r.data : [];
+    markFresh("deliveries");
+    return S.deliveries;
+  }).catch(() => {
+    S.deliveries = [];
+    return [];
+  }).finally(() => { S.pending.deliveries = null; });
+  return S.pending.deliveries;
+}
 async function ensureBaseData(force = false) {
   await Promise.all([loadPersonnel(force), loadSchools(force)]);
 }
@@ -1008,7 +1021,7 @@ async function loadOkullar(force = false) {
   try {
     if (force || !S.schools.length || !isFresh("schools") || !S.records.length || !isFresh("records")) {
       showLoader("Okullar yükleniyor...");
-      await Promise.all([loadSchools(force), loadRecords(force)]);
+      await Promise.all([loadSchools(force), loadRecords(force), loadDeliveries(force)]);
     }
     renderOkullar();
   } catch (e) {
@@ -1104,19 +1117,10 @@ function toggleSchoolDetail(sid) {
     <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditSchoolModal(${sq(sid)})">✏️ Düzenle</button>
   </div>`;
 
-  detail.innerHTML = schoolInfo + `<div class="timeline-loading"><div class="spinner spin-sm"></div></div>`;
-
-  // Records + Deliveries paralel yükle
+  // S.deliveries'den filtrele — API çağrısı yok, anında render
   const recs = S.records.filter(r => String(r.school_id) === sid);
-
-  api({ action: "getDeliveries", school_id: sid })
-    .then(res => {
-      const deliveries = Array.isArray(res.data) ? res.data : [];
-      renderSchoolTimeline(detail, sid, school, recs, deliveries);
-    })
-    .catch(() => {
-      renderSchoolTimeline(detail, sid, school, recs, []);
-    });
+  const deliveries = S.deliveries.filter(d => String(d.school_id) === sid);
+  renderSchoolTimeline(detail, sid, school, recs, deliveries);
 }
 
 function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
@@ -1407,6 +1411,20 @@ async function submitTeslim() {
     rec.kalan_adet = calcRemaining({ ...rec, toplam_teslim: Number(res.data?.toplamTeslim || 0) });
     rec.durum = res.data?.yeniDurum || (rec.kalan_adet > 0 ? "kismi" : "teslim");
 
+    // Yeni teslim kaydını local S.deliveries'e ekle — refresh olmadan anında görünsün
+    if (res.data?.delivery_id) {
+      S.deliveries.push({
+        delivery_id: res.data.delivery_id,
+        record_id: rec.record_id,
+        school_id: rec.school_id,
+        school_name: rec.school_name,
+        teslim_adet: teslim_adet,
+        personel: personel,
+        tarih: res.data.tarih || new Date().toISOString(),
+        notlar: notlar
+      });
+    }
+
     markFresh("records"); S.derived = null;
     rebuildDerived();
 
@@ -1624,6 +1642,7 @@ async function executeDeleteRecord() {
 
     const rec = S.records.find(r => String(r.record_id) === String(record_id));
     S.records = S.records.filter(r => String(r.record_id) !== String(record_id));
+    S.deliveries = S.deliveries.filter(d => String(d.record_id) !== String(record_id));
     rebuildDerived();
 
     closeModal("confirmDeleteModal");
@@ -1665,7 +1684,7 @@ qsa(".modal-ov").forEach(ov => ov.addEventListener("click", e => {
 
   try {
     showLoader("Veriler hazırlanıyor...");
-    await Promise.all([loadPersonnel(), loadSchools(), loadRecords()]);
+    await Promise.all([loadPersonnel(), loadSchools(), loadRecords(), loadDeliveries()]);
     fillPersonnelDropdowns();
     renderDashboard();
   } catch (e) {
