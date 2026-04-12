@@ -179,7 +179,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 .mobile-nav{display:none}
 @media(max-width:768px){
   .topbar{padding:11px 15px}.topbar-nav{display:none}.page{padding:14px;padding-bottom:90px}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}.sc-stats{gap:8px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}.sc-stats{display:flex;gap:8px}
   .sc-stat-v{font-size:13px}.sc-stat-l{font-size:9px}
   .brand-sub{display:none}.form-grid{grid-template-columns:1fr}
   .personnel-chip span:last-child{display:none}
@@ -1069,7 +1069,7 @@ function renderOkullar() {
   root.innerHTML = schools.map(s => {
     const st = schoolStats[String(s.school_id)] || {alinan:0, teslimAdet:0, kalan:0, bekleyen:0};
     const hasBorç = st.kalan > 0;
-    return `<div class="school-card ${hasBorç ? "school-card-borç" : "school-card-clean"}" id="sc-${h(s.school_id)}" onclick="toggleSchoolDetail(${sq(s.school_id)})">
+    return `<div class="school-card ${hasBorç ? "school-card-borç" : "school-card-clean"}" id="sc-${s.school_id}" onclick="toggleSchoolDetail(${sq(s.school_id)})">
       <div class="sc-icon">${hasBorç ? "🏫" : "✅"}</div>
       <div class="sc-info">
         <div class="sc-name">${h(s.school_name)}</div>
@@ -1080,17 +1080,17 @@ function renderOkullar() {
         <div class="sc-stat"><div class="sc-stat-v" style="color:var(--green)">${st.teslimAdet||0}</div><div class="sc-stat-l">Teslim</div></div>
         <div class="sc-stat"><div class="sc-stat-v" style="color:${hasBorç ? "var(--orange)" : "var(--text3)"}">${st.kalan||0}</div><div class="sc-stat-l">Kalan</div></div>
       </div>
-      <span id="sc-arr-${h(s.school_id)}" style="color:var(--text3);font-size:16px">›</span>
-    </div><div class="school-detail" id="scd-${h(s.school_id)}"></div>`;
+      <span id="sc-arr-${s.school_id}" style="color:var(--text3);font-size:16px">›</span>
+    </div><div class="school-detail" id="scd-${s.school_id}"></div>`;
   }).join("");
 }
 
 function refreshSchoolDetail(sid) {
-  const detail = qs("#scd-" + CSS.escape(String(sid)));
+  const detail = qs("#scd-" + String(sid));
   if (!detail || !detail.classList.contains("open")) return;
   // içeriği sıfırla, tekrar aç
-  const card = qs("#sc-" + CSS.escape(String(sid)));
-  const arr  = qs("#sc-arr-" + CSS.escape(String(sid)));
+  const card = qs("#sc-" + String(sid));
+  const arr  = qs("#sc-arr-" + String(sid));
   detail.classList.remove("open");
   if (card) card.classList.remove("expanded");
   if (arr)  arr.textContent = "›";
@@ -1098,9 +1098,9 @@ function refreshSchoolDetail(sid) {
 }
 function toggleSchoolDetail(sid) {
   sid = String(sid);
-  const detail = qs("#scd-" + CSS.escape(sid));
-  const card   = qs("#sc-" + CSS.escape(sid));
-  const arr    = qs("#sc-arr-" + CSS.escape(sid));
+  const detail = qs("#scd-" + sid);
+  const card   = qs("#sc-" + sid);
+  const arr    = qs("#sc-arr-" + sid);
   if (!detail || !card || !arr) return;
   if (detail.classList.contains("open")) {
     detail.classList.remove("open");
