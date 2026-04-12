@@ -179,7 +179,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
 .mobile-nav{display:none}
 @media(max-width:768px){
   .topbar{padding:11px 15px}.topbar-nav{display:none}.page{padding:14px;padding-bottom:90px}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}.sc-stats{display:none}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}.sc-stats{gap:8px}
+  .sc-stat-v{font-size:13px}.sc-stat-l{font-size:9px}
   .brand-sub{display:none}.form-grid{grid-template-columns:1fr}
   .personnel-chip span:last-child{display:none}
   #topName{display:none}
@@ -1122,6 +1123,19 @@ function toggleSchoolDetail(sid) {
 
   const recs = S.records.filter(r => String(r.school_id) === sid);
   const deliveries = S.deliveries.filter(d => String(d.school_id) === sid);
+
+  // Records henüz yüklenmediyse bekle
+  if (!S.records.length && !S.derived) {
+    detail.insertAdjacentHTML('beforeend', `<div style="padding:16px;color:var(--text2);font-size:13px">⏳ Kayıtlar yükleniyor...</div>`);
+    Promise.all([loadRecords(), loadDeliveries()]).then(() => {
+      const r2 = S.records.filter(r => String(r.school_id) === sid);
+      const d2 = S.deliveries.filter(d => String(d.school_id) === sid);
+      detail.innerHTML = schoolInfo;
+      renderSchoolTimeline(detail, sid, school, r2, d2);
+    });
+    return;
+  }
+
   renderSchoolTimeline(detail, sid, school, recs, deliveries);
 }
 
@@ -1168,7 +1182,12 @@ function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
   });
 
   if (!events.length) {
-    detail.insertAdjacentHTML('beforeend', `<div class="empty" style="padding:28px"><div class="empty-s">Bu okul için henüz işlem yok</div></div>`);
+    const debugInfo = recs.length === 0 && deliveries.length === 0
+      ? `<div style="padding:12px 16px;background:rgba(239,68,68,.08);border-top:1px solid rgba(239,68,68,.2);font-size:12px;color:var(--text2)">
+          Kayıt bulunamadı · Toplam kayıt: ${S.records.length} · school_id: ${sid}
+         </div>`
+      : '';
+    detail.insertAdjacentHTML('beforeend', `<div class="empty" style="padding:28px"><div class="empty-s">Bu okul için henüz işlem yok</div></div>${debugInfo}`);
     return;
   }
 
