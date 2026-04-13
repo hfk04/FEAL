@@ -1124,16 +1124,14 @@ function toggleSchoolDetail(sid) {
   const recs = S.records.filter(r => String(r.school_id) === sid);
   const deliveries = S.deliveries.filter(d => String(d.school_id) === sid);
 
-  // Records henüz yüklenmediyse bekle
-  if (!S.records.length && !S.derived) {
-    detail.insertAdjacentHTML('beforeend', `<div style="padding:16px;color:var(--text2);font-size:13px">⏳ Kayıtlar yükleniyor...</div>`);
-    Promise.all([loadRecords(), loadDeliveries()]).then(() => {
-      const r2 = S.records.filter(r => String(r.school_id) === sid);
-      const d2 = S.deliveries.filter(d => String(d.school_id) === sid);
-      detail.innerHTML = schoolInfo;
-      renderSchoolTimeline(detail, sid, school, r2, d2);
-    });
-    return;
+  // Tanı: sid ile S.records karşılaştır
+  if (!recs.length && S.records.length > 0) {
+    const sample = S.records.slice(0,3).map(r => `${r.school_id}(${typeof r.school_id})`).join(', ');
+    detail.insertAdjacentHTML('beforeend',
+      `<div style="padding:12px 16px;font-size:11px;color:var(--text2);background:rgba(79,142,247,.08);border-top:1px solid rgba(79,142,247,.2)">
+        🔍 sid="${sid}" (${typeof sid}) · toplam kayıt:${S.records.length} · örnekler: ${sample}
+       </div>`
+    );
   }
 
   renderSchoolTimeline(detail, sid, school, recs, deliveries);
