@@ -1049,6 +1049,12 @@ function recomputeRecordDeliveryFromLocal(recordId) {
   rec.kalan_adet = Math.max(0, Number(rec.adet || 0) - total);
   rec.durum = rec.kalan_adet === 0 ? 'teslim' : total > 0 ? 'kismi' : 'bekliyor';
 }
+function openSchoolDetailAfterRender(sid) {
+  setTimeout(() => {
+    const detail = qs("#scd-" + String(sid));
+    if (detail && !detail.classList.contains("open")) toggleSchoolDetail(String(sid));
+  }, 0);
+}
 function refreshDeliveryUIForRecord(recordId) {
   const rec = S.records.find(r => String(r.record_id) === String(recordId));
   if (!rec) return;
@@ -1056,7 +1062,7 @@ function refreshDeliveryUIForRecord(recordId) {
   S.derived = null;
   rebuildDerived();
   if (pageIs('dashboard')) renderDashboard();
-  if (pageIs('okullar')) { renderOkullar(); refreshSchoolDetail(rec.school_id); }
+  if (pageIs('okullar')) { renderOkullar(); openSchoolDetailAfterRender(rec.school_id); }
   if (pageIs('kayitlar')) renderKayitlar();
 }
 function openSchoolTeslimPicker(sid) {
@@ -1620,11 +1626,16 @@ function openEditDeliveryModal(deliveryId) {
   const d = S.deliveries.find(x => String(x.delivery_id) === String(deliveryId));
   if (!d) return toast('Teslim kaydı bulunamadı', 'error');
   const rec = S.records.find(r => String(r.record_id) === String(d.record_id));
+  const otherTotal = S.deliveries
+    .filter(x => String(x.record_id) === String(d.record_id) && String(x.delivery_id) !== String(d.delivery_id))
+    .reduce((sum, x) => sum + Number(x.teslim_adet || 0), 0);
+  const safeMax = Math.max(1, Number(rec?.adet || 0) - otherTotal);
+
   qs('#ed-delivery-id').value = d.delivery_id;
   qs('#ed-record-id').value = d.record_id || '';
   qs('#ed-delivery-info').innerHTML = `<strong>${h(d.school_name || rec?.school_name || '-')}</strong> · Mevcut teslim: ${h(d.teslim_adet)} adet`;
   qs('#ed-adet').value = d.teslim_adet || 1;
-  qs('#ed-adet').max = String(Math.max(1, Number(rec?.adet || 99)));
+  qs('#ed-adet').max = String(safeMax);
   qs('#ed-personel').value = d.personel || S.personnel || '';
   qs('#ed-not').value = d.notlar || '';
   fillPersonnelDropdowns();
@@ -1638,15 +1649,26 @@ async function saveEditDelivery() {
     const teslim_adet = parseInt(qs('#ed-adet').value, 10) || 1;
     const personel = qs('#ed-personel').value.trim();
     const notlar = qs('#ed-not').value.trim();
+    const maxAllowed = parseInt(qs('#ed-adet').max, 10) || 1;
     if (!personel) throw new Error('Personel seçin');
+    if (teslim_adet > maxAllowed) throw new Error(`En fazla ${maxAllowed} adet girebilirsiniz`);
+
     btn.disabled = true; btn.textContent = 'Kaydediliyor...';
-    await apiPost({ action:'updateDelivery', delivery_id, record_id, teslim_adet, personel, notlar });
+    const res = await apiPost({ action:'updateDelivery', delivery_id, record_id, teslim_adet, personel, notlar });
+
     const d = S.deliveries.find(x => String(x.delivery_id) === String(delivery_id));
     if (d) {
       d.teslim_adet = teslim_adet;
       d.personel = personel;
       d.notlar = notlar;
     }
+    const rec = S.records.find(r => String(r.record_id) === String(record_id));
+    if (rec && res?.data) {
+      rec.toplam_teslim = Number(res.data.toplamTeslim || 0);
+      rec.kalan_adet = Number(res.data.kalan_adet ?? Math.max(0, Number(rec.adet || 0) - Number(res.data.toplamTeslim || 0)));
+      rec.durum = res.data.yeniDurum || (rec.kalan_adet === 0 ? 'teslim' : rec.toplam_teslim > 0 ? 'kismi' : 'bekliyor');
+    }
+
     closeModal('editDeliveryModal');
     refreshDeliveryUIForRecord(record_id);
     toast('Teslim kaydı güncellendi', 'success');
@@ -1670,8 +1692,16 @@ async function executeDeleteDelivery() {
     const d = S.deliveries.find(x => String(x.delivery_id) === String(delivery_id));
     if (!d) throw new Error('Teslim kaydı bulunamadı');
     btn.disabled = true; btn.textContent = 'Siliniyor...';
-    await apiPost({ action:'deleteDelivery', delivery_id, record_id: d.record_id });
+    const res = await apiPost({ action:'deleteDelivery', delivery_id, record_id: d.record_id });
     S.deliveries = S.deliveries.filter(x => String(x.delivery_id) !== String(delivery_id));
+
+    const rec = S.records.find(r => String(r.record_id) === String(d.record_id));
+    if (rec && res?.data) {
+      rec.toplam_teslim = Number(res.data.toplamTeslim || 0);
+      rec.kalan_adet = Number(res.data.kalan_adet ?? Math.max(0, Number(rec.adet || 0) - Number(res.data.toplamTeslim || 0)));
+      rec.durum = res.data.yeniDurum || (rec.kalan_adet === 0 ? 'teslim' : rec.toplam_teslim > 0 ? 'kismi' : 'bekliyor');
+    }
+
     closeModal('confirmDeleteDeliveryModal');
     refreshDeliveryUIForRecord(d.record_id);
     toast('Teslim kaydı silindi', 'success');
@@ -1891,7 +1921,7 @@ async function executeDeleteRecord() {
     closeModal("confirmDeleteModal");
     if (pageIs("kayitlar")) renderKayitlar();
     if (pageIs("dashboard")) renderDashboard();
-    if (pageIs("okullar")) { renderOkullar(); if (rec) refreshSchoolDetail(rec.school_id); }
+    if (pageIs("okullar")) { renderOkullar(); }
     toast("Kayıt silindi", "success");
   } catch (e) {
     toast("Hata: " + e.message, "error");
