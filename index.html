@@ -342,9 +342,9 @@ tr:hover td{background:rgba(255,255,255,.018)}
         <div class="form-group">
           <label>Faz *</label>
           <div class="faz-toggle">
-            <button type="button" class="faz-btn" id="faz1" onclick="pickFaz(event, 1)">FAZ 1</button>
-            <button type="button" class="faz-btn" id="faz2" onclick="pickFaz(event, 2)">FAZ 2</button>
-            <button type="button" class="faz-btn" id="faz3" onclick="pickFaz(event, 3)">FAZ 3</button>
+            <button class="faz-btn" id="faz1" onclick="pickFaz(1)">FAZ 1</button>
+            <button class="faz-btn" id="faz2" onclick="pickFaz(2)">FAZ 2</button>
+            <button class="faz-btn" id="faz3" onclick="pickFaz(3)">FAZ 3</button>
           </div>
         </div>
         <div class="form-group">
@@ -358,8 +358,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
         <div class="form-group">
           <label>Kaynak *</label>
           <div class="faz-toggle">
-            <button type="button" class="faz-btn" id="kaynak-sinif" onclick="pickKaynak(event, 'sinif')" style="font-size:11px">🏫 SINIFTAN</button>
-            <button type="button" class="faz-btn" id="kaynak-yedek" onclick="pickKaynak(event, 'yedek')" style="font-size:11px">📦 YEDEK</button>
+            <button class="faz-btn" id="kaynak-sinif" onclick="pickKaynak('sinif')" style="font-size:11px">🏫 SINIFTAN</button>
+            <button class="faz-btn" id="kaynak-yedek" onclick="pickKaynak('yedek')" style="font-size:11px">📦 YEDEK</button>
           </div>
         </div>
         <div class="form-group full">
@@ -437,66 +437,6 @@ tr:hover td{background:rgba(255,255,255,.018)}
   </div>
 </div>
 
-<div class="modal-ov" id="schoolTeslimPickerModal">
-  <div class="modal">
-    <div class="modal-title">📦 Teslim Edilecek Alışı Seç</div>
-    <div class="modal-close" onclick="closeModal('schoolTeslimPickerModal')">✕</div>
-    <div id="schoolTeslimPickerList" style="display:flex;flex-direction:column;gap:10px"></div>
-  </div>
-</div>
-
-<div class="modal-ov" id="editDeliveryModal">
-  <div class="modal">
-    <div class="modal-title">✏️ Teslim Kaydını Düzenle</div>
-    <div class="modal-close" onclick="closeModal('editDeliveryModal')">✕</div>
-    <input type="hidden" id="ed-delivery-id">
-    <input type="hidden" id="ed-record-id">
-    <div id="ed-delivery-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:18px;font-size:13px;color:var(--text2)"></div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Teslim Edilen Adet *</label>
-        <div class="adet-wrap">
-          <button class="adet-btn" onclick="edChangeAdet(-1)">−</button>
-          <input type="number" class="adet-num" id="ed-adet" value="1" min="1" max="99">
-          <button class="adet-btn" onclick="edChangeAdet(1)">+</button>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Teslim Eden Personel *</label>
-        <div class="sd-wrap">
-          <input type="text" id="ed-personel" placeholder="Personel seç..." autocomplete="off" oninput="sdFilter('ed-p')" onfocus="sdOpen('ed-p')" onblur="sdBlur('ed-p')">
-          <div class="sd-list" id="sd-ed-p"></div>
-        </div>
-      </div>
-      <div class="form-group full">
-        <label>Not</label>
-        <textarea id="ed-not" placeholder="Teslim notu..." style="min-height:70px"></textarea>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" id="editDeliveryBtn" onclick="saveEditDelivery()">💾 Kaydet</button>
-      <button class="btn btn-secondary" onclick="closeModal('editDeliveryModal')">İptal</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-ov" id="confirmDeleteDeliveryModal">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-title">🗑️ Teslim Kaydını Sil</div>
-    <div class="modal-close" onclick="closeModal('confirmDeleteDeliveryModal')">✕</div>
-    <input type="hidden" id="del-delivery-id">
-    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:var(--r-sm);padding:16px;margin-bottom:20px">
-      <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Silinecek teslim kaydı:</div>
-      <div id="del-delivery-info" style="font-weight:600;font-size:14px"></div>
-      <div style="margin-top:10px;font-size:12px;color:var(--red)">⚠️ Bu işlem geri alınamaz.</div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-danger" id="confirmDeleteDeliveryBtn" onclick="executeDeleteDelivery()">🗑️ Evet, Sil</button>
-      <button class="btn btn-secondary" onclick="closeModal('confirmDeleteDeliveryModal')">İptal</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-ov" id="editSchoolModal">
   <div class="modal">
     <div class="modal-title">✏️ Okul Bilgilerini Düzenle</div>
@@ -537,6 +477,66 @@ tr:hover td{background:rgba(255,255,255,.018)}
   </div>
 </div>
 
+
+<div class="modal-ov" id="deliverySelectModal">
+  <div class="modal">
+    <div class="modal-title">📦 Teslim Edilecek Kaydı Seç</div>
+    <div class="modal-close" onclick="closeModal('deliverySelectModal')">✕</div>
+    <div id="deliverySelectList" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<div class="modal-ov" id="editDeliveryModal">
+  <div class="modal">
+    <div class="modal-title">✏️ Teslim Kaydını Düzenle</div>
+    <div class="modal-close" onclick="closeModal('editDeliveryModal')">✕</div>
+    <input type="hidden" id="ed-delivery-id">
+    <div id="ed-delivery-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:18px;font-size:13px;color:var(--text2)"></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Teslim Edilen Adet *</label>
+        <div class="adet-wrap">
+          <button class="adet-btn" onclick="edChangeAdet(-1)">−</button>
+          <input type="number" class="adet-num" id="ed-teslim-adet" value="1" min="1">
+          <button class="adet-btn" onclick="edChangeAdet(1)">+</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Teslim Eden Personel *</label>
+        <div class="sd-wrap">
+          <input type="text" id="ed-personel" placeholder="Personel seç..." autocomplete="off" oninput="sdFilter('ed-p')" onfocus="sdOpen('ed-p')" onblur="sdBlur('ed-p')">
+          <div class="sd-list" id="sd-ed-p"></div>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>Not</label>
+        <textarea id="ed-not" placeholder="Teslim notu..." style="min-height:60px"></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="editDeliveryBtn" onclick="saveEditDelivery()">💾 Kaydet</button>
+      <button class="btn btn-secondary" onclick="closeModal('editDeliveryModal')">İptal</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="confirmDeleteDeliveryModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">🗑️ Teslim Kaydını Sil</div>
+    <div class="modal-close" onclick="closeModal('confirmDeleteDeliveryModal')">✕</div>
+    <input type="hidden" id="del-delivery-id">
+    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:var(--r-sm);padding:16px;margin-bottom:20px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Silinecek teslim kaydı:</div>
+      <div id="del-delivery-info" style="font-weight:600;font-size:14px"></div>
+      <div style="margin-top:10px;font-size:12px;color:var(--red)">⚠️ Bu işlem geri alınamaz.</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-danger" id="confirmDeleteDeliveryBtn" onclick="executeDeleteDelivery()">🗑️ Evet, Sil</button>
+      <button class="btn btn-secondary" onclick="closeModal('confirmDeleteDeliveryModal')">İptal</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <!-- KAYIT DÜZENLE MODAL -->
@@ -550,9 +550,9 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div class="form-group">
         <label>Faz *</label>
         <div class="faz-toggle">
-          <button type="button" class="faz-btn" id="er-faz1" onclick="erPickFaz(event, 1)">FAZ 1</button>
-          <button type="button" class="faz-btn" id="er-faz2" onclick="erPickFaz(event, 2)">FAZ 2</button>
-          <button type="button" class="faz-btn" id="er-faz3" onclick="erPickFaz(event, 3)">FAZ 3</button>
+          <button class="faz-btn" id="er-faz1" onclick="erPickFaz(1)">FAZ 1</button>
+          <button class="faz-btn" id="er-faz2" onclick="erPickFaz(2)">FAZ 2</button>
+          <button class="faz-btn" id="er-faz3" onclick="erPickFaz(3)">FAZ 3</button>
         </div>
       </div>
       <div class="form-group">
@@ -566,8 +566,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div class="form-group">
         <label>Kaynak *</label>
         <div class="faz-toggle">
-          <button type="button" class="faz-btn" id="er-kaynak-sinif" onclick="erPickKaynak(event, 'sinif')" style="font-size:11px">🏫 SINIFTAN</button>
-          <button type="button" class="faz-btn" id="er-kaynak-yedek" onclick="erPickKaynak(event, 'yedek')" style="font-size:11px">📦 YEDEK</button>
+          <button class="faz-btn" id="er-kaynak-sinif" onclick="erPickKaynak('sinif')" style="font-size:11px">🏫 SINIFTAN</button>
+          <button class="faz-btn" id="er-kaynak-yedek" onclick="erPickKaynak('yedek')" style="font-size:11px">📦 YEDEK</button>
         </div>
       </div>
       <div class="form-group">
@@ -632,7 +632,6 @@ const S = {
 const qs = s => document.querySelector(s);
 const qsa = s => [...document.querySelectorAll(s)];
 const pageIs = id => qs("#page-"+id)?.classList.contains("active");
-const stopEvt = e => { if (e) { e.preventDefault(); e.stopPropagation(); } return false; };
 const h = v => String(v ?? "").replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const isFresh = key => (Date.now() - (S.cacheAt[key] || 0)) < CACHE_TTL[key];
 const markFresh = key => { S.cacheAt[key] = Date.now(); };
@@ -690,20 +689,51 @@ function apiPost(body){
 }
 
 function calcRemaining(record) {
-  const adet = Number(record?.adet || 0);
-  const toplamTeslim = Number(record?.toplam_teslim || 0);
-  const durum = String(record?.durum || 'bekliyor');
-  const rawKalan = Number(record?.kalan_adet);
-  const fallback = Math.max(0, adet - toplamTeslim);
+  const adet = Math.max(0, Number(record?.adet || 0));
+  const toplamTeslim = Math.max(0, Number(record?.toplam_teslim || 0));
+  return Math.max(0, adet - Math.min(adet, toplamTeslim));
+}
 
-  if (durum === 'teslim') return 0;
-
-  // Teslim bilgisi varsa kalan hesabında her zaman adet - toplam_teslim esas alınmalı.
-  // Eski kalan_adet değeri burada öncelikli olursa UI teslim sonrası düşmeyebilir.
-  if (toplamTeslim > 0) return fallback;
-
-  if (!Number.isFinite(rawKalan)) return fallback;
-  return Math.max(0, rawKalan);
+function normText(v){
+  return String(v ?? "").trim().toLocaleLowerCase("tr-TR");
+}
+function schoolKeyFromSchool(s){
+  return [normText(s?.city), normText(s?.district), normText(s?.school_name), normText(s?.kurum_kodu)].join("|");
+}
+function schoolKeyFromRecord(r){
+  return [normText(r?.city), normText(r?.district), normText(r?.school_name), normText(r?.kurum_kodu)].join("|");
+}
+function schoolMatchesRecord(school, record){
+  if (!school || !record) return false;
+  const sid = String(school.school_id || "").trim();
+  const rid = String(record.school_id || "").trim();
+  if (sid && rid && sid === rid) return true;
+  return schoolKeyFromSchool(school) === schoolKeyFromRecord(record);
+}
+function getMatchingRecordsForSchool(school){
+  return S.records.filter(r => schoolMatchesRecord(school, r));
+}
+function getMatchingDeliveriesForSchool(school, recs){
+  const matchedRecords = recs || getMatchingRecordsForSchool(school);
+  const recordIds = new Set(matchedRecords.map(r => String(r.record_id)));
+  return S.deliveries.filter(d => recordIds.has(String(d.record_id)));
+}
+function getSchoolAggregate(school){
+  const recs = getMatchingRecordsForSchool(school);
+  const alinan = recs.reduce((s,r)=>s + Number(r.adet || 0), 0);
+  const teslimAdet = recs.reduce((s,r)=>s + Number(r.toplam_teslim || 0), 0);
+  const kalan = recs.reduce((s,r)=>s + calcRemaining(r), 0);
+  const bekleyen = recs.filter(r => calcRemaining(r) > 0).length;
+  return { alinan, teslimAdet, kalan, bekleyen, recs };
+}
+function formatTarih(value){
+  if (!value) return "-";
+  const d = parseTRDate(value);
+  if (!d) return String(value);
+  return d.toLocaleString("tr-TR", {
+    day:"2-digit", month:"2-digit", year:"numeric",
+    hour:"2-digit", minute:"2-digit"
+  });
 }
 
 function parseTRDate(value){
@@ -712,19 +742,6 @@ function parseTRDate(value){
   if(m) return new Date(Number(m[3]), Number(m[2])-1, Number(m[1]), Number(m[4]||0), Number(m[5]||0), Number(m[6]||0));
   const d=new Date(s);
   return Number.isNaN(d.getTime())?null:d;
-}
-
-function formatTarih(value){
-  if (value == null || value === "") return "—";
-  const d = parseTRDate(value);
-  if (!d) return h(String(value));
-  return d.toLocaleString("tr-TR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
 }
 function isSameDay(a,b){
   return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
@@ -743,26 +760,27 @@ function rebuildDerived() {
 
   for (const r of S.records) {
     const schoolId = String(r.school_id ?? '');
+    const schoolKey = schoolKeyFromRecord(r);
     const city = r.city || '';
     const adet = Number(r.adet || 0);
     const toplamTeslim = Number(r.toplam_teslim || 0);
     const kalan = calcRemaining(r);
-    const isBekleyen = (r.durum || 'bekliyor') !== 'teslim' && kalan > 0;
+    const isBekleyen = kalan > 0;
     const dt = parseTRDate(r.tarih);
 
-    if (!schoolStats[schoolId]) schoolStats[schoolId] = { bekleyen:0, toplam:0, alinan:0, teslimAdet:0, kalan:0 };
-    schoolStats[schoolId].toplam += 1;
-    schoolStats[schoolId].alinan += Number(r.adet || 0);
-    schoolStats[schoolId].teslimAdet += Number(r.toplam_teslim || 0);
-    schoolStats[schoolId].kalan += calcRemaining(r);
-    if (isBekleyen) schoolStats[schoolId].bekleyen += 1;
+    if (!schoolStats[schoolKey]) schoolStats[schoolKey] = { bekleyen:0, toplam:0, alinan:0, teslimAdet:0, kalan:0, school_id: schoolId };
+    schoolStats[schoolKey].toplam += 1;
+    schoolStats[schoolKey].alinan += adet;
+    schoolStats[schoolKey].teslimAdet += toplamTeslim;
+    schoolStats[schoolKey].kalan += kalan;
+    if (isBekleyen) schoolStats[schoolKey].bekleyen += 1;
 
     if (cityAgg[city]) {
       cityAgg[city].kayit += 1;
-      if ((r.durum || 'bekliyor') === 'teslim') cityAgg[city].teslimKayit += 1;
+      if (kalan === 0) cityAgg[city].teslimKayit += 1;
       if (isBekleyen) {
         cityAgg[city].bekleyenOps += kalan;
-        cityAgg[city].borcluOkul.add(schoolId);
+        cityAgg[city].borcluOkul.add(schoolKey);
       }
     }
 
@@ -770,7 +788,7 @@ function rebuildDerived() {
 
     if (isBekleyen) {
       openRecords += 1;
-      borcluSet.add(schoolId);
+      borcluSet.add(schoolKey);
       const faz = String(r.faz || '');
       if (faz === '1') faz1 += kalan;
       else if (faz === '2') faz2 += kalan;
@@ -884,7 +902,7 @@ function buildCityTabs(targetId, clickFnName, selectedValue) {
   const cities = ["all", ...CITIES];
   root.innerHTML = cities.map(c => {
     const label = c === "all" ? "Tümü" : c;
-    return `<div class="city-tab ${selectedValue===c ? 'active' : ''}" data-city="${h(c)}" onclick="${clickFnName}(event, this, ${sq(c)})">${h(label)}</div>`;
+    return `<div class="city-tab ${selectedValue===c ? 'active' : ''}" data-city="${h(c)}" onclick="${clickFnName}(this, ${sq(c)})">${h(label)}</div>`;
   }).join("");
 }
 
@@ -925,14 +943,14 @@ function sdFilter(ns) {
   if (ns === "personel" || ns === "teslim-p" || ns === "er-p" || ns === "ed-p") {
     const items = S.personnelList.filter(p => String(p.isim || "").toLowerCase().includes(q));
     list.innerHTML = items.length
-      ? items.map(p => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, ${sq(ns)}, ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
+      ? items.map(p => `<div class="sd-item" onclick="sdPick(${sq(ns)}, ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
       : `<div class="sd-empty">Personel bulunamadı</div>`;
     return;
   }
   if (ns === "sehir") {
     const items = CITIES.filter(c => c.toLowerCase().includes(q));
     list.innerHTML = items.length
-      ? items.map(c => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, 'sehir', ${sq(c)})">${h(c)}</div>`).join("")
+      ? items.map(c => `<div class="sd-item" onclick="sdPick('sehir', ${sq(c)})">${h(c)}</div>`).join("")
       : `<div class="sd-empty">Sonuç yok</div>`;
     return;
   }
@@ -940,7 +958,7 @@ function sdFilter(ns) {
     if (!S.selSehir) { list.innerHTML = `<div class="sd-empty">Önce şehir seçin</div>`; return; }
     const items = (DISTRICTS[S.selSehir] || []).filter(d => d.toLowerCase().includes(q));
     list.innerHTML = items.length
-      ? items.map(d => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, 'ilce', ${sq(d)})">${h(d)}</div>`).join("")
+      ? items.map(d => `<div class="sd-item" onclick="sdPick('ilce', ${sq(d)})">${h(d)}</div>`).join("")
       : `<div class="sd-empty">Sonuç yok</div>`;
     return;
   }
@@ -951,16 +969,15 @@ function sdFilter(ns) {
       s.district === S.selIlce &&
       String(s.school_name || "").toLowerCase().includes(q)
     );
-    let html = matches.map(s => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPickOkul(event, ${sq(s.school_id)})">${h(s.school_name)}${s.kurum_kodu ? ` <span style="color:var(--text3);font-size:11px">(${h(s.kurum_kodu)})</span>` : ""}</div>`).join("");
+    let html = matches.map(s => `<div class="sd-item" onclick="sdPickOkul(${sq(s.school_id)})">${h(s.school_name)}${s.kurum_kodu ? ` <span style="color:var(--text3);font-size:11px">(${h(s.kurum_kodu)})</span>` : ""}</div>`).join("");
     const typed = inp.value.trim();
     if (typed && !matches.some(s => String(s.school_name || "").toLowerCase() === typed.toLowerCase())) {
-      html += `<div class="sd-item new-item" onmousedown="return false" ontouchstart="return false" onclick="sdPickOkulNew(event)">+ "${h(typed)}" olarak ekle</div>`;
+      html += `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ "${h(typed)}" olarak ekle</div>`;
     }
-    list.innerHTML = html || `<div class="sd-item new-item" onmousedown="return false" ontouchstart="return false" onclick="sdPickOkulNew(event)">+ Yeni okul ekle</div>`;
+    list.innerHTML = html || `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ Yeni okul ekle</div>`;
   }
 }
-function sdPick(e, ns, val) {
-  stopEvt(e);
+function sdPick(ns, val) {
   const inp = ns==="teslim-p" ? qs("#teslim-personel") : ns==="er-p" ? qs("#er-personel") : ns==="ed-p" ? qs("#ed-personel") : qs("#inp-"+ns);
   if (inp) inp.value = val;
   qs("#sd-"+ns)?.classList.remove("open");
@@ -982,8 +999,7 @@ function sdPick(e, ns, val) {
     qs("#inp-kurum").value = "";
   }
 }
-function sdPickOkul(e, id) {
-  stopEvt(e);
+function sdPickOkul(id) {
   const school = S.schools.find(s => String(s.school_id) === String(id));
   if (!school) return;
   S.selOkul = school;
@@ -992,8 +1008,7 @@ function sdPickOkul(e, id) {
   qs("#sd-okul")?.classList.remove("open");
   qs("#sd-okul")?.closest(".form-group")?.classList.remove("dropdown-open");
 }
-function sdPickOkulNew(e) {
-  stopEvt(e);
+function sdPickOkulNew() {
   const name = qs("#inp-okul").value.trim();
   if (!name) return toast("Okul adı girin", "error");
   S.selOkul = { school_id:null, school_name:name, kurum_kodu:qs("#inp-kurum").value.trim(), city:S.selSehir, district:S.selIlce };
@@ -1001,8 +1016,7 @@ function sdPickOkulNew(e) {
   qs("#sd-okul")?.closest(".form-group")?.classList.remove("dropdown-open");
 }
 
-function pickFaz(e, n) {
-  stopEvt(e);
+function pickFaz(n) {
   S.selFaz = n;
   [1,2,3].forEach(i => {
     const b = qs("#faz"+i);
@@ -1011,8 +1025,7 @@ function pickFaz(e, n) {
     if (i === n) b.classList.add("a"+n);
   });
 }
-function pickKaynak(e, k) {
-  stopEvt(e);
+function pickKaynak(k) {
   S.selKaynak = k;
   const sinif = qs("#kaynak-sinif"), yedek = qs("#kaynak-yedek");
   if (!sinif || !yedek) return;
@@ -1029,76 +1042,17 @@ function changeTeslimAdet(d) {
   const inp = qs("#teslim-adet");
   inp.value = Math.max(1, Math.min(parseInt(inp.max,10) || 99, (parseInt(inp.value,10) || 1) + d));
 }
-function edChangeAdet(d) {
-  const inp = qs("#ed-adet");
-  inp.value = Math.max(1, Math.min(parseInt(inp.max,10) || 99, (parseInt(inp.value,10) || 1) + d));
-}
-function getPendingRecordsForSchool(sid) {
-  return S.records
-    .filter(r => String(r.school_id || '').trim() === String(sid).trim())
-    .filter(r => calcRemaining(r) > 0 && String(r.durum || '') !== 'teslim')
-    .sort((a,b) => (parseTRDate(b.tarih)?.getTime() || 0) - (parseTRDate(a.tarih)?.getTime() || 0));
-}
-function recomputeRecordDeliveryFromLocal(recordId) {
-  const rec = S.records.find(r => String(r.record_id) === String(recordId));
-  if (!rec) return;
-  const total = S.deliveries
-    .filter(d => String(d.record_id) === String(recordId))
-    .reduce((sum, d) => sum + Number(d.teslim_adet || 0), 0);
-  rec.toplam_teslim = total;
-  rec.kalan_adet = Math.max(0, Number(rec.adet || 0) - total);
-  rec.durum = rec.kalan_adet === 0 ? 'teslim' : total > 0 ? 'kismi' : 'bekliyor';
-}
-function openSchoolDetailAfterRender(sid) {
-  setTimeout(() => {
-    const detail = qs("#scd-" + String(sid));
-    if (detail && !detail.classList.contains("open")) toggleSchoolDetail(String(sid));
-  }, 0);
-}
-function refreshDeliveryUIForRecord(recordId) {
-  const rec = S.records.find(r => String(r.record_id) === String(recordId));
-  if (!rec) return;
-  recomputeRecordDeliveryFromLocal(recordId);
-  S.derived = null;
-  rebuildDerived();
-  if (pageIs('dashboard')) renderDashboard();
-  if (pageIs('okullar')) { renderOkullar(); openSchoolDetailAfterRender(rec.school_id); }
-  if (pageIs('kayitlar')) renderKayitlar();
-}
-function openSchoolTeslimPicker(sid) {
-  const pending = getPendingRecordsForSchool(sid);
-  if (!pending.length) return toast('Bu okul için teslim bekleyen kayıt yok', 'info');
-  if (pending.length === 1) return openTeslimModal(pending[0].record_id);
-  const root = qs('#schoolTeslimPickerList');
-  root.innerHTML = pending.map(r => `
-    <div class="school-card" onclick="pickSchoolTeslim(${sq(r.record_id)})">
-      <div class="sc-icon">📥</div>
-      <div class="sc-info">
-        <div class="sc-name">FAZ ${h(r.faz)} · ${kaynakText(r.kaynak)} · Kalan ${calcRemaining(r)}</div>
-        <div class="sc-meta">${h(r.personel || '-')} · ${h(formatTarih(r.tarih))}${r.notlar ? ` · ${h(r.notlar)}` : ''}</div>
-      </div>
-      <span class="badge b-done">Seç</span>
-    </div>
-  `).join('');
-  openModal('schoolTeslimPickerModal');
-}
-function pickSchoolTeslim(recordId) {
-  closeModal('schoolTeslimPickerModal');
-  openTeslimModal(recordId);
-}
-function kaynakText(k) {
-  if (k === 'sinif') return 'Sınıf';
-  if (k === 'yedek') return 'Yedek';
-  return '-';
-}
 
 function fillPersonnelDropdowns() {
   const items = S.personnelList.length
-    ? S.personnelList.map(p => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, 'personel', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
+    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('personel', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
     : `<div class="sd-empty">Önce personel ekleyin</div>`;
   if (qs("#sd-personel")) qs("#sd-personel").innerHTML = items;
   if (qs("#sd-teslim-p")) qs("#sd-teslim-p").innerHTML = S.personnelList.length
-    ? S.personnelList.map(p => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, 'teslim-p', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
+    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('teslim-p', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
+    : `<div class="sd-empty">Personel yok</div>`;
+  if (qs("#sd-ed-p")) qs("#sd-ed-p").innerHTML = S.personnelList.length
+    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('ed-p', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
     : `<div class="sd-empty">Personel yok</div>`;
   if (S.personnel && qs("#inp-personel")) qs("#inp-personel").value = S.personnel;
 }
@@ -1173,8 +1127,7 @@ async function loadOkullar(force = false) {
     hideLoader();
   }
 }
-function setOkulCity(e, el, c) {
-  stopEvt(e);
+function setOkulCity(el, c) {
   S.okulCity = c;
   qsa("#okulCityTabs .city-tab").forEach(t => t.classList.remove("active"));
   el.classList.add("active");
@@ -1198,19 +1151,17 @@ function renderOkullar() {
     return;
   }
 
-  const schoolStats = (S.derived || {}).schoolStats || {};
-
   // Ops borcu olanlar üste, sonra alfabe
   schools.sort((a, b) => {
-    const sa = schoolStats[String(a.school_id)] || {};
-    const sb = schoolStats[String(b.school_id)] || {};
+    const sa = getSchoolAggregate(a);
+    const sb = getSchoolAggregate(b);
     const ka = sa.kalan || 0, kb = sb.kalan || 0;
     if (kb !== ka) return kb - ka; // borcu fazla olan üste
     return (a.school_name||"").localeCompare(b.school_name||"", "tr");
   });
 
   root.innerHTML = schools.map(s => {
-    const st = schoolStats[String(s.school_id)] || {alinan:0, teslimAdet:0, kalan:0, bekleyen:0};
+    const st = getSchoolAggregate(s);
     const hasBorç = st.kalan > 0;
     return `<div class="school-card ${hasBorç ? "school-card-borç" : "school-card-clean"}" id="sc-${s.school_id}" data-sid="${s.school_id}" onclick="handleSchoolClick(event)">
       <div class="sc-icon">${hasBorç ? "🏫" : "✅"}</div>
@@ -1263,28 +1214,19 @@ function toggleSchoolDetail(sid) {
   arr.textContent = "⌄";
 
   const school = S.schools.find(s => String(s.school_id) === sid);
-  const pendingCount = getPendingRecordsForSchool(sid).length;
+  const recs = school ? getMatchingRecordsForSchool(school) : S.records.filter(r => String(r.school_id || '').trim() === sid.trim());
+  const deliveries = school ? getMatchingDeliveriesForSchool(school, recs) : S.deliveries.filter(d => String(d.school_id || '').trim() === sid.trim());
+  const openRecs = recs.filter(r => calcRemaining(r) > 0);
   const schoolInfo = `<div class="school-detail-header">
     <div class="sdh-info">${h(school?.school_name||"")} <span style="color:var(--text3)">·</span> ${h(school?.city||"")} / ${h(school?.district||"")}${school?.kurum_kodu ? ` <span style="color:var(--text3)">·</span> Kod: ${h(school.kurum_kodu)}` : ""}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      ${pendingCount ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openSchoolTeslimPicker(${sq(sid)})">📦 Teslim Et</button>` : ''}
+      ${openRecs.length ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openSchoolTeslimSelector(${sq(sid)})">📦 Teslim Et</button>` : ``}
       <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditSchoolModal(${sq(sid)})">✏️ Düzenle</button>
     </div>
   </div>`;
 
   // Önce header'ı yaz, sonra timeline'ı render et
   detail.innerHTML = schoolInfo;
-
-  // school_id ile eşleştir; eşleşme yoksa school_name ile dene
-  let recs = S.records.filter(r => String(r.school_id || '').trim() === sid.trim());
-  if (!recs.length && school) {
-    recs = S.records.filter(r =>
-      String(r.school_name || '').trim().toLowerCase() === String(school.school_name || '').trim().toLowerCase() &&
-      String(r.city || '') === String(school.city || '') &&
-      String(r.district || '') === String(school.district || '')
-    );
-  }
-  const deliveries = S.deliveries.filter(d => String(d.school_id || '').trim() === sid.trim());
 
   // Hata ayıklama: hiç kayıt yoksa bilgi göster
   if (!recs.length) {
@@ -1347,9 +1289,9 @@ function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
 
   const rows = events.map(ev => {
     if (ev.type === 'alim') {
-      const kalanStr = ev.kalan < Number(ev.adet)
-        ? `<span style="font-weight:700">${ev.kalan}</span><span style="color:var(--text3);font-size:11px"> /${ev.adet}</span>`
-        : `<span style="font-weight:700">${ev.adet}</span>`;
+      const teslimBilgi = Number(ev.kalan) < Number(ev.adet)
+        ? `<span class="tl-adet"><span style="font-weight:700">${h(ev.kalan)}</span><span style="color:var(--text3);font-size:11px"> /${h(ev.adet)}</span></span>`
+        : `<span class="tl-adet"><span style="font-weight:700">${h(ev.adet)}</span></span>`;
       return `<div class="tl-event tl-alim">
         <div class="tl-icon">📥</div>
         <div class="tl-body">
@@ -1357,7 +1299,7 @@ function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
             <span class="tl-type-label alim-label">ALIM</span>
             <span class="badge b-f${h(ev.faz)}">FAZ ${h(ev.faz)}</span>
             ${kaynakBadge(ev.kaynak)}
-            <span class="tl-adet">${kalanStr}</span>
+            ${teslimBilgi}
           </div>
           <div class="tl-row-bot">
             <span>👤 ${h(ev.personel)}</span>
@@ -1404,8 +1346,7 @@ function kaynakBadge(k) {
 function loadKayitlarPage(force = false) {
   loadRecords(force).then(() => renderKayitlar()).catch(e => toast("Kayıtlar yüklenemedi: " + e.message, "error"));
 }
-function setRecCity(e, el, c) {
-  stopEvt(e);
+function setRecCity(el, c) {
   S.recCity = c;
   qsa("#recCityTabs .city-tab").forEach(t => t.classList.remove("active"));
   el.classList.add("active");
@@ -1438,7 +1379,7 @@ function renderKayitlar() {
     <td>${durumBadge(r.durum)}</td>
     <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
     <td style="white-space:nowrap">
-      ${(calcRemaining(r) > 0 && r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal(${sq(r.record_id)})">📦</button> ` : `<span style="color:var(--green);font-size:12px">✓ </span>`}
+      ${(r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal(${sq(r.record_id)})">📦</button> ` : `<span style="color:var(--green);font-size:12px">✓ </span>`}
       <button class="btn btn-secondary btn-sm" onclick="openEditRecordModal(${sq(r.record_id)})">✏️</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDeleteRecord(${sq(r.record_id)}, ${sq(r.school_name)})">🗑️</button>
     </td>
@@ -1549,15 +1490,11 @@ function resetKayitForm() {
 function openTeslimModal(recordId) {
   const rec = S.records.find(r => String(r.record_id) === String(recordId));
   if (!rec) return;
-  const remaining = calcRemaining(rec);
-  if (remaining <= 0 || String(rec.durum || "") === "teslim") {
-    toast("Bu kayıt tamamen teslim edilmiş.", "info");
-    return;
-  }
+  if (calcRemaining(rec) <= 0) return toast("Bu kayıt tamamen teslim edilmiş.", "info");
   S.teslimRec = rec;
   qs("#teslimInfo").innerHTML = `<div><strong>${h(rec.school_name)}</strong></div><div style="margin-top:6px;color:var(--text2)">Faz ${h(rec.faz)} · ${h(rec.adet)} adet · ${h(rec.tarih)}</div>`;
   qs("#teslim-adet").value = 1;
-  qs("#teslim-adet").max = String(Math.max(1, remaining || Number(rec.adet) || 1));
+  qs("#teslim-adet").max = String(Math.max(1, calcRemaining(rec) || Number(rec.adet) || 1));
   qs("#teslim-personel").value = S.personnel || "";
   fillPersonnelDropdowns();
   qs("#teslim-not").value = "";
@@ -1571,10 +1508,7 @@ async function submitTeslim() {
     const teslim_adet = parseInt(qs("#teslim-adet").value, 10) || 1;
     const personel = qs("#teslim-personel").value.trim();
     const notlar = qs("#teslim-not").value.trim();
-    const remaining = calcRemaining(rec);
     if (!personel) throw new Error("Personel seçin");
-    if (remaining <= 0) throw new Error("Bu kayıt tamamen teslim edilmiş.");
-    if (teslim_adet > remaining) throw new Error(`En fazla ${remaining} adet teslim edebilirsiniz`);
 
     btn.disabled = true; btn.textContent = "Kaydediliyor...";
     const res = await apiPost({
@@ -1587,9 +1521,8 @@ async function submitTeslim() {
       notlar
     });
 
-    const yeniToplamTeslim = Number(res.data?.toplamTeslim || 0);
-    rec.toplam_teslim = yeniToplamTeslim;
-    rec.kalan_adet = Math.max(0, Number(rec.adet || 0) - yeniToplamTeslim);
+    rec.toplam_teslim = Number(res.data?.toplamTeslim || 0);
+    rec.kalan_adet = Math.max(0, Number(rec.adet || 0) - rec.toplam_teslim);
     rec.durum = res.data?.yeniDurum || (rec.kalan_adet > 0 ? "kismi" : "teslim");
 
     // Yeni teslim kaydını local S.deliveries'e ekle — refresh olmadan anında görünsün
@@ -1619,96 +1552,6 @@ async function submitTeslim() {
   } finally {
     btn.disabled = false;
     btn.textContent = "✅ Teslimi Onayla";
-  }
-}
-
-function openEditDeliveryModal(deliveryId) {
-  const d = S.deliveries.find(x => String(x.delivery_id) === String(deliveryId));
-  if (!d) return toast('Teslim kaydı bulunamadı', 'error');
-  const rec = S.records.find(r => String(r.record_id) === String(d.record_id));
-  const otherTotal = S.deliveries
-    .filter(x => String(x.record_id) === String(d.record_id) && String(x.delivery_id) !== String(d.delivery_id))
-    .reduce((sum, x) => sum + Number(x.teslim_adet || 0), 0);
-  const safeMax = Math.max(1, Number(rec?.adet || 0) - otherTotal);
-
-  qs('#ed-delivery-id').value = d.delivery_id;
-  qs('#ed-record-id').value = d.record_id || '';
-  qs('#ed-delivery-info').innerHTML = `<strong>${h(d.school_name || rec?.school_name || '-')}</strong> · Mevcut teslim: ${h(d.teslim_adet)} adet`;
-  qs('#ed-adet').value = d.teslim_adet || 1;
-  qs('#ed-adet').max = String(safeMax);
-  qs('#ed-personel').value = d.personel || S.personnel || '';
-  qs('#ed-not').value = d.notlar || '';
-  fillPersonnelDropdowns();
-  openModal('editDeliveryModal');
-}
-async function saveEditDelivery() {
-  const btn = qs('#editDeliveryBtn');
-  try {
-    const delivery_id = qs('#ed-delivery-id').value;
-    const record_id = qs('#ed-record-id').value;
-    const teslim_adet = parseInt(qs('#ed-adet').value, 10) || 1;
-    const personel = qs('#ed-personel').value.trim();
-    const notlar = qs('#ed-not').value.trim();
-    const maxAllowed = parseInt(qs('#ed-adet').max, 10) || 1;
-    if (!personel) throw new Error('Personel seçin');
-    if (teslim_adet > maxAllowed) throw new Error(`En fazla ${maxAllowed} adet girebilirsiniz`);
-
-    btn.disabled = true; btn.textContent = 'Kaydediliyor...';
-    const res = await apiPost({ action:'updateDelivery', delivery_id, record_id, teslim_adet, personel, notlar });
-
-    const d = S.deliveries.find(x => String(x.delivery_id) === String(delivery_id));
-    if (d) {
-      d.teslim_adet = teslim_adet;
-      d.personel = personel;
-      d.notlar = notlar;
-    }
-    const rec = S.records.find(r => String(r.record_id) === String(record_id));
-    if (rec && res?.data) {
-      rec.toplam_teslim = Number(res.data.toplamTeslim || 0);
-      rec.kalan_adet = Number(res.data.kalan_adet ?? Math.max(0, Number(rec.adet || 0) - Number(res.data.toplamTeslim || 0)));
-      rec.durum = res.data.yeniDurum || (rec.kalan_adet === 0 ? 'teslim' : rec.toplam_teslim > 0 ? 'kismi' : 'bekliyor');
-    }
-
-    closeModal('editDeliveryModal');
-    refreshDeliveryUIForRecord(record_id);
-    toast('Teslim kaydı güncellendi', 'success');
-  } catch (e) {
-    toast('Teslim kaydı güncellenemedi: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '💾 Kaydet';
-  }
-}
-function confirmDeleteDelivery(deliveryId) {
-  const d = S.deliveries.find(x => String(x.delivery_id) === String(deliveryId));
-  if (!d) return toast('Teslim kaydı bulunamadı', 'error');
-  qs('#del-delivery-id').value = d.delivery_id;
-  qs('#del-delivery-info').innerHTML = `${h(d.school_name || '-')} · ${h(d.teslim_adet)} adet · ${h(formatTarih(d.tarih))}`;
-  openModal('confirmDeleteDeliveryModal');
-}
-async function executeDeleteDelivery() {
-  const btn = qs('#confirmDeleteDeliveryBtn');
-  try {
-    const delivery_id = qs('#del-delivery-id').value;
-    const d = S.deliveries.find(x => String(x.delivery_id) === String(delivery_id));
-    if (!d) throw new Error('Teslim kaydı bulunamadı');
-    btn.disabled = true; btn.textContent = 'Siliniyor...';
-    const res = await apiPost({ action:'deleteDelivery', delivery_id, record_id: d.record_id });
-    S.deliveries = S.deliveries.filter(x => String(x.delivery_id) !== String(delivery_id));
-
-    const rec = S.records.find(r => String(r.record_id) === String(d.record_id));
-    if (rec && res?.data) {
-      rec.toplam_teslim = Number(res.data.toplamTeslim || 0);
-      rec.kalan_adet = Number(res.data.kalan_adet ?? Math.max(0, Number(rec.adet || 0) - Number(res.data.toplamTeslim || 0)));
-      rec.durum = res.data.yeniDurum || (rec.kalan_adet === 0 ? 'teslim' : rec.toplam_teslim > 0 ? 'kismi' : 'bekliyor');
-    }
-
-    closeModal('confirmDeleteDeliveryModal');
-    refreshDeliveryUIForRecord(d.record_id);
-    toast('Teslim kaydı silindi', 'success');
-  } catch (e) {
-    toast('Teslim kaydı silinemedi: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '🗑️ Evet, Sil';
   }
 }
 
@@ -1832,12 +1675,11 @@ function openEditRecordModal(recordId) {
   else if (erKaynak === "yedek") { yedek.style.borderColor="var(--orange)"; yedek.style.background="rgba(245,158,11,.14)"; yedek.style.color="var(--orange)"; }
 
   qs("#sd-er-p").innerHTML = S.personnelList.length
-    ? S.personnelList.map(p => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, 'er-p', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
+    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('er-p', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
     : `<div class="sd-empty">Personel yok</div>`;
   openModal("editRecordModal");
 }
-function erPickFaz(e, n) {
-  stopEvt(e);
+function erPickFaz(n) {
   erFaz = n;
   [1,2,3].forEach(i => {
     const b = qs("#er-faz"+i);
@@ -1845,8 +1687,7 @@ function erPickFaz(e, n) {
     if (i === n) b.classList.add("a"+n);
   });
 }
-function erPickKaynak(e, k) {
-  stopEvt(e);
+function erPickKaynak(k) {
   erKaynak = k;
   const sinif = qs("#er-kaynak-sinif"), yedek = qs("#er-kaynak-yedek");
   sinif.className = "faz-btn"; sinif.removeAttribute("style");
@@ -1921,7 +1762,7 @@ async function executeDeleteRecord() {
     closeModal("confirmDeleteModal");
     if (pageIs("kayitlar")) renderKayitlar();
     if (pageIs("dashboard")) renderDashboard();
-    if (pageIs("okullar")) { renderOkullar(); }
+    if (pageIs("okullar")) { renderOkullar(); if (rec) refreshSchoolDetail(rec.school_id); }
     toast("Kayıt silindi", "success");
   } catch (e) {
     toast("Hata: " + e.message, "error");
@@ -1930,6 +1771,135 @@ async function executeDeleteRecord() {
     btn.textContent = "🗑️ Evet, Sil";
   }
 }
+
+
+function openSchoolTeslimSelector(sid) {
+  const school = S.schools.find(s => String(s.school_id) === String(sid));
+  if (!school) return;
+  const recs = getMatchingRecordsForSchool(school).filter(r => calcRemaining(r) > 0);
+  if (!recs.length) return toast("Bu okul için açık teslim kaydı yok.", "info");
+  if (recs.length === 1) return openTeslimModal(recs[0].record_id);
+
+  const root = qs("#deliverySelectList");
+  root.innerHTML = recs.map(r => `
+    <button class="school-card" style="width:100%;text-align:left" onclick="closeModal('deliverySelectModal');openTeslimModal(${sq(r.record_id)})">
+      <div class="sc-icon">📥</div>
+      <div class="sc-info">
+        <div class="sc-name">FAZ ${h(r.faz)} · ${h(r.kaynak === 'sinif' ? 'Sınıf' : 'Yedek')}</div>
+        <div class="sc-meta">${h(r.personel)} · ${formatTarih(r.tarih)} · Kalan ${calcRemaining(r)} / ${h(r.adet)}</div>
+      </div>
+    </button>
+  `).join("");
+  openModal("deliverySelectModal");
+}
+
+let activeDelivery = null;
+
+function edChangeAdet(d) {
+  const inp = qs("#ed-teslim-adet");
+  inp.value = Math.max(1, Math.min(parseInt(inp.max,10) || 999, (parseInt(inp.value,10) || 1) + d));
+}
+function openEditDeliveryModal(deliveryId) {
+  const del = S.deliveries.find(d => String(d.delivery_id) === String(deliveryId));
+  if (!del) return toast("Teslim kaydı bulunamadı", "error");
+  const rec = S.records.find(r => String(r.record_id) === String(del.record_id));
+  if (!rec) return toast("Bağlı kayıt bulunamadı", "error");
+
+  const otherSum = S.deliveries
+    .filter(d => String(d.record_id) === String(del.record_id) && String(d.delivery_id) !== String(deliveryId))
+    .reduce((s,d)=>s + Number(d.teslim_adet || 0), 0);
+  const maxAllowed = Math.max(1, Number(rec.adet || 0) - otherSum);
+
+  activeDelivery = { del, rec, maxAllowed };
+  qs("#ed-delivery-id").value = del.delivery_id;
+  qs("#ed-delivery-info").innerHTML = `<strong>${h(rec.school_name)}</strong> · FAZ ${h(rec.faz)} · Toplam ${h(rec.adet)} adet`;
+  qs("#ed-teslim-adet").value = Number(del.teslim_adet || 1);
+  qs("#ed-teslim-adet").max = String(maxAllowed);
+  qs("#ed-personel").value = del.personel || "";
+  qs("#ed-not").value = del.notlar || "";
+  fillPersonnelDropdowns();
+  openModal("editDeliveryModal");
+}
+async function saveEditDelivery() {
+  const btn = qs("#editDeliveryBtn");
+  try {
+    if (!activeDelivery) throw new Error("Teslim kaydı seçili değil");
+    const delivery_id = qs("#ed-delivery-id").value;
+    const teslim_adet = parseInt(qs("#ed-teslim-adet").value, 10) || 1;
+    const personel = qs("#ed-personel").value.trim();
+    const notlar = qs("#ed-not").value.trim();
+    if (!personel) throw new Error("Personel seçin");
+    if (teslim_adet < 1) throw new Error("Teslim adedi en az 1 olmalı");
+    if (teslim_adet > activeDelivery.maxAllowed) throw new Error("Teslim adedi izin verilen üst sınırı aşıyor");
+
+    btn.disabled = true; btn.textContent = "Kaydediliyor...";
+    const res = await apiPost({ action:"updateDelivery", delivery_id, teslim_adet, personel, notlar });
+
+    const del = S.deliveries.find(d => String(d.delivery_id) === String(delivery_id));
+    if (del) {
+      del.teslim_adet = teslim_adet;
+      del.personel = personel;
+      del.notlar = notlar;
+    }
+    const rec = S.records.find(r => String(r.record_id) === String(activeDelivery.rec.record_id));
+    if (rec && res.data) {
+      rec.toplam_teslim = Number(res.data.toplamTeslim || 0);
+      rec.kalan_adet = Number(res.data.kalan_adet || 0);
+      rec.durum = String(res.data.yeniDurum || rec.durum);
+    }
+
+    rebuildDerived();
+    closeModal("editDeliveryModal");
+    if (pageIs("dashboard")) renderDashboard();
+    if (pageIs("okullar")) { renderOkullar(); refreshSchoolDetail(activeDelivery.rec.school_id); }
+    toast("Teslim kaydı güncellendi", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "💾 Kaydet";
+  }
+}
+function confirmDeleteDelivery(deliveryId) {
+  const del = S.deliveries.find(d => String(d.delivery_id) === String(deliveryId));
+  const rec = del ? S.records.find(r => String(r.record_id) === String(del.record_id)) : null;
+  qs("#del-delivery-id").value = deliveryId;
+  qs("#del-delivery-info").innerHTML = del
+    ? `${h(rec?.school_name || del.school_name || "-")} · ${h(del.teslim_adet)} adet · ${h(del.tarih)}`
+    : "Teslim kaydı";
+  openModal("confirmDeleteDeliveryModal");
+}
+async function executeDeleteDelivery() {
+  const btn = qs("#confirmDeleteDeliveryBtn");
+  try {
+    const delivery_id = qs("#del-delivery-id").value;
+    const del = S.deliveries.find(d => String(d.delivery_id) === String(delivery_id));
+    if (!del) throw new Error("Teslim kaydı bulunamadı");
+
+    btn.disabled = true; btn.textContent = "Siliniyor...";
+    const res = await apiPost({ action:"deleteDelivery", delivery_id });
+
+    S.deliveries = S.deliveries.filter(d => String(d.delivery_id) !== String(delivery_id));
+    const rec = S.records.find(r => String(r.record_id) === String(del.record_id));
+    if (rec && res.data) {
+      rec.toplam_teslim = Number(res.data.toplamTeslim || 0);
+      rec.kalan_adet = Number(res.data.kalan_adet || 0);
+      rec.durum = String(res.data.yeniDurum || rec.durum);
+    }
+
+    rebuildDerived();
+    closeModal("confirmDeleteDeliveryModal");
+    if (pageIs("dashboard")) renderDashboard();
+    if (pageIs("okullar")) { renderOkullar(); if (rec) refreshSchoolDetail(rec.school_id); }
+    toast("Teslim kaydı silindi", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🗑️ Evet, Sil";
+  }
+}
+
 
 function durumBadge(d) {
   if (d === "teslim") return `<span class="badge b-done">✓ Teslim</span>`;
