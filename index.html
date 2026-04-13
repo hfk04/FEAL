@@ -1128,8 +1128,26 @@ function toggleSchoolDetail(sid) {
   // Önce header'ı yaz, sonra timeline'ı render et
   detail.innerHTML = schoolInfo;
 
-  const recs = S.records.filter(r => String(r.school_id) === sid);
-  const deliveries = S.deliveries.filter(d => String(d.school_id) === sid);
+  // school_id ile eşleştir; eşleşme yoksa school_name ile dene
+  let recs = S.records.filter(r => String(r.school_id || '').trim() === sid.trim());
+  if (!recs.length && school) {
+    recs = S.records.filter(r =>
+      String(r.school_name || '').trim().toLowerCase() === String(school.school_name || '').trim().toLowerCase() &&
+      String(r.city || '') === String(school.city || '') &&
+      String(r.district || '') === String(school.district || '')
+    );
+  }
+  const deliveries = S.deliveries.filter(d => String(d.school_id || '').trim() === sid.trim());
+
+  // Hata ayıklama: hiç kayıt yoksa bilgi göster
+  if (!recs.length) {
+    const ids = [...new Set(S.records.map(r => String(r.school_id || '')))].slice(0,5).join(' | ');
+    detail.insertAdjacentHTML('beforeend',
+      `<div style="padding:10px 16px;font-size:11px;color:var(--orange);border-top:1px solid var(--border)">
+        Kayıt bulunamadı. sid=${sid} · Toplam=${S.records.length} · İlk ID'ler: ${ids}
+      </div>`
+    );
+  }
 
   renderSchoolTimeline(detail, sid, school, recs, deliveries);
 }
