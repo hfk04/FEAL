@@ -342,9 +342,9 @@ tr:hover td{background:rgba(255,255,255,.018)}
         <div class="form-group">
           <label>Faz *</label>
           <div class="faz-toggle">
-            <button class="faz-btn" id="faz1" onclick="pickFaz(1)">FAZ 1</button>
-            <button class="faz-btn" id="faz2" onclick="pickFaz(2)">FAZ 2</button>
-            <button class="faz-btn" id="faz3" onclick="pickFaz(3)">FAZ 3</button>
+            <button type="button" class="faz-btn" id="faz1" onclick="pickFaz(event, 1)">FAZ 1</button>
+            <button type="button" class="faz-btn" id="faz2" onclick="pickFaz(event, 2)">FAZ 2</button>
+            <button type="button" class="faz-btn" id="faz3" onclick="pickFaz(event, 3)">FAZ 3</button>
           </div>
         </div>
         <div class="form-group">
@@ -358,8 +358,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
         <div class="form-group">
           <label>Kaynak *</label>
           <div class="faz-toggle">
-            <button class="faz-btn" id="kaynak-sinif" onclick="pickKaynak('sinif')" style="font-size:11px">🏫 SINIFTAN</button>
-            <button class="faz-btn" id="kaynak-yedek" onclick="pickKaynak('yedek')" style="font-size:11px">📦 YEDEK</button>
+            <button type="button" class="faz-btn" id="kaynak-sinif" onclick="pickKaynak(event, 'sinif')" style="font-size:11px">🏫 SINIFTAN</button>
+            <button type="button" class="faz-btn" id="kaynak-yedek" onclick="pickKaynak(event, 'yedek')" style="font-size:11px">📦 YEDEK</button>
           </div>
         </div>
         <div class="form-group full">
@@ -490,9 +490,9 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div class="form-group">
         <label>Faz *</label>
         <div class="faz-toggle">
-          <button class="faz-btn" id="er-faz1" onclick="erPickFaz(1)">FAZ 1</button>
-          <button class="faz-btn" id="er-faz2" onclick="erPickFaz(2)">FAZ 2</button>
-          <button class="faz-btn" id="er-faz3" onclick="erPickFaz(3)">FAZ 3</button>
+          <button type="button" class="faz-btn" id="er-faz1" onclick="erPickFaz(event, 1)">FAZ 1</button>
+          <button type="button" class="faz-btn" id="er-faz2" onclick="erPickFaz(event, 2)">FAZ 2</button>
+          <button type="button" class="faz-btn" id="er-faz3" onclick="erPickFaz(event, 3)">FAZ 3</button>
         </div>
       </div>
       <div class="form-group">
@@ -506,8 +506,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div class="form-group">
         <label>Kaynak *</label>
         <div class="faz-toggle">
-          <button class="faz-btn" id="er-kaynak-sinif" onclick="erPickKaynak('sinif')" style="font-size:11px">🏫 SINIFTAN</button>
-          <button class="faz-btn" id="er-kaynak-yedek" onclick="erPickKaynak('yedek')" style="font-size:11px">📦 YEDEK</button>
+          <button type="button" class="faz-btn" id="er-kaynak-sinif" onclick="erPickKaynak(event, 'sinif')" style="font-size:11px">🏫 SINIFTAN</button>
+          <button type="button" class="faz-btn" id="er-kaynak-yedek" onclick="erPickKaynak(event, 'yedek')" style="font-size:11px">📦 YEDEK</button>
         </div>
       </div>
       <div class="form-group">
@@ -572,6 +572,7 @@ const S = {
 const qs = s => document.querySelector(s);
 const qsa = s => [...document.querySelectorAll(s)];
 const pageIs = id => qs("#page-"+id)?.classList.contains("active");
+const stopEvt = e => { if (e) { e.preventDefault(); e.stopPropagation(); } return false; };
 const h = v => String(v ?? "").replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const isFresh = key => (Date.now() - (S.cacheAt[key] || 0)) < CACHE_TTL[key];
 const markFresh = key => { S.cacheAt[key] = Date.now(); };
@@ -633,14 +634,15 @@ function calcRemaining(record) {
   const toplamTeslim = Number(record?.toplam_teslim || 0);
   const durum = String(record?.durum || 'bekliyor');
   const rawKalan = Number(record?.kalan_adet);
+  const fallback = Math.max(0, adet - toplamTeslim);
 
   if (durum === 'teslim') return 0;
 
-  const fallback = Math.max(0, adet - toplamTeslim);
+  // Teslim bilgisi varsa kalan hesabında her zaman adet - toplam_teslim esas alınmalı.
+  // Eski kalan_adet değeri burada öncelikli olursa UI teslim sonrası düşmeyebilir.
+  if (toplamTeslim > 0) return fallback;
 
   if (!Number.isFinite(rawKalan)) return fallback;
-  if (rawKalan > 0) return rawKalan;
-  if (rawKalan === 0 && fallback > 0) return fallback;
   return Math.max(0, rawKalan);
 }
 
@@ -822,7 +824,7 @@ function buildCityTabs(targetId, clickFnName, selectedValue) {
   const cities = ["all", ...CITIES];
   root.innerHTML = cities.map(c => {
     const label = c === "all" ? "Tümü" : c;
-    return `<div class="city-tab ${selectedValue===c ? 'active' : ''}" data-city="${h(c)}" onclick="${clickFnName}(this, ${sq(c)})">${h(label)}</div>`;
+    return `<div class="city-tab ${selectedValue===c ? 'active' : ''}" data-city="${h(c)}" onclick="${clickFnName}(event, this, ${sq(c)})">${h(label)}</div>`;
   }).join("");
 }
 
@@ -863,14 +865,14 @@ function sdFilter(ns) {
   if (ns === "personel" || ns === "teslim-p" || ns === "er-p") {
     const items = S.personnelList.filter(p => String(p.isim || "").toLowerCase().includes(q));
     list.innerHTML = items.length
-      ? items.map(p => `<div class="sd-item" onclick="sdPick(${sq(ns)}, ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
+      ? items.map(p => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, ${sq(ns)}, ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
       : `<div class="sd-empty">Personel bulunamadı</div>`;
     return;
   }
   if (ns === "sehir") {
     const items = CITIES.filter(c => c.toLowerCase().includes(q));
     list.innerHTML = items.length
-      ? items.map(c => `<div class="sd-item" onclick="sdPick('sehir', ${sq(c)})">${h(c)}</div>`).join("")
+      ? items.map(c => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, 'sehir', ${sq(c)})">${h(c)}</div>`).join("")
       : `<div class="sd-empty">Sonuç yok</div>`;
     return;
   }
@@ -878,7 +880,7 @@ function sdFilter(ns) {
     if (!S.selSehir) { list.innerHTML = `<div class="sd-empty">Önce şehir seçin</div>`; return; }
     const items = (DISTRICTS[S.selSehir] || []).filter(d => d.toLowerCase().includes(q));
     list.innerHTML = items.length
-      ? items.map(d => `<div class="sd-item" onclick="sdPick('ilce', ${sq(d)})">${h(d)}</div>`).join("")
+      ? items.map(d => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, 'ilce', ${sq(d)})">${h(d)}</div>`).join("")
       : `<div class="sd-empty">Sonuç yok</div>`;
     return;
   }
@@ -889,15 +891,16 @@ function sdFilter(ns) {
       s.district === S.selIlce &&
       String(s.school_name || "").toLowerCase().includes(q)
     );
-    let html = matches.map(s => `<div class="sd-item" onclick="sdPickOkul(${sq(s.school_id)})">${h(s.school_name)}${s.kurum_kodu ? ` <span style="color:var(--text3);font-size:11px">(${h(s.kurum_kodu)})</span>` : ""}</div>`).join("");
+    let html = matches.map(s => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPickOkul(event, ${sq(s.school_id)})">${h(s.school_name)}${s.kurum_kodu ? ` <span style="color:var(--text3);font-size:11px">(${h(s.kurum_kodu)})</span>` : ""}</div>`).join("");
     const typed = inp.value.trim();
     if (typed && !matches.some(s => String(s.school_name || "").toLowerCase() === typed.toLowerCase())) {
-      html += `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ "${h(typed)}" olarak ekle</div>`;
+      html += `<div class="sd-item new-item" onmousedown="return false" ontouchstart="return false" onclick="sdPickOkulNew(event)">+ "${h(typed)}" olarak ekle</div>`;
     }
-    list.innerHTML = html || `<div class="sd-item new-item" onclick="sdPickOkulNew()">+ Yeni okul ekle</div>`;
+    list.innerHTML = html || `<div class="sd-item new-item" onmousedown="return false" ontouchstart="return false" onclick="sdPickOkulNew(event)">+ Yeni okul ekle</div>`;
   }
 }
-function sdPick(ns, val) {
+function sdPick(e, ns, val) {
+  stopEvt(e);
   const inp = ns==="teslim-p" ? qs("#teslim-personel") : ns==="er-p" ? qs("#er-personel") : qs("#inp-"+ns);
   if (inp) inp.value = val;
   qs("#sd-"+ns)?.classList.remove("open");
@@ -919,7 +922,8 @@ function sdPick(ns, val) {
     qs("#inp-kurum").value = "";
   }
 }
-function sdPickOkul(id) {
+function sdPickOkul(e, id) {
+  stopEvt(e);
   const school = S.schools.find(s => String(s.school_id) === String(id));
   if (!school) return;
   S.selOkul = school;
@@ -928,7 +932,8 @@ function sdPickOkul(id) {
   qs("#sd-okul")?.classList.remove("open");
   qs("#sd-okul")?.closest(".form-group")?.classList.remove("dropdown-open");
 }
-function sdPickOkulNew() {
+function sdPickOkulNew(e) {
+  stopEvt(e);
   const name = qs("#inp-okul").value.trim();
   if (!name) return toast("Okul adı girin", "error");
   S.selOkul = { school_id:null, school_name:name, kurum_kodu:qs("#inp-kurum").value.trim(), city:S.selSehir, district:S.selIlce };
@@ -936,7 +941,8 @@ function sdPickOkulNew() {
   qs("#sd-okul")?.closest(".form-group")?.classList.remove("dropdown-open");
 }
 
-function pickFaz(n) {
+function pickFaz(e, n) {
+  stopEvt(e);
   S.selFaz = n;
   [1,2,3].forEach(i => {
     const b = qs("#faz"+i);
@@ -945,7 +951,8 @@ function pickFaz(n) {
     if (i === n) b.classList.add("a"+n);
   });
 }
-function pickKaynak(k) {
+function pickKaynak(e, k) {
+  stopEvt(e);
   S.selKaynak = k;
   const sinif = qs("#kaynak-sinif"), yedek = qs("#kaynak-yedek");
   if (!sinif || !yedek) return;
@@ -965,11 +972,11 @@ function changeTeslimAdet(d) {
 
 function fillPersonnelDropdowns() {
   const items = S.personnelList.length
-    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('personel', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
+    ? S.personnelList.map(p => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, 'personel', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
     : `<div class="sd-empty">Önce personel ekleyin</div>`;
   if (qs("#sd-personel")) qs("#sd-personel").innerHTML = items;
   if (qs("#sd-teslim-p")) qs("#sd-teslim-p").innerHTML = S.personnelList.length
-    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('teslim-p', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
+    ? S.personnelList.map(p => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, 'teslim-p', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
     : `<div class="sd-empty">Personel yok</div>`;
   if (S.personnel && qs("#inp-personel")) qs("#inp-personel").value = S.personnel;
 }
@@ -1044,7 +1051,8 @@ async function loadOkullar(force = false) {
     hideLoader();
   }
 }
-function setOkulCity(el, c) {
+function setOkulCity(e, el, c) {
+  stopEvt(e);
   S.okulCity = c;
   qsa("#okulCityTabs .city-tab").forEach(t => t.classList.remove("active"));
   el.classList.add("active");
@@ -1222,7 +1230,8 @@ function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
       const kalanStr = ev.kalan < Number(ev.adet)
         ? `<span style="font-weight:700">${ev.kalan}</span><span style="color:var(--text3);font-size:11px"> /${ev.adet}</span>`
         : `<span style="font-weight:700">${ev.adet}</span>`;
-      const islemBtns = ev.durum !== 'teslim'
+      const canDeliver = Number(ev.kalan || 0) > 0 && ev.durum !== 'teslim';
+      const islemBtns = canDeliver
         ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();openTeslimModal(${sq(ev.record_id)})">📦 Teslim</button> `
         : '';
       return `<div class="tl-event tl-alim">
@@ -1278,7 +1287,8 @@ function kaynakBadge(k) {
 function loadKayitlarPage(force = false) {
   loadRecords(force).then(() => renderKayitlar()).catch(e => toast("Kayıtlar yüklenemedi: " + e.message, "error"));
 }
-function setRecCity(el, c) {
+function setRecCity(e, el, c) {
+  stopEvt(e);
   S.recCity = c;
   qsa("#recCityTabs .city-tab").forEach(t => t.classList.remove("active"));
   el.classList.add("active");
@@ -1311,7 +1321,7 @@ function renderKayitlar() {
     <td>${durumBadge(r.durum)}</td>
     <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
     <td style="white-space:nowrap">
-      ${(r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal(${sq(r.record_id)})">📦</button> ` : `<span style="color:var(--green);font-size:12px">✓ </span>`}
+      ${(calcRemaining(r) > 0 && r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal(${sq(r.record_id)})">📦</button> ` : `<span style="color:var(--green);font-size:12px">✓ </span>`}
       <button class="btn btn-secondary btn-sm" onclick="openEditRecordModal(${sq(r.record_id)})">✏️</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDeleteRecord(${sq(r.record_id)}, ${sq(r.school_name)})">🗑️</button>
     </td>
@@ -1422,10 +1432,15 @@ function resetKayitForm() {
 function openTeslimModal(recordId) {
   const rec = S.records.find(r => String(r.record_id) === String(recordId));
   if (!rec) return;
+  const remaining = calcRemaining(rec);
+  if (remaining <= 0 || String(rec.durum || "") === "teslim") {
+    toast("Bu kayıt tamamen teslim edilmiş.", "info");
+    return;
+  }
   S.teslimRec = rec;
   qs("#teslimInfo").innerHTML = `<div><strong>${h(rec.school_name)}</strong></div><div style="margin-top:6px;color:var(--text2)">Faz ${h(rec.faz)} · ${h(rec.adet)} adet · ${h(rec.tarih)}</div>`;
   qs("#teslim-adet").value = 1;
-  qs("#teslim-adet").max = String(Math.max(1, calcRemaining(rec) || Number(rec.adet) || 1));
+  qs("#teslim-adet").max = String(Math.max(1, remaining || Number(rec.adet) || 1));
   qs("#teslim-personel").value = S.personnel || "";
   fillPersonnelDropdowns();
   qs("#teslim-not").value = "";
@@ -1439,7 +1454,10 @@ async function submitTeslim() {
     const teslim_adet = parseInt(qs("#teslim-adet").value, 10) || 1;
     const personel = qs("#teslim-personel").value.trim();
     const notlar = qs("#teslim-not").value.trim();
+    const remaining = calcRemaining(rec);
     if (!personel) throw new Error("Personel seçin");
+    if (remaining <= 0) throw new Error("Bu kayıt tamamen teslim edilmiş.");
+    if (teslim_adet > remaining) throw new Error(`En fazla ${remaining} adet teslim edebilirsiniz`);
 
     btn.disabled = true; btn.textContent = "Kaydediliyor...";
     const res = await apiPost({
@@ -1452,8 +1470,9 @@ async function submitTeslim() {
       notlar
     });
 
-    rec.toplam_teslim = Number(res.data?.toplamTeslim || 0);
-    rec.kalan_adet = calcRemaining({ ...rec, toplam_teslim: Number(res.data?.toplamTeslim || 0) });
+    const yeniToplamTeslim = Number(res.data?.toplamTeslim || 0);
+    rec.toplam_teslim = yeniToplamTeslim;
+    rec.kalan_adet = Math.max(0, Number(rec.adet || 0) - yeniToplamTeslim);
     rec.durum = res.data?.yeniDurum || (rec.kalan_adet > 0 ? "kismi" : "teslim");
 
     // Yeni teslim kaydını local S.deliveries'e ekle — refresh olmadan anında görünsün
@@ -1606,11 +1625,12 @@ function openEditRecordModal(recordId) {
   else if (erKaynak === "yedek") { yedek.style.borderColor="var(--orange)"; yedek.style.background="rgba(245,158,11,.14)"; yedek.style.color="var(--orange)"; }
 
   qs("#sd-er-p").innerHTML = S.personnelList.length
-    ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('er-p', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
+    ? S.personnelList.map(p => `<div class="sd-item" onmousedown="return false" ontouchstart="return false" onclick="sdPick(event, 'er-p', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
     : `<div class="sd-empty">Personel yok</div>`;
   openModal("editRecordModal");
 }
-function erPickFaz(n) {
+function erPickFaz(e, n) {
+  stopEvt(e);
   erFaz = n;
   [1,2,3].forEach(i => {
     const b = qs("#er-faz"+i);
@@ -1618,7 +1638,8 @@ function erPickFaz(n) {
     if (i === n) b.classList.add("a"+n);
   });
 }
-function erPickKaynak(k) {
+function erPickKaynak(e, k) {
+  stopEvt(e);
   erKaynak = k;
   const sinif = qs("#er-kaynak-sinif"), yedek = qs("#er-kaynak-yedek");
   sinif.className = "faz-btn"; sinif.removeAttribute("style");
@@ -1652,7 +1673,7 @@ async function saveEditRecord() {
       rec.notlar = notlar;
       rec.kaynak = erKaynak;
       const toplamTeslim = Number(rec.toplam_teslim || 0);
-      rec.kalan_adet = calcRemaining({ ...rec, adet, toplam_teslim: toplamTeslim, durum: rec.durum });
+      rec.kalan_adet = Math.max(0, adet - toplamTeslim);
       rec.durum = rec.kalan_adet === 0 ? "teslim" : toplamTeslim > 0 ? "kismi" : "bekliyor";
     }
 
