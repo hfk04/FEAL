@@ -1069,7 +1069,7 @@ function renderOkullar() {
   root.innerHTML = schools.map(s => {
     const st = schoolStats[String(s.school_id)] || {alinan:0, teslimAdet:0, kalan:0, bekleyen:0};
     const hasBorç = st.kalan > 0;
-    return `<div class="school-card ${hasBorç ? "school-card-borç" : "school-card-clean"}" id="sc-${s.school_id}" onclick="toggleSchoolDetail(${sq(s.school_id)})">
+    return `<div class="school-card ${hasBorç ? "school-card-borç" : "school-card-clean"}" id="sc-${s.school_id}" data-sid="${s.school_id}" onclick="handleSchoolClick(event)">
       <div class="sc-icon">${hasBorç ? "🏫" : "✅"}</div>
       <div class="sc-info">
         <div class="sc-name">${h(s.school_name)}</div>
@@ -1095,6 +1095,13 @@ function refreshSchoolDetail(sid) {
   if (card) card.classList.remove("expanded");
   if (arr)  arr.textContent = "›";
   setTimeout(() => toggleSchoolDetail(sid), 50);
+}
+function handleSchoolClick(event) {
+  // data-sid attribute'undan doğrudan al — string parsing hatası yok
+  const card = event.currentTarget;
+  const sid = card.dataset.sid;
+  if (!sid) return;
+  toggleSchoolDetail(sid);
 }
 function toggleSchoolDetail(sid) {
   sid = String(sid);
@@ -1123,16 +1130,6 @@ function toggleSchoolDetail(sid) {
 
   const recs = S.records.filter(r => String(r.school_id) === sid);
   const deliveries = S.deliveries.filter(d => String(d.school_id) === sid);
-
-  // Tanı: sid ile S.records karşılaştır
-  if (!recs.length && S.records.length > 0) {
-    const sample = S.records.slice(0,3).map(r => `${r.school_id}(${typeof r.school_id})`).join(', ');
-    detail.insertAdjacentHTML('beforeend',
-      `<div style="padding:12px 16px;font-size:11px;color:var(--text2);background:rgba(79,142,247,.08);border-top:1px solid rgba(79,142,247,.2)">
-        🔍 sid="${sid}" (${typeof sid}) · toplam kayıt:${S.records.length} · örnekler: ${sample}
-       </div>`
-    );
-  }
 
   renderSchoolTimeline(detail, sid, school, recs, deliveries);
 }
