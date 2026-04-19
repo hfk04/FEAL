@@ -216,6 +216,14 @@ tr:hover td{background:rgba(255,255,255,.018)}
 .school-card-clean .sc-icon{filter:grayscale(1)}
 
 
+
+.login-shell{position:fixed;inset:0;background:rgba(15,17,23,.96);z-index:1200;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:26px;box-shadow:0 28px 72px rgba(0,0,0,.55)}
+.login-title{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;margin-bottom:8px}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:18px}
+.login-note{font-size:12px;color:var(--text3);margin-top:10px}
+.readonly-input{opacity:.75;pointer-events:none}
+
 .site-footer{max-width:1440px;margin:18px auto 28px;padding:0 28px;color:var(--text3);font-family:'Space Mono',monospace;font-size:12px;text-align:right}
 @media(max-width:768px){.site-footer{padding:0 14px 86px;text-align:center}}
 
@@ -235,7 +243,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
     <button class="nav-btn" data-page="okullar" onclick="showPage('okullar')">🏫 Okullar</button>
     <button class="nav-btn" data-page="ayarlar" onclick="showPage('ayarlar')">⚙️ Ayarlar</button>
   </nav>
-  <div class="personnel-chip" onclick="openPersonnelModal()">
+  <div class="personnel-chip" onclick="openSessionModal()">
     <div class="p-avatar" id="topAvatar">?</div>
     <span id="topName">Personel Seç</span>
     <span style="color:var(--text3);font-size:11px">▾</span>
@@ -307,7 +315,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
         <div class="form-group">
           <label>Personel *</label>
           <div class="sd-wrap">
-            <input type="text" id="inp-personel" placeholder="Adınızı seçin..." autocomplete="off" oninput="sdFilter('personel')" onfocus="sdOpen('personel')" onblur="sdBlur('personel')">
+            <input type="text" id="inp-personel" placeholder="Giriş yapan personel" autocomplete="off" readonly class="readonly-input">
             <div class="sd-list" id="sd-personel"></div>
           </div>
         </div>
@@ -360,6 +368,10 @@ tr:hover td{background:rgba(255,255,255,.018)}
           </div>
         </div>
         <div class="form-group">
+          <label>Alım Tarihi *</label>
+          <input type="datetime-local" id="inp-tarih">
+        </div>
+        <div class="form-group">
           <label>Kaynak *</label>
           <div class="faz-toggle">
             <button class="faz-btn" id="kaynak-sinif" onclick="pickKaynak('sinif')" style="font-size:11px">🏫 SINIFTAN</button>
@@ -392,10 +404,12 @@ tr:hover td{background:rgba(255,255,255,.018)}
     <div class="section-head"><div class="section-title">👤 PERSONEL YÖNETİMİ</div></div>
     <div class="section-body">
       <div id="personnelMgmtList" style="display:flex;flex-direction:column;gap:7px;margin-bottom:15px"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input type="text" id="newPersonnelInp" placeholder="Yeni personel adı..." style="max-width:280px" onkeydown="if(event.key==='Enter')addNewPersonnel()">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="text" id="newPersonnelInp" placeholder="Yeni personel adı..." style="max-width:220px" onkeydown="if(event.key==='Enter')addNewPersonnel()">
+        <input type="password" id="newPersonnelPasswordInp" placeholder="İlk giriş şifresi..." style="max-width:220px" onkeydown="if(event.key==='Enter')addNewPersonnel()">
         <button class="btn btn-primary btn-sm" onclick="addNewPersonnel()">+ Ekle</button>
       </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--text3)">Her personel giriş yapmak için kendi şifresini kullanır. Şifreler backend tarafında hashlenerek saklanır.</div>
     </div>
   </div>
 </div>
@@ -425,7 +439,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div class="form-group">
         <label>Teslim Eden Personel *</label>
         <div class="sd-wrap">
-          <input type="text" id="teslim-personel" placeholder="Personel seç..." autocomplete="off" oninput="sdFilter('teslim-p')" onfocus="sdOpen('teslim-p')" onblur="sdBlur('teslim-p')">
+          <input type="text" id="teslim-personel" placeholder="Giriş yapan personel" autocomplete="off" readonly class="readonly-input">
           <div class="sd-list" id="sd-teslim-p"></div>
         </div>
       </div>
@@ -508,7 +522,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div class="form-group">
         <label>Teslim Eden Personel *</label>
         <div class="sd-wrap">
-          <input type="text" id="ed-personel" placeholder="Personel seç..." autocomplete="off" oninput="sdFilter('ed-p')" onfocus="sdOpen('ed-p')" onblur="sdBlur('ed-p')">
+          <input type="text" id="ed-personel" placeholder="Giriş yapan personel" autocomplete="off" readonly class="readonly-input">
           <div class="sd-list" id="sd-ed-p"></div>
         </div>
       </div>
@@ -537,6 +551,62 @@ tr:hover td{background:rgba(255,255,255,.018)}
     <div class="btn-row">
       <button class="btn btn-danger" id="confirmDeleteDeliveryBtn" onclick="executeDeleteDelivery()">🗑️ Evet, Sil</button>
       <button class="btn btn-secondary" onclick="closeModal('confirmDeleteDeliveryModal')">İptal</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="login-shell" id="loginShell">
+  <div class="login-card">
+    <div class="login-title">🔐 Personel Girişi</div>
+    <div class="login-sub">Sisteme erişmek için personel adı ve şifre ile giriş yapın.</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Personel</label>
+        <input type="text" id="login-name" placeholder="Ad Soyad">
+      </div>
+      <div class="form-group full">
+        <label>Şifre</label>
+        <input type="password" id="login-password" placeholder="Şifreniz" onkeydown="if(event.key==='Enter')submitLogin()">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="loginBtn" onclick="submitLogin()">Giriş Yap</button>
+    </div>
+    <div class="login-note">Oturum süresi dolarsa sistem yeniden giriş isteyecektir.</div>
+  </div>
+</div>
+
+<div class="modal-ov" id="sessionModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">👤 Oturum</div>
+    <div class="modal-close" onclick="closeModal('sessionModal')">✕</div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:18px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">Aktif kullanıcı</div>
+      <div style="font-size:15px;font-weight:700" id="sessionUserName">-</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-danger" onclick="logoutUser()">Çıkış Yap</button>
+      <button class="btn btn-secondary" onclick="closeModal('sessionModal')">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="passwordResetModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-title">🔑 Personel Şifresi Güncelle</div>
+    <div class="modal-close" onclick="closeModal('passwordResetModal')">✕</div>
+    <input type="hidden" id="reset-personnel-id">
+    <div id="reset-personnel-name" style="margin-bottom:14px;font-size:14px;font-weight:600"></div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Yeni Şifre</label>
+        <input type="password" id="reset-personnel-password" placeholder="Yeni şifre" onkeydown="if(event.key==='Enter')savePersonnelPassword()">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="resetPersonnelBtn" onclick="savePersonnelPassword()">💾 Kaydet</button>
+      <button class="btn btn-secondary" onclick="closeModal('passwordResetModal')">İptal</button>
     </div>
   </div>
 </div>
@@ -577,7 +647,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div class="form-group">
         <label>Personel *</label>
         <div class="sd-wrap">
-          <input type="text" id="er-personel" placeholder="Personel seç..." autocomplete="off" oninput="sdFilter('er-p')" onfocus="sdOpen('er-p')" onblur="sdBlur('er-p')">
+          <input type="text" id="er-personel" placeholder="Kayıt personeli" autocomplete="off">
           <div class="sd-list" id="sd-er-p"></div>
         </div>
       </div>
@@ -598,7 +668,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
   <button class="mob-btn mob-add" id="mob-kayit" onclick="showPage('kayit')"><span class="mob-ico">➕</span><span>Ekle</span></button>
   <button class="mob-btn" id="mob-ayarlar" onclick="showPage('ayarlar')"><span class="mob-ico">⚙️</span><span>Ayarlar</span></button>
 </nav>
-<div class="site-footer" id="siteFooter">v1.35</div>
+<div class="site-footer" id="siteFooter">v1.36</div>
 
 </div>
 
@@ -606,7 +676,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 
 const CACHE_TTL = { dashboard: 30000, schools: 180000, personnel: 180000, records: 60000, deliveries: 60000 };
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZXE4OxOawYB8XlDF6HpRMkBP1F3Zka80MUqoKFz5GTHMn0YrKEqr2wsOHeIth-UE/exec";
-const FRONTEND_VERSION = "v1.35";
+const FRONTEND_VERSION = "v1.36";
 
 const CITIES = ["İstanbul Avrupa","İstanbul Anadolu","Kocaeli","Yalova","Bursa"];
 const DISTRICTS = {
@@ -618,7 +688,9 @@ const DISTRICTS = {
 };
 
 const S = {
-  personnel: localStorage.getItem("ops_personnel") || "",
+  personnel: "",
+  authToken: localStorage.getItem("ops_auth_token") || "",
+  session: null,
   personnelList: [],
   schools: [],
   records: [],
@@ -687,13 +759,111 @@ async function fetchJSON(url, options = {}) {
     clearTimeout(timer);
   }
 }
-function api(params){ return fetchJSON(SCRIPT_URL + "?" + new URLSearchParams(params).toString()); }
+function setSession(session) {
+  S.session = session || null;
+  S.personnel = session?.personnel?.isim || "";
+  S.authToken = session?.token || "";
+  if (S.authToken) localStorage.setItem("ops_auth_token", S.authToken);
+  else localStorage.removeItem("ops_auth_token");
+  renderSessionUI();
+}
+function clearSession() {
+  S.session = null;
+  S.personnel = "";
+  S.authToken = "";
+  localStorage.removeItem("ops_auth_token");
+  renderSessionUI();
+}
+function renderSessionUI() {
+  if (qs("#topName")) qs("#topName").textContent = S.personnel || "Giriş Yap";
+  if (qs("#topAvatar")) qs("#topAvatar").textContent = String(S.personnel || "?").charAt(0).toUpperCase();
+  if (qs("#sessionUserName")) qs("#sessionUserName").textContent = S.personnel || "-";
+  if (qs("#inp-personel")) qs("#inp-personel").value = S.personnel || "";
+  if (qs("#teslim-personel")) qs("#teslim-personel").value = S.personnel || "";
+}
+function openLoginScreen() {
+  const el = qs("#loginShell");
+  if (el) el.style.display = "flex";
+}
+function closeLoginScreen() {
+  const el = qs("#loginShell");
+  if (el) el.style.display = "none";
+}
+function api(params){
+  const payload = { ...(params || {}) };
+  if (S.authToken) payload.authToken = S.authToken;
+  return fetchJSON(SCRIPT_URL + "?" + new URLSearchParams(payload).toString()).catch(err => {
+    if (/Oturum geçersiz|yeniden giriş/i.test(String(err.message || err))) {
+      clearSession();
+      openLoginScreen();
+    }
+    throw err;
+  });
+}
 function apiPost(body){
+  const payload = { ...(body || {}) };
+  if (S.authToken) payload.authToken = S.authToken;
   return fetchJSON(SCRIPT_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(body)
+    body: JSON.stringify(payload)
+  }).catch(err => {
+    if (/Oturum geçersiz|yeniden giriş/i.test(String(err.message || err))) {
+      clearSession();
+      openLoginScreen();
+    }
+    throw err;
   });
+}
+function toDateTimeLocalValue(date = new Date()) {
+  const pad = n => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+function trFromDateTimeLocal(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = n => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+async function submitLogin() {
+  const btn = qs("#loginBtn");
+  try {
+    const isim = qs("#login-name").value.trim();
+    const password = qs("#login-password").value;
+    if (!isim || !password) throw new Error("Personel adı ve şifre girin");
+    btn.disabled = true;
+    btn.textContent = "Giriş yapılıyor...";
+    const res = await fetchJSON(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "login", isim, password })
+    });
+    setSession({ token: res.data.token, personnel: res.data.personnel });
+    closeLoginScreen();
+    showLoader("Veriler hazırlanıyor...");
+    await Promise.all([loadPersonnel(true), loadSchools(true), loadRecords(true), loadDeliveries(true)]);
+    fillPersonnelDropdowns();
+    if (qs("#inp-tarih") && !qs("#inp-tarih").value) qs("#inp-tarih").value = toDateTimeLocalValue();
+    renderDashboard();
+    toast("Giriş başarılı", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Giriş Yap";
+    hideLoader();
+  }
+}
+async function logoutUser() {
+  try { if (S.authToken) await apiPost({ action: "logout" }); } catch (e) {}
+  clearSession();
+  closeModal("sessionModal");
+  openLoginScreen();
+}
+function openSessionModal() {
+  renderSessionUI();
+  openModal("sessionModal");
 }
 
 function calcRemaining(record) {
@@ -1397,7 +1567,7 @@ function renderKayitlar() {
 async function submitKayit() {
   const btn = qs("#kayitBtn");
   try {
-    const personel = (qs("#inp-personel").value.trim() || S.personnel).trim();
+    const personel = String(S.personnel || "").trim();
     if (!personel) throw new Error("Personel seçin");
     if (!S.selSehir) throw new Error("Şehir seçin");
     if (!S.selIlce) throw new Error("İlçe seçin");
@@ -1419,6 +1589,8 @@ async function submitKayit() {
     const adet = parseInt(qs("#inp-adet").value, 10) || 1;
     const notlar = qs("#inp-not").value.trim();
     const kurum = qs("#inp-kurum").value.trim();
+    const tarih = trFromDateTimeLocal(qs("#inp-tarih").value);
+    if (!tarih) throw new Error("Geçerli bir alım tarihi seçin");
 
     btn.disabled = true; btn.textContent = "Kaydediliyor...";
 
@@ -1447,7 +1619,8 @@ async function submitKayit() {
       adet,
       personel,
       notlar,
-      kaynak: S.selKaynak
+      kaynak: S.selKaynak,
+      tarih
     });
 
     const created = rr.data || {};
@@ -1463,7 +1636,7 @@ async function submitKayit() {
       personel,
       notlar,
       kaynak: S.selKaynak,
-      tarih: created.tarih || new Date().toLocaleString("tr-TR"),
+      tarih: created.tarih || tarih,
       durum: created.durum || "bekliyor",
       toplam_teslim: created.toplam_teslim || 0,
       kalan_adet: created.kalan_adet ?? adet
@@ -1486,6 +1659,7 @@ async function submitKayit() {
 function resetKayitForm() {
   S.selSehir = ""; S.selIlce = ""; S.selOkul = null; S.selFaz = null; S.selKaynak = null;
   ["#inp-sehir","#inp-ilce","#inp-okul","#inp-kurum","#inp-not"].forEach(id => { const el = qs(id); if (el) el.value = ""; });
+  if (qs("#inp-tarih")) qs("#inp-tarih").value = toDateTimeLocalValue();
   qs("#inp-ilce").disabled = true;
   qs("#inp-okul").disabled = true;
   qs("#inp-adet").value = 1;
@@ -1514,7 +1688,7 @@ async function submitTeslim() {
     const rec = S.teslimRec;
     if (!rec) throw new Error("Kayıt seçili değil");
     const teslim_adet = parseInt(qs("#teslim-adet").value, 10) || 1;
-    const personel = qs("#teslim-personel").value.trim();
+    const personel = String(S.personnel || "").trim();
     const notlar = qs("#teslim-not").value.trim();
     if (!personel) throw new Error("Personel seçin");
 
@@ -1580,7 +1754,7 @@ function renderPersonnelList() {
 }
 function selectPersonnel(name, close = true) {
   S.personnel = name;
-  localStorage.setItem("ops_personnel", name);
+  S.personnel = name;
   if (qs("#topName")) qs("#topName").textContent = name;
   if (qs("#topAvatar")) qs("#topAvatar").textContent = String(name).charAt(0).toUpperCase();
   if (qs("#inp-personel")) qs("#inp-personel").value = name;
@@ -1592,28 +1766,58 @@ function renderPersonnelMgmt() {
     root.innerHTML = `<div style="color:var(--text3);font-size:13px">Henüz personel yok</div>`;
     return;
   }
-  root.innerHTML = S.personnelList.map(p => `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm)">
+  root.innerHTML = S.personnelList.map(p => `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);flex-wrap:wrap">
     <div class="p-avatar" style="width:28px;height:28px;font-size:11px">${h(String(p.isim || "?").charAt(0).toUpperCase())}</div>
-    <span style="flex:1;font-size:14px">${h(p.isim)}</span>
+    <span style="flex:1;font-size:14px;min-width:180px">${h(p.isim)}</span>
     <span style="font-size:11px;color:var(--text3)">${h(p.created_at || "")}</span>
+    <button class="btn btn-secondary btn-sm" onclick="openResetPasswordModal(${sq(p.personnel_id)}, ${sq(p.isim)})">Şifre Güncelle</button>
   </div>`).join("");
 }
 async function addNewPersonnel() {
   try {
     const isim = qs("#newPersonnelInp").value.trim();
+    const password = qs("#newPersonnelPasswordInp").value.trim();
     if (!isim) throw new Error("İsim girin");
+    if (!password) throw new Error("İlk giriş şifresi girin");
     if (S.personnelList.some(p => String(p.isim || "").toLowerCase() === isim.toLowerCase())) throw new Error("Bu personel zaten var");
 
-    const res = await apiPost({ action: "addPersonnel", isim });
+    const res = await apiPost({ action: "addPersonnel", isim, password });
     S.personnelList.push(res.data);
     S.personnelList.sort((a,b) => String(a.isim || "").localeCompare(String(b.isim || ""), "tr"));
     markFresh("personnel");
     fillPersonnelDropdowns();
     renderPersonnelMgmt();
     qs("#newPersonnelInp").value = "";
+    qs("#newPersonnelPasswordInp").value = "";
     toast("Personel eklendi", "success");
   } catch (e) {
     toast(e.message, "error");
+  }
+}
+
+
+function openResetPasswordModal(personnelId, isim) {
+  qs("#reset-personnel-id").value = personnelId;
+  qs("#reset-personnel-name").textContent = isim;
+  qs("#reset-personnel-password").value = "";
+  openModal("passwordResetModal");
+}
+async function savePersonnelPassword() {
+  const btn = qs("#resetPersonnelBtn");
+  try {
+    const personnel_id = qs("#reset-personnel-id").value;
+    const new_password = qs("#reset-personnel-password").value.trim();
+    if (!new_password) throw new Error("Yeni şifre girin");
+    btn.disabled = true;
+    btn.textContent = "Kaydediliyor...";
+    await apiPost({ action: "updatePersonnelPassword", personnel_id, new_password });
+    closeModal("passwordResetModal");
+    toast("Personel şifresi güncellendi", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "💾 Kaydet";
   }
 }
 
@@ -1834,7 +2038,7 @@ async function saveEditDelivery() {
     if (!activeDelivery) throw new Error("Teslim kaydı seçili değil");
     const delivery_id = qs("#ed-delivery-id").value;
     const teslim_adet = parseInt(qs("#ed-teslim-adet").value, 10) || 1;
-    const personel = qs("#ed-personel").value.trim();
+    const personel = String(S.personnel || "").trim();
     const notlar = qs("#ed-not").value.trim();
     if (!personel) throw new Error("Personel seçin");
     if (teslim_adet < 1) throw new Error("Teslim adedi en az 1 olmalı");
@@ -1926,20 +2130,23 @@ qsa(".modal-ov").forEach(ov => ov.addEventListener("click", e => {
 (async function init() {
   buildCityTabs("#okulCityTabs", "setOkulCity", S.okulCity);
   buildCityTabs("#recCityTabs", "setRecCity", S.recCity);
+  renderSessionUI();
+  if (qs("#inp-tarih")) qs("#inp-tarih").value = toDateTimeLocalValue();
 
-  if (S.personnel) {
-    qs("#topName").textContent = S.personnel;
-    qs("#topAvatar").textContent = String(S.personnel).charAt(0).toUpperCase();
-    if (qs("#inp-personel")) qs("#inp-personel").value = S.personnel;
+  if (!S.authToken) {
+    openLoginScreen();
+    return;
   }
 
   try {
     showLoader("Veriler hazırlanıyor...");
-    await Promise.all([loadPersonnel(), loadSchools(), loadRecords(), loadDeliveries()]);
+    await Promise.all([loadPersonnel(true), loadSchools(true), loadRecords(true), loadDeliveries(true)]);
+    closeLoginScreen();
     fillPersonnelDropdowns();
     renderDashboard();
   } catch (e) {
-    toast("Başlangıç verileri yüklenemedi: " + e.message, "error");
+    clearSession();
+    openLoginScreen();
   } finally {
     hideLoader();
   }
