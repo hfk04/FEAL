@@ -556,7 +556,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 </div>
 
 
-<div class="login-shell" id="loginShell">
+<div class="login-shell" id="loginShell" style="display:none">
   <div class="login-card">
     <div class="login-title">🔐 Personel Girişi</div>
     <div class="login-sub">Sisteme erişmek için personel adı ve şifre ile giriş yapın.</div>
@@ -589,7 +589,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
         <button class="btn btn-success" id="bootstrapBtn" onclick="submitBootstrapSetup()">Şifreyi Oluştur</button>
       </div>
     </div>
-    <div class="login-note">Oturum süresi dolarsa sistem yeniden giriş isteyecektir.</div>
+    <div class="login-note">Bu sürümde zorunlu giriş katmanı geçici olarak kapalıdır. Şifreleri Ayarlar ekranından oluşturabilirsiniz.</div>
   </div>
 </div>
 
@@ -692,7 +692,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 
 const CACHE_TTL = { dashboard: 30000, schools: 180000, personnel: 180000, records: 60000, deliveries: 60000 };
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZXE4OxOawYB8XlDF6HpRMkBP1F3Zka80MUqoKFz5GTHMn0YrKEqr2wsOHeIth-UE/exec";
-const FRONTEND_VERSION = "v1.38";
+const FRONTEND_VERSION = "v1.40";
 
 const CITIES = ["İstanbul Avrupa","İstanbul Anadolu","Kocaeli","Yalova","Bursa"];
 const DISTRICTS = {
@@ -2215,21 +2215,18 @@ qsa(".modal-ov").forEach(ov => ov.addEventListener("click", e => {
   renderSessionUI();
   if (qs("#inp-tarih")) qs("#inp-tarih").value = toDateTimeLocalValue();
 
-  if (!S.authToken) {
-    openLoginScreen();
-    await checkBootstrapStatus();
-    return;
-  }
-
   try {
     showLoader("Veriler hazırlanıyor...");
+    await checkBootstrapStatus();
     await Promise.all([loadPersonnel(true), loadSchools(true), loadRecords(true), loadDeliveries(true)]);
     closeLoginScreen();
     fillPersonnelDropdowns();
     renderDashboard();
+    toast("Bu sürümde giriş kilidi geçici olarak kapalı.", "info");
   } catch (e) {
     clearSession();
-    openLoginScreen();
+    closeLoginScreen();
+    toast(e.message || "Veriler yüklenemedi", "error");
   } finally {
     hideLoader();
   }
