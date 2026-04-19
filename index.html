@@ -563,7 +563,10 @@ tr:hover td{background:rgba(255,255,255,.018)}
     <div class="form-grid">
       <div class="form-group full">
         <label>Personel</label>
-        <input type="text" id="login-name" placeholder="Ad Soyad">
+        <div class="sd-wrap">
+          <input type="text" id="login-name" placeholder="Ad Soyad" autocomplete="off" oninput="filterLoginPersonnel()" onfocus="openLoginPersonnelDropdown()" onblur="blurLoginPersonnelDropdown()">
+          <div class="sd-list" id="sd-login-name"></div>
+        </div>
       </div>
       <div class="form-group full">
         <label>Şifre</label>
@@ -589,7 +592,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
         <button class="btn btn-success" id="bootstrapBtn" onclick="submitBootstrapSetup()">Şifreyi Oluştur</button>
       </div>
     </div>
-    <div class="login-note">Bu sürümde zorunlu giriş katmanı geçici olarak kapalıdır. Şifreleri Ayarlar ekranından oluşturabilirsiniz.</div>
+    <div class="login-note">Personel adını yazarken kayıtlı isimler aşağıda listelenir. Şifresi olmayan kullanıcılar alttan ilk şifresini oluşturabilir.</div>
   </div>
 </div>
 
@@ -684,7 +687,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
   <button class="mob-btn mob-add" id="mob-kayit" onclick="showPage('kayit')"><span class="mob-ico">➕</span><span>Ekle</span></button>
   <button class="mob-btn" id="mob-ayarlar" onclick="showPage('ayarlar')"><span class="mob-ico">⚙️</span><span>Ayarlar</span></button>
 </nav>
-<div class="site-footer" id="siteFooter">v1.36</div>
+<div class="site-footer" id="siteFooter">v1.41</div>
 
 </div>
 
@@ -692,7 +695,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 
 const CACHE_TTL = { dashboard: 30000, schools: 180000, personnel: 180000, records: 60000, deliveries: 60000 };
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZXE4OxOawYB8XlDF6HpRMkBP1F3Zka80MUqoKFz5GTHMn0YrKEqr2wsOHeIth-UE/exec";
-const FRONTEND_VERSION = "v1.40";
+const FRONTEND_VERSION = "v1.41";
 
 const CITIES = ["İstanbul Avrupa","İstanbul Anadolu","Kocaeli","Yalova","Bursa"];
 const DISTRICTS = {
@@ -807,6 +810,32 @@ function closeLoginScreen() {
   if (el) el.style.display = "none";
 }
 
+function getLoginPersonnelOptions() {
+  return Array.isArray(S.authBootstrap?.loginCandidates) ? S.authBootstrap.loginCandidates : [];
+}
+function openLoginPersonnelDropdown() {
+  qs("#sd-login-name")?.classList.add("open");
+  filterLoginPersonnel();
+}
+function blurLoginPersonnelDropdown() {
+  setTimeout(() => qs("#sd-login-name")?.classList.remove("open"), 140);
+}
+function pickLoginPersonnel(name) {
+  if (qs("#login-name")) qs("#login-name").value = name || "";
+  qs("#sd-login-name")?.classList.remove("open");
+  setTimeout(() => qs("#login-password")?.focus(), 0);
+}
+function filterLoginPersonnel() {
+  const inp = qs("#login-name");
+  const listEl = qs("#sd-login-name");
+  if (!inp || !listEl) return;
+  const q = String(inp.value || "").trim().toLocaleLowerCase("tr-TR");
+  const options = getLoginPersonnelOptions();
+  const filtered = options.filter(name => String(name || "").toLocaleLowerCase("tr-TR").includes(q));
+  listEl.innerHTML = filtered.length
+    ? filtered.map(name => `<div class="sd-item" onclick="pickLoginPersonnel(${sq(name)})">${h(name)}</div>`).join("")
+    : `<div class="sd-empty">Eşleşen personel bulunamadı</div>`;
+}
 function renderBootstrapSetup() {
   const box = qs("#loginSetupBox");
   const sel = qs("#bootstrap-personnel");
@@ -827,12 +856,14 @@ async function checkBootstrapStatus() {
     });
     S.authBootstrap = {
       hasAuthSetup: !!res?.data?.has_auth_setup,
-      candidates: Array.isArray(res?.data?.candidates) ? res.data.candidates : []
+      candidates: Array.isArray(res?.data?.candidates) ? res.data.candidates : [],
+      loginCandidates: Array.isArray(res?.data?.login_candidates) ? res.data.login_candidates : []
     };
   } catch (e) {
-    S.authBootstrap = { hasAuthSetup:true, candidates:[] };
+    S.authBootstrap = { hasAuthSetup:true, candidates:[], loginCandidates:[] };
   }
   renderBootstrapSetup();
+  filterLoginPersonnel();
 }
 async function submitBootstrapSetup() {
   const btn = qs("#bootstrapBtn");
@@ -2216,16 +2247,19 @@ qsa(".modal-ov").forEach(ov => ov.addEventListener("click", e => {
   if (qs("#inp-tarih")) qs("#inp-tarih").value = toDateTimeLocalValue();
 
   try {
-    showLoader("Veriler hazırlanıyor...");
+    showLoader("Giriş hazırlanıyor...");
     await checkBootstrapStatus();
-    await Promise.all([loadPersonnel(true), loadSchools(true), loadRecords(true), loadDeliveries(true)]);
-    closeLoginScreen();
-    fillPersonnelDropdowns();
-    renderDashboard();
-    toast("Bu sürümde giriş kilidi geçici olarak kapalı.", "info");
+    if (S.authToken) {
+      await Promise.all([loadPersonnel(true), loadSchools(true), loadRecords(true), loadDeliveries(true)]);
+      closeLoginScreen();
+      fillPersonnelDropdowns();
+      renderDashboard();
+    } else {
+      openLoginScreen();
+    }
   } catch (e) {
     clearSession();
-    closeLoginScreen();
+    openLoginScreen();
     toast(e.message || "Veriler yüklenemedi", "error");
   } finally {
     hideLoader();
