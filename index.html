@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -118,6 +119,13 @@ tr:hover td{background:rgba(255,255,255,.018)}
 .sc-stat-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px}
 .school-detail{display:none;border-top:1px solid var(--border);background:var(--bg)}
 .school-detail.open{display:block}
+.timeline{display:flex;flex-direction:column}
+.tl-item{display:flex;gap:13px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;margin-top:1px}
+.tl-content{flex:1;min-width:0}
+.tl-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.tl-meta{font-size:11px;color:var(--text2)}
 .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);z-index:500;align-items:center;justify-content:center;padding:20px}
 .modal-ov.open{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;position:relative;box-shadow:0 28px 72px rgba(0,0,0,.55)}
@@ -134,11 +142,17 @@ tr:hover td{background:rgba(255,255,255,.018)}
 .empty-ico{font-size:38px;margin-bottom:11px}
 .empty-t{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:5px}
 .empty-s{font-size:13px}
+.cfg-banner{background:linear-gradient(135deg,rgba(79,142,247,.09),rgba(124,58,237,.06));border:1px solid rgba(79,142,247,.22);border-radius:var(--r);padding:18px 22px;margin-bottom:22px;display:flex;align-items:center;gap:14px}
+.cfg-ico{font-size:28px;flex-shrink:0}
+.cfg-title{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;margin-bottom:3px}
+.cfg-sub{font-size:13px;color:var(--text2)}
 .loader-ov{display:none;position:fixed;inset:0;background:rgba(15,17,23,.6);z-index:900;align-items:center;justify-content:center;flex-direction:column;gap:14px;backdrop-filter:blur(4px)}
 .loader-ov.on{display:flex}
 .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.spin-sm{width:16px;height:16px;border-width:2px;border-top-color:#fff}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loader-txt{font-family:'Space Mono',monospace;font-size:13px;color:var(--text2)}
+
 .dashboard-hero{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:22px}
 .hero-card{background:linear-gradient(135deg,rgba(79,142,247,.14),rgba(124,58,237,.08));border:1px solid rgba(79,142,247,.22);border-radius:var(--r);padding:22px}
 .hero-title{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.7px;color:var(--text2);margin-bottom:10px}
@@ -161,6 +175,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 .activity-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
 .activity-title{font-weight:600;font-size:13px}.activity-sub{font-size:12px;color:var(--text2)}
 @media(max-width:900px){.dashboard-hero,.dashboard-split{grid-template-columns:1fr}.hero-value{font-size:36px}}
+
 .mobile-nav{display:none}
 @media(max-width:768px){
   .topbar{padding:11px 15px}.topbar-nav{display:none}.page{padding:14px;padding-bottom:90px}
@@ -176,6 +191,8 @@ tr:hover td{background:rgba(255,255,255,.018)}
   .mob-btn.mob-add{color:#fff}
   .mob-btn.mob-add .mob-ico{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(79,142,247,.45);margin-top:-12px}
 }
+
+/* ── SCHOOL TIMELINE ── */
 .school-detail-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .sdh-info{font-size:13px;color:var(--text2)}
 .school-timeline{display:flex;flex-direction:column;gap:0}
@@ -193,45 +210,33 @@ tr:hover td{background:rgba(255,255,255,.018)}
 .teslim-label{background:rgba(34,197,94,.15);color:var(--green)}
 .tl-adet{font-family:'Space Mono',monospace;font-size:14px}
 .tl-actions{display:flex;gap:5px;flex-shrink:0;align-items:flex-start;padding-top:2px}
-.school-card-debt .sc-name{color:var(--text)}
+.timeline-loading{padding:24px;text-align:center}
+.school-card-borç .sc-name{color:var(--text)}
 .school-card-clean{opacity:.75}
 .school-card-clean .sc-icon{filter:grayscale(1)}
 
-/* v1.42 - LOGIN dropdown düzeltmesi */
+
+
 .login-shell{position:fixed;inset:0;background:rgba(15,17,23,.96);z-index:1200;display:flex;align-items:center;justify-content:center;padding:20px}
-.login-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:26px;box-shadow:0 28px 72px rgba(0,0,0,.55);overflow:visible;position:relative}
+.login-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:26px;box-shadow:0 28px 72px rgba(0,0,0,.55)}
 .login-title{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;margin-bottom:8px}
 .login-sub{font-size:13px;color:var(--text2);margin-bottom:18px}
 .login-note{font-size:12px;color:var(--text3);margin-top:10px}
 .login-shell .form-group{position:relative}
 .login-shell .form-group.dropdown-open{z-index:5000}
-#sd-login-name{
-  position:absolute;
-  top:calc(100% + 4px);
-  left:0; right:0;
-  background:#1a1d27;
-  color:var(--text);
-  border:1px solid var(--border2);
-  border-radius:var(--r-sm);
-  max-height:240px;
-  overflow-y:auto;
-  z-index:9999;
-  display:none;
-  box-shadow:0 18px 40px rgba(0,0,0,.7);
-}
+#sd-login-name{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1a1d27;color:var(--text);border:1px solid var(--border2);border-radius:var(--r-sm);max-height:240px;overflow-y:auto;z-index:9999;display:none;box-shadow:0 18px 40px rgba(0,0,0,.7)}
 #sd-login-name.open{display:block}
 #sd-login-name .sd-item{background:#1a1d27;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
 #sd-login-name .sd-item:hover{background:rgba(79,142,247,.22);color:var(--accent)}
 #sd-login-name .sd-empty{background:#1a1d27}
-
 .readonly-input{opacity:.75;pointer-events:none}
-.site-footer{max-width:1440px;margin:18px auto 28px;padding:0 28px;color:var(--text3);font-family:'Space Mono',monospace;font-size:12px;text-align:right}
-@media(max-width:768px){.site-footer{padding:0 14px 86px;text-align:center}}
-
-/* v1.42 - Sıralama barı */
 .sort-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .sort-bar label{margin:0;font-size:11px}
 .sort-bar select{width:auto;min-width:200px;padding:8px 12px;font-size:13px}
+
+.site-footer{max-width:1440px;margin:18px auto 28px;padding:0 28px;color:var(--text3);font-family:'Space Mono',monospace;font-size:12px;text-align:right}
+@media(max-width:768px){.site-footer{padding:0 14px 86px;text-align:center}}
+
 </style>
 </head>
 <body>
@@ -277,6 +282,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
       </div>
     </div>
   </div>
+
   <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
     <div class="stat-card sc-blue">
       <div class="stat-label">Faz Dağılımı</div>
@@ -297,6 +303,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <div class="stat-sub">Sistemdeki tüm işlem sayısı</div>
     </div>
   </div>
+
   <div class="dashboard-split">
     <div class="section">
       <div class="section-head"><div class="section-title">📍 ŞEHİR BAZINDA DURUM</div></div>
@@ -395,7 +402,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 </div>
 
 <div id="page-okullar" class="page">
-  <div class="page-header"><div class="page-title">// OKULLAR &amp; KAYITLAR</div><div class="page-sub">Ops borcunuz olan okullar üstte · tıklayın tüm işlem geçmişini görün</div></div>
+  <div class="page-header"><div class="page-title">// OKULLAR & KAYITLAR</div><div class="page-sub">Ops borcunuz olan okullar üstte · tıklayın tüm işlem geçmişini görün</div></div>
   <div class="city-tabs" id="okulCityTabs"></div>
   <div class="sort-bar">
     <label>Sırala:</label>
@@ -497,6 +504,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
   </div>
 </div>
 
+<!-- SİLME ONAY MODAL -->
 <div class="modal-ov" id="confirmDeleteModal">
   <div class="modal" style="max-width:420px">
     <div class="modal-title">🗑️ Kaydı Sil</div>
@@ -513,6 +521,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
     </div>
   </div>
 </div>
+
 
 <div class="modal-ov" id="deliverySelectModal">
   <div class="modal">
@@ -573,6 +582,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
   </div>
 </div>
 
+
 <div class="login-shell" id="loginShell" style="display:none">
   <div class="login-card">
     <div class="login-title">🔐 Personel Girişi</div>
@@ -594,7 +604,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
       <button class="btn btn-primary" id="loginBtn" onclick="submitLogin()">Giriş Yap</button>
     </div>
     <div id="loginSetupBox" style="display:none;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)">
-      <div class="login-sub" style="margin-bottom:12px">Şifresi olmayan personeller için aşağıdan doğrudan şifre oluşturabilirsiniz.</div>
+      <div class="login-sub" style="margin-bottom:12px">Şifresi olmayan personeller için aşağıdan doğrudan şifre oluşturabilirsiniz. Bu alan artık her zaman görünür; böylece eski kayıtlar yüzünden giriş ekranında kilitlenmezsiniz.</div>
       <div class="form-grid" style="grid-template-columns:1fr;gap:12px">
         <div class="form-group">
           <label>KURULUM PERSONELİ</label>
@@ -609,7 +619,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
         <button class="btn btn-success" id="bootstrapBtn" onclick="submitBootstrapSetup()">Şifreyi Oluştur</button>
       </div>
     </div>
-    <div class="login-note">Personel adını yazarken kayıtlı isimler aşağıda listelenir.</div>
+    <div class="login-note">Personel adını yazarken kayıtlı isimler aşağıda listelenir. Şifresi olmayan kullanıcılar alttan ilk şifresini oluşturabilir.</div>
   </div>
 </div>
 
@@ -649,6 +659,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 
 <div class="toast-wrap" id="toastWrap"></div>
 
+<!-- KAYIT DÜZENLE MODAL -->
 <div class="modal-ov" id="editRecordModal">
   <div class="modal">
     <div class="modal-title">✏️ Kaydı Düzenle</div>
@@ -697,21 +708,22 @@ tr:hover td{background:rgba(255,255,255,.018)}
     </div>
   </div>
 </div>
-
 <nav class="mobile-nav">
   <button class="mob-btn active" id="mob-dashboard" onclick="showPage('dashboard')"><span class="mob-ico">📊</span><span>Özet</span></button>
   <button class="mob-btn" id="mob-okullar" style="flex:1.5" onclick="showPage('okullar')"><span class="mob-ico">🏫</span><span>Okullar</span></button>
   <button class="mob-btn mob-add" id="mob-kayit" onclick="showPage('kayit')"><span class="mob-ico">➕</span><span>Ekle</span></button>
   <button class="mob-btn" id="mob-ayarlar" onclick="showPage('ayarlar')"><span class="mob-ico">⚙️</span><span>Ayarlar</span></button>
 </nav>
+<div class="site-footer" id="siteFooter">v1.43</div>
 
-<div class="site-footer" id="siteFooter">v1.42</div>
 </div>
 
 <script>
+
 const CACHE_TTL = { dashboard: 30000, schools: 180000, personnel: 180000, records: 60000, deliveries: 60000 };
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZXE4OxOawYB8XlDF6HpRMkBP1F3Zka80MUqoKFz5GTHMn0YrKEqr2wsOHeIth-UE/exec";
-const FRONTEND_VERSION = "v1.42";
+const FRONTEND_VERSION = "v1.43";
+
 const CITIES = ["İstanbul Avrupa","İstanbul Anadolu","Kocaeli","Yalova","Bursa"];
 const DISTRICTS = {
   "İstanbul Avrupa":["Arnavutköy","Avcılar","Bağcılar","Bahçelievler","Bakırköy","Başakşehir","Bayrampaşa","Beşiktaş","Beylikdüzü","Beyoğlu","Büyükçekmece","Çatalca","Esenler","Esenyurt","Eyüpsultan","Fatih","Gaziosmanpaşa","Güngören","Kağıthane","Küçükçekmece","Sarıyer","Silivri","Sultangazi","Şişli","Zeytinburnu"],
@@ -720,6 +732,7 @@ const DISTRICTS = {
   "Yalova":["Altınova","Armutlu","Çınarcık","Çiftlikköy","Merkez","Termal"],
   "Bursa":["Büyükorhan","Gemlik","Gürsu","Harmancık","İnegöl","İznik","Karacabey","Keles","Kestel","Mudanya","Mustafakemalpaşa","Nilüfer","Orhaneli","Orhangazi","Osmangazi","Yıldırım","Yenişehir"]
 };
+
 const S = {
   personnel: "",
   authToken: localStorage.getItem("ops_auth_token") || "",
@@ -730,7 +743,7 @@ const S = {
   records: [],
   cacheAt: { dashboard:0, schools:0, personnel:0, records:0, deliveries:0 },
   pending: { schools:null, personnel:null, records:null, deliveries:null },
-  deliveries: [],
+  deliveries: [],  // tüm teslim kayıtları
   derived: null,
   selFaz: null,
   selKaynak: null,
@@ -743,6 +756,7 @@ const S = {
   schoolSort: "debt_desc",
   timelineSort: "newest",
 };
+
 const qs = s => document.querySelector(s);
 const qsa = s => [...document.querySelectorAll(s)];
 window.addEventListener("DOMContentLoaded",()=>{ const f=document.getElementById("siteFooter"); if(f) f.textContent=FRONTEND_VERSION; });
@@ -750,6 +764,7 @@ const pageIs = id => qs("#page-"+id)?.classList.contains("active");
 const h = v => String(v ?? "").replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const isFresh = key => (Date.now() - (S.cacheAt[key] || 0)) < CACHE_TTL[key];
 const markFresh = key => { S.cacheAt[key] = Date.now(); };
+// sq(): onclick attribute içinde güvenli string — tek tırnak, html-safe
 const sq = v => "'" + String(v ?? "").replace(/'/g, "&#39;") + "'";
 
 function toast(msg, type="info") {
@@ -761,6 +776,7 @@ function toast(msg, type="info") {
   w.appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
+
 function showLoader(txt="Yükleniyor..."){ const ov=qs("#loaderOv"); if(ov){ qs("#loaderTxt").textContent = txt; ov.classList.add("on"); } }
 function hideLoader(){ qs("#loaderOv")?.classList.remove("on"); }
 
@@ -775,7 +791,7 @@ async function fetchJSON(url, options = {}) {
       redirect: "follow"
     });
     const text = await res.text();
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     let data;
     try {
       data = JSON.parse(text);
@@ -792,7 +808,6 @@ async function fetchJSON(url, options = {}) {
     clearTimeout(timer);
   }
 }
-
 function setSession(session) {
   S.session = session || null;
   S.personnel = session?.personnel?.isim || "";
@@ -815,8 +830,15 @@ function renderSessionUI() {
   if (qs("#inp-personel")) qs("#inp-personel").value = S.personnel || "";
   if (qs("#teslim-personel")) qs("#teslim-personel").value = S.personnel || "";
 }
-function openLoginScreen() { const el = qs("#loginShell"); if (el) el.style.display = "flex"; }
-function closeLoginScreen() { const el = qs("#loginShell"); if (el) el.style.display = "none"; }
+function openLoginScreen() {
+  const el = qs("#loginShell");
+  if (el) el.style.display = "flex";
+}
+function closeLoginScreen() {
+  const el = qs("#loginShell");
+  if (el) el.style.display = "none";
+}
+
 function getLoginPersonnelOptions() {
   return Array.isArray(S.authBootstrap?.loginCandidates) ? S.authBootstrap.loginCandidates : [];
 }
@@ -845,7 +867,7 @@ function filterLoginPersonnel() {
   const options = getLoginPersonnelOptions();
   const filtered = options.filter(name => String(name || "").toLocaleLowerCase("tr-TR").includes(q));
   listEl.innerHTML = filtered.length
-    ? filtered.map(name => `<div class="sd-item" onmousedown="pickLoginPersonnel(${sq(name)})">${h(name)}</div>`).join("")
+    ? filtered.map(name => `<div class="sd-item" onclick="pickLoginPersonnel(${sq(name)})">${h(name)}</div>`).join("")
     : `<div class="sd-empty">Eşleşen personel bulunamadı</div>`;
 }
 function renderBootstrapSetup() {
@@ -908,7 +930,6 @@ async function submitBootstrapSetup() {
     hideLoader();
   }
 }
-
 function api(params){
   const payload = { ...(params || {}) };
   if (S.authToken) payload.authToken = S.authToken;
@@ -946,7 +967,6 @@ function trFromDateTimeLocal(value) {
   const pad = n => String(n).padStart(2, "0");
   return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
-
 async function submitLogin() {
   const btn = qs("#loginBtn");
   try {
@@ -993,9 +1013,16 @@ function calcRemaining(record) {
   const toplamTeslim = Math.max(0, Number(record?.toplam_teslim || 0));
   return Math.max(0, adet - Math.min(adet, toplamTeslim));
 }
-function normText(v){ return String(v ?? "").trim().toLocaleLowerCase("tr-TR"); }
-function schoolKeyFromSchool(s){ return [normText(s?.city), normText(s?.district), normText(s?.school_name), normText(s?.kurum_kodu)].join("|"); }
-function schoolKeyFromRecord(r){ return [normText(r?.city), normText(r?.district), normText(r?.school_name), normText(r?.kurum_kodu)].join("|"); }
+
+function normText(v){
+  return String(v ?? "").trim().toLocaleLowerCase("tr-TR");
+}
+function schoolKeyFromSchool(s){
+  return [normText(s?.city), normText(s?.district), normText(s?.school_name), normText(s?.kurum_kodu)].join("|");
+}
+function schoolKeyFromRecord(r){
+  return [normText(r?.city), normText(r?.district), normText(r?.school_name), normText(r?.kurum_kodu)].join("|");
+}
 function schoolMatchesRecord(school, record){
   if (!school || !record) return false;
   const sid = String(school.school_id || "").trim();
@@ -1017,25 +1044,18 @@ function getSchoolAggregate(school){
   const teslimAdet = recs.reduce((s,r)=>s + Number(r.toplam_teslim || 0), 0);
   const kalan = recs.reduce((s,r)=>s + calcRemaining(r), 0);
   const bekleyen = recs.filter(r => calcRemaining(r) > 0).length;
-  // En yeni ve en eski kayıt tarihleri
-  let latestTs = 0, oldestTs = Infinity;
-  recs.forEach(r => {
-    const d = parseTRDate(r.tarih);
-    if (d) {
-      const t = d.getTime();
-      if (t > latestTs) latestTs = t;
-      if (t < oldestTs) oldestTs = t;
-    }
-  });
-  if (!recs.length) { latestTs = 0; oldestTs = 0; }
-  return { alinan, teslimAdet, kalan, bekleyen, recs, latestTs, oldestTs };
+  return { alinan, teslimAdet, kalan, bekleyen, recs };
 }
 function formatTarih(value){
   if (!value) return "-";
   const d = parseTRDate(value);
   if (!d) return String(value);
-  return d.toLocaleString("tr-TR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" });
+  return d.toLocaleString("tr-TR", {
+    day:"2-digit", month:"2-digit", year:"numeric",
+    hour:"2-digit", minute:"2-digit"
+  });
 }
+
 function parseTRDate(value){
   const s=String(value||'').trim();
   let m=s.match(/^(\d{2})\.(\d{2})\.(\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?/);
@@ -1054,9 +1074,12 @@ function rebuildDerived() {
   const today = new Date();
   const recent = [];
   for (const c of CITIES) cityAgg[c] = { bekleyenOps:0, borcluOkul:new Set(), kayit:0, teslimKayit:0 };
+
   let faz1 = 0, faz2 = 0, faz3 = 0, teslimToplam = 0, sinif = 0, yedek = 0;
   let openRecords = 0, todayRecords = 0, todayOps = 0;
+
   for (const r of S.records) {
+    const schoolId = String(r.school_id ?? '');
     const schoolKey = schoolKeyFromRecord(r);
     const city = r.city || '';
     const adet = Number(r.adet || 0);
@@ -1064,12 +1087,14 @@ function rebuildDerived() {
     const kalan = calcRemaining(r);
     const isBekleyen = kalan > 0;
     const dt = parseTRDate(r.tarih);
-    if (!schoolStats[schoolKey]) schoolStats[schoolKey] = { bekleyen:0, toplam:0, alinan:0, teslimAdet:0, kalan:0 };
+
+    if (!schoolStats[schoolKey]) schoolStats[schoolKey] = { bekleyen:0, toplam:0, alinan:0, teslimAdet:0, kalan:0, school_id: schoolId };
     schoolStats[schoolKey].toplam += 1;
     schoolStats[schoolKey].alinan += adet;
     schoolStats[schoolKey].teslimAdet += toplamTeslim;
     schoolStats[schoolKey].kalan += kalan;
     if (isBekleyen) schoolStats[schoolKey].bekleyen += 1;
+
     if (cityAgg[city]) {
       cityAgg[city].kayit += 1;
       if (kalan === 0) cityAgg[city].teslimKayit += 1;
@@ -1078,7 +1103,9 @@ function rebuildDerived() {
         cityAgg[city].borcluOkul.add(schoolKey);
       }
     }
+
     teslimToplam += toplamTeslim;
+
     if (isBekleyen) {
       openRecords += 1;
       borcluSet.add(schoolKey);
@@ -1086,10 +1113,16 @@ function rebuildDerived() {
       if (faz === '1') faz1 += kalan;
       else if (faz === '2') faz2 += kalan;
       else if (faz === '3') faz3 += kalan;
+
       if (r.kaynak === 'sinif') sinif += kalan;
       else if (r.kaynak === 'yedek') yedek += kalan;
     }
-    if (isSameDay(dt, today)) { todayRecords += 1; todayOps += adet; }
+
+    if (isSameDay(dt, today)) {
+      todayRecords += 1;
+      todayOps += adet;
+    }
+
     recent.push({
       school_name: r.school_name || '-',
       city: city || '-',
@@ -1099,6 +1132,7 @@ function rebuildDerived() {
       durum: r.durum || 'bekliyor'
     });
   }
+
   const cityRows = CITIES.map(c => ({
     city: c,
     bekleyenOps: cityAgg[c].bekleyenOps,
@@ -1106,20 +1140,26 @@ function rebuildDerived() {
     kayit: cityAgg[c].kayit,
     teslimKayit: cityAgg[c].teslimKayit,
   })).sort((a,b) => b.bekleyenOps - a.bekleyenOps || b.borcluOkul - a.borcluOkul || a.city.localeCompare(b.city,'tr'));
+
   recent.sort((a,b) => {
     const da = parseTRDate(a.tarih)?.getTime() || 0;
     const db = parseTRDate(b.tarih)?.getTime() || 0;
     return db - da;
   });
+
   S.derived = {
-    schoolStats, cityRows,
+    schoolStats,
+    cityRows,
     faz1, faz2, faz3,
     toplamBekleyen: faz1 + faz2 + faz3,
-    teslimToplam, sinif, yedek,
+    teslimToplam,
+    sinif,
+    yedek,
     borcluCount: borcluSet.size,
     openRecords,
     totalRecords: S.records.length,
-    todayRecords, todayOps,
+    todayRecords,
+    todayOps,
     topCity: cityRows[0]?.city || '-',
     recent: recent.slice(0, 6)
   };
@@ -1152,8 +1192,8 @@ async function loadRecords(force = false) {
   if (S.pending.records) return S.pending.records;
   S.pending.records = api({ action: "getRecords" }).then(r => {
     S.records = Array.isArray(r.data) ? r.data : [];
-    markFresh("records");
     S.derived = null;
+    markFresh("records"); S.derived = null;
     rebuildDerived();
     return S.records;
   }).finally(() => { S.pending.records = null; });
@@ -1190,9 +1230,11 @@ function showPage(id) {
   qsa(".page").forEach(p => p.classList.remove("active"));
   qs("#page-"+id)?.classList.add("active");
   qsa(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.page === id));
-  ["dashboard","okullar","kayit","ayarlar"].forEach(p => qs("#mob-"+p)?.classList.toggle("active", p === id));
+  ["dashboard","okullar","kayit","kayitlar","ayarlar"].forEach(p => qs("#mob-"+p)?.classList.toggle("active", p === id));
+
   if (id === "dashboard") loadDashboard();
   else if (id === "okullar") loadOkullar();
+  else if (id === "kayitlar") loadKayitlarPage();
   else if (id === "kayit") ensureBaseData().catch(e=>toast(e.message,"error"));
   else if (id === "ayarlar") loadAyarlar();
 }
@@ -1217,6 +1259,7 @@ function sdFilter(ns) {
   if (!inp || !list) return;
   const q = (inp.value || "").toLowerCase().trim();
   list.classList.add("open");
+
   if (ns === "personel" || ns === "teslim-p" || ns === "er-p" || ns === "ed-p") {
     const items = S.personnelList.filter(p => String(p.isim || "").toLowerCase().includes(q));
     list.innerHTML = items.length
@@ -1259,8 +1302,10 @@ function sdPick(ns, val) {
   if (inp) inp.value = val;
   qs("#sd-"+ns)?.classList.remove("open");
   qs("#sd-"+ns)?.closest(".form-group")?.classList.remove("dropdown-open");
+
   if (ns === "personel") { selectPersonnel(val, false); return; }
   if (ns === "teslim-p" || ns === "er-p" || ns === "ed-p") return;
+
   if (ns === "sehir") {
     S.selSehir = val; S.selIlce = ""; S.selOkul = null;
     qs("#inp-ilce").value = ""; qs("#inp-ilce").disabled = false;
@@ -1361,8 +1406,9 @@ function renderDashboard() {
   qs('#s-total-records').textContent = d.totalRecords;
   qs('#s-faz-summary').textContent = `F1 ${d.faz1} · F2 ${d.faz2} · F3 ${d.faz3}`;
   qs('#s-kaynak-summary').textContent = `Sınıf ${d.sinif} · Yedek ${d.yedek}`;
+
   const grid = qs('#citySummaryGrid');
-  const cityRowsHtml = d.cityRows.map(row => `
+  grid.innerHTML = d.cityRows.map(row => `
     <div class="city-row" onclick="showPage('okullar');setOkulCityByName(${sq(row.city)})">
       <div class="city-main">
         <div class="city-name">${h(row.city)}</div>
@@ -1373,10 +1419,10 @@ function renderDashboard() {
         <span class="mini-badge">Bekleyen okul: ${row.borcluOkul}</span>
       </div>
     </div>
-  `).join('');
-  grid.innerHTML = cityRowsHtml || `<div class="empty"><div class="empty-s">Şehir verisi yok</div></div>`;
+  `).join('') || `<div class="empty"><div class="empty-s">Şehir verisi yok</div></div>`;
+
   const recent = qs('#recentActivity');
-  const recentHtml = d.recent.map(item => `
+  recent.innerHTML = d.recent.length ? d.recent.map(item => `
     <div class="activity-item">
       <div class="activity-top">
         <div class="activity-title">${h(item.school_name)}</div>
@@ -1385,8 +1431,7 @@ function renderDashboard() {
       <div class="activity-sub">${h(item.city)} · ${h(item.personel)} · ${item.adet} adet</div>
       <div class="activity-sub">${h(item.tarih)}</div>
     </div>
-  `).join('');
-  recent.innerHTML = recentHtml || `<div class="empty"><div class="empty-s">Henüz hareket yok</div></div>`;
+  `).join('') : `<div class="empty"><div class="empty-s">Henüz hareket yok</div></div>`;
 }
 
 async function loadOkullar(force = false) {
@@ -1413,8 +1458,6 @@ function setOkulCityByName(c) {
   buildCityTabs("#okulCityTabs", "setOkulCity", S.okulCity);
   renderOkullar();
 }
-
-// v1.42 — Sıralama fonksiyonları
 function applySchoolSort() {
   const sel = qs("#schoolSortSelect");
   S.schoolSort = sel ? sel.value : "debt_desc";
@@ -1423,71 +1466,58 @@ function applySchoolSort() {
 function applyTimelineSort() {
   const sel = qs("#timelineSortSelect");
   S.timelineSort = sel ? sel.value : "newest";
-  // Açık olan tüm timeline'ları yeniden çiz
-  qsa(".school-detail.open").forEach(d => {
-    const sid = d.id.replace("scd-", "");
-    refreshSchoolDetail(sid);
+  qsa(".school-detail.open").forEach(el => {
+    const sid = String(el.id || "").replace("scd-", "");
+    if (sid) refreshSchoolDetail(sid);
   });
-}
-function sortSchools(list) {
-  if (!Array.isArray(list)) return list;
-  const arr = list.slice();
-  const aggMap = new WeakMap();
-  const agg = s => {
-    if (aggMap.has(s)) return aggMap.get(s);
-    const a = getSchoolAggregate(s);
-    aggMap.set(s, a);
-    return a;
-  };
-  const name = s => String(s.school_name || "").toLocaleLowerCase("tr");
-  const city = s => String(s.city || "").toLocaleLowerCase("tr");
-  switch (S.schoolSort) {
-    case "debt_asc":
-      arr.sort((a,b) => agg(a).kalan - agg(b).kalan || name(a).localeCompare(name(b), "tr"));
-      break;
-    case "newest":
-      arr.sort((a,b) => agg(b).latestTs - agg(a).latestTs || name(a).localeCompare(name(b), "tr"));
-      break;
-    case "oldest":
-      arr.sort((a,b) => {
-        const ao = agg(a).oldestTs || Infinity;
-        const bo = agg(b).oldestTs || Infinity;
-        return ao - bo;
-      });
-      break;
-    case "name_asc":
-      arr.sort((a,b) => name(a).localeCompare(name(b), "tr"));
-      break;
-    case "name_desc":
-      arr.sort((a,b) => name(b).localeCompare(name(a), "tr"));
-      break;
-    case "city_asc":
-      arr.sort((a,b) => city(a).localeCompare(city(b), "tr") || name(a).localeCompare(name(b), "tr"));
-      break;
-    case "debt_desc":
-    default:
-      arr.sort((a,b) => agg(b).kalan - agg(a).kalan || name(a).localeCompare(name(b), "tr"));
-  }
-  return arr;
 }
 
 function renderOkullar() {
   buildCityTabs("#okulCityTabs", "setOkulCity", S.okulCity);
+  if (qs("#schoolSortSelect")) qs("#schoolSortSelect").value = S.schoolSort;
+  if (qs("#timelineSortSelect")) qs("#timelineSortSelect").value = S.timelineSort;
   const q = (qs("#okulSearch")?.value || "").toLowerCase().trim();
   let schools = S.schools.slice();
   if (S.okulCity !== "all") schools = schools.filter(s => s.city === S.okulCity);
   if (q) schools = schools.filter(s => `${s.school_name||""} ${s.district||""} ${s.kurum_kodu||""}`.toLowerCase().includes(q));
+
   const root = qs("#okullarList");
   if (!schools.length) {
     root.innerHTML = `<div class="empty"><div class="empty-t">Okul bulunamadı</div></div>`;
     return;
   }
-  schools = sortSchools(schools);
+
+  schools.sort((a, b) => {
+    const sa = getSchoolAggregate(a);
+    const sb = getSchoolAggregate(b);
+    const newestA = Math.max(0, ...sa.recs.map(r => parseTRDate(r.tarih)?.getTime() || 0));
+    const newestB = Math.max(0, ...sb.recs.map(r => parseTRDate(r.tarih)?.getTime() || 0));
+    const oldestA = sa.recs.length ? Math.min(...sa.recs.map(r => parseTRDate(r.tarih)?.getTime() || 0).filter(Boolean)) : 0;
+    const oldestB = sb.recs.length ? Math.min(...sb.recs.map(r => parseTRDate(r.tarih)?.getTime() || 0).filter(Boolean)) : 0;
+    switch (S.schoolSort) {
+      case "debt_asc":
+        return (sa.kalan || 0) - (sb.kalan || 0) || (a.school_name||"").localeCompare(b.school_name||"", "tr");
+      case "newest":
+        return newestB - newestA || (a.school_name||"").localeCompare(b.school_name||"", "tr");
+      case "oldest":
+        return oldestA - oldestB || (a.school_name||"").localeCompare(b.school_name||"", "tr");
+      case "name_asc":
+        return (a.school_name||"").localeCompare(b.school_name||"", "tr");
+      case "name_desc":
+        return (b.school_name||"").localeCompare(a.school_name||"", "tr");
+      case "city_asc":
+        return (a.city||"").localeCompare(b.city||"", "tr") || (a.school_name||"").localeCompare(b.school_name||"", "tr");
+      case "debt_desc":
+      default:
+        return (sb.kalan || 0) - (sa.kalan || 0) || (a.school_name||"").localeCompare(b.school_name||"", "tr");
+    }
+  });
+
   root.innerHTML = schools.map(s => {
     const st = getSchoolAggregate(s);
-    const hasDebt = st.kalan > 0;
-    return `<div class="school-card ${hasDebt ? "school-card-debt" : "school-card-clean"}" id="sc-${s.school_id}" data-sid="${s.school_id}" onclick="handleSchoolClick(event)">
-      <div class="sc-icon">${hasDebt ? "🏫" : "✅"}</div>
+    const hasBorç = st.kalan > 0;
+    return `<div class="school-card ${hasBorç ? "school-card-borç" : "school-card-clean"}" id="sc-${s.school_id}" data-sid="${s.school_id}" onclick="handleSchoolClick(event)">
+      <div class="sc-icon">${hasBorç ? "🏫" : "✅"}</div>
       <div class="sc-info">
         <div class="sc-name">${h(s.school_name)}</div>
         <div class="sc-meta">${h(s.city)} › ${h(s.district)}${s.kurum_kodu ? ` · Kod: ${h(s.kurum_kodu)}` : ""}</div>
@@ -1495,15 +1525,17 @@ function renderOkullar() {
       <div class="sc-stats">
         <div class="sc-stat"><div class="sc-stat-v" style="color:var(--accent)">${st.alinan||0}</div><div class="sc-stat-l">Alınan</div></div>
         <div class="sc-stat"><div class="sc-stat-v" style="color:var(--green)">${st.teslimAdet||0}</div><div class="sc-stat-l">Teslim</div></div>
-        <div class="sc-stat"><div class="sc-stat-v" style="color:${hasDebt ? "var(--orange)" : "var(--text3)"}">${st.kalan||0}</div><div class="sc-stat-l">Kalan</div></div>
+        <div class="sc-stat"><div class="sc-stat-v" style="color:${hasBorç ? "var(--orange)" : "var(--text3)"}">${st.kalan||0}</div><div class="sc-stat-l">Kalan</div></div>
       </div>
       <span id="sc-arr-${s.school_id}" style="color:var(--text3);font-size:16px">›</span>
     </div><div class="school-detail" id="scd-${s.school_id}"></div>`;
   }).join("");
 }
+
 function refreshSchoolDetail(sid) {
   const detail = qs("#scd-" + String(sid));
   if (!detail || !detail.classList.contains("open")) return;
+  // içeriği sıfırla, tekrar aç
   const card = qs("#sc-" + String(sid));
   const arr  = qs("#sc-arr-" + String(sid));
   detail.classList.remove("open");
@@ -1512,6 +1544,7 @@ function refreshSchoolDetail(sid) {
   setTimeout(() => toggleSchoolDetail(sid), 50);
 }
 function handleSchoolClick(event) {
+  // data-sid attribute'undan doğrudan al — string parsing hatası yok
   const card = event.currentTarget;
   const sid = card.dataset.sid;
   if (!sid) return;
@@ -1532,6 +1565,7 @@ function toggleSchoolDetail(sid) {
   detail.classList.add("open");
   card.classList.add("expanded");
   arr.textContent = "⌄";
+
   const school = S.schools.find(s => String(s.school_id) === sid);
   const recs = school ? getMatchingRecordsForSchool(school) : S.records.filter(r => String(r.school_id || '').trim() === sid.trim());
   const deliveries = school ? getMatchingDeliveriesForSchool(school, recs) : S.deliveries.filter(d => String(d.school_id || '').trim() === sid.trim());
@@ -1543,11 +1577,16 @@ function toggleSchoolDetail(sid) {
       <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openEditSchoolModal(${sq(sid)})">✏️ Düzenle</button>
     </div>
   </div>`;
+
+  // Önce header'ı yaz, sonra timeline'ı render et
   detail.innerHTML = schoolInfo;
+
   renderSchoolTimeline(detail, sid, school, recs, deliveries);
 }
+
 function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
   const events = [];
+
   recs.forEach(r => {
     events.push({
       type: 'alim',
@@ -1555,12 +1594,16 @@ function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
       tarih: r.tarih,
       record_id: r.record_id,
       school_name: r.school_name,
-      faz: r.faz, adet: r.adet,
+      faz: r.faz,
+      adet: r.adet,
       kalan: calcRemaining(r),
-      kaynak: r.kaynak, personel: r.personel,
-      notlar: r.notlar, durum: r.durum,
+      kaynak: r.kaynak,
+      personel: r.personel,
+      notlar: r.notlar,
+      durum: r.durum,
     });
   });
+
   deliveries.forEach(d => {
     events.push({
       type: 'teslim',
@@ -1570,23 +1613,26 @@ function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
       record_id: d.record_id,
       school_name: d.school_name,
       teslim_adet: d.teslim_adet,
-      personel: d.personel, notlar: d.notlar,
+      personel: d.personel,
+      notlar: d.notlar,
     });
   });
-  // v1.42 — timeline sıralaması
+
   if (S.timelineSort === "oldest") {
     events.sort((a, b) => (a.date?.getTime() || 0) - (b.date?.getTime() || 0));
   } else {
     events.sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0));
   }
+
   if (!events.length) {
     detail.insertAdjacentHTML('beforeend', `<div class="empty" style="padding:28px"><div class="empty-s">Bu okul için henüz işlem yok</div></div>`);
     return;
   }
+
   const rows = events.map(ev => {
     if (ev.type === 'alim') {
       const teslimBilgi = Number(ev.kalan) < Number(ev.adet)
-        ? `<span class="tl-adet"><span style="font-weight:700">${h(ev.kalan)}</span><span style="color:var(--text3);font-size:11px"> / ${h(ev.adet)}</span></span>`
+        ? `<span class="tl-adet"><span style="font-weight:700">${h(ev.kalan)}</span><span style="color:var(--text3);font-size:11px"> /${h(ev.adet)}</span></span>`
         : `<span class="tl-adet"><span style="font-weight:700">${h(ev.adet)}</span></span>`;
       return `<div class="tl-event tl-alim">
         <div class="tl-icon">📥</div>
@@ -1628,12 +1674,58 @@ function renderSchoolTimeline(detail, sid, school, recs, deliveries) {
       </div>
     </div>`;
   }).join('');
+
   detail.insertAdjacentHTML('beforeend', `<div class="school-timeline">${rows}</div>`);
 }
+
+
 function kaynakBadge(k) {
   if (k === "sinif") return `<span class="badge b-done">🏫 Sınıf</span>`;
   if (k === "yedek") return `<span class="badge b-f3">📦 Yedek</span>`;
   return `<span style="color:var(--text3)">—</span>`;
+}
+
+function loadKayitlarPage(force = false) {
+  loadRecords(force).then(() => renderKayitlar()).catch(e => toast("Kayıtlar yüklenemedi: " + e.message, "error"));
+}
+function setRecCity(el, c) {
+  S.recCity = c;
+  qsa("#recCityTabs .city-tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  renderKayitlar();
+}
+function renderKayitlar() {
+  buildCityTabs("#recCityTabs", "setRecCity", S.recCity);
+  const q = (qs("#recSearch")?.value || "").toLowerCase().trim();
+  const df = qs("#recDurumFilter")?.value || "all";
+  const ff = qs("#recFazFilter")?.value || "all";
+  let recs = S.records.slice();
+  if (S.recCity !== "all") recs = recs.filter(r => r.city === S.recCity);
+  if (df !== "all") recs = recs.filter(r => r.durum === df);
+  if (ff !== "all") recs = recs.filter(r => String(r.faz) === ff);
+  if (q) recs = recs.filter(r => `${r.school_name||""} ${r.district||""} ${r.kurum_kodu||""}`.toLowerCase().includes(q));
+
+  const t = qs("#kayitlarTbl");
+  if (!recs.length) {
+    t.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text3)">Kayıt bulunamadı</td></tr>`;
+    return;
+  }
+  t.innerHTML = recs.map(r => `<tr>
+    <td>${h(r.school_name)}</td>
+    <td>${h(r.city)}${r.district ? ` / ${h(r.district)}` : ""}</td>
+    <td><span class="badge b-f${h(r.faz)}">FAZ ${h(r.faz)}</span></td>
+    <td>${kaynakBadge(r.kaynak)}</td>
+    <td>${h(r.adet)}</td>
+    <td>${h(r.personel)}</td>
+    <td>${h(r.tarih)}</td>
+    <td>${durumBadge(r.durum)}</td>
+    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.notlar || "—")}</td>
+    <td style="white-space:nowrap">
+      ${(r.durum !== "teslim") ? `<button class="btn btn-success btn-sm" onclick="openTeslimModal(${sq(r.record_id)})">📦</button> ` : `<span style="color:var(--green);font-size:12px">✓ </span>`}
+      <button class="btn btn-secondary btn-sm" onclick="openEditRecordModal(${sq(r.record_id)})">✏️</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteRecord(${sq(r.record_id)}, ${sq(r.school_name)})">🗑️</button>
+    </td>
+  </tr>`).join("");
 }
 
 async function submitKayit() {
@@ -1645,8 +1737,10 @@ async function submitKayit() {
     if (!S.selIlce) throw new Error("İlçe seçin");
     if (!S.selFaz) throw new Error("Faz seçin");
     if (!S.selKaynak) throw new Error("Kaynak seçin (Sınıftan / Yedek)");
+
     const okulAdi = qs("#inp-okul").value.trim();
     if (!okulAdi) throw new Error("Okul adı girin");
+
     if (!S.selOkul || String(S.selOkul.school_name || "").toLowerCase() !== okulAdi.toLowerCase()) {
       const match = S.schools.find(s =>
         s.city === S.selSehir &&
@@ -1655,17 +1749,21 @@ async function submitKayit() {
       );
       S.selOkul = match || { school_id:null, school_name:okulAdi, kurum_kodu: qs("#inp-kurum").value.trim() };
     }
+
     const adet = parseInt(qs("#inp-adet").value, 10) || 1;
     const notlar = qs("#inp-not").value.trim();
     const kurum = qs("#inp-kurum").value.trim();
     const tarih = trFromDateTimeLocal(qs("#inp-tarih").value);
     if (!tarih) throw new Error("Geçerli bir alım tarihi seçin");
+
     btn.disabled = true; btn.textContent = "Kaydediliyor...";
+
     let school = S.selOkul;
     if (!school.school_id) {
       const sr = await apiPost({
         action: "addSchool",
-        city: S.selSehir, district: S.selIlce,
+        city: S.selSehir,
+        district: S.selIlce,
         school_name: school.school_name,
         kurum_kodu: kurum
       });
@@ -1673,36 +1771,48 @@ async function submitKayit() {
       S.schools.unshift(school);
       markFresh("schools");
     }
+
     const rr = await apiPost({
       action: "addRecord",
       school_id: school.school_id,
-      city: S.selSehir, district: S.selIlce,
+      city: S.selSehir,
+      district: S.selIlce,
       school_name: school.school_name,
       kurum_kodu: school.kurum_kodu || kurum,
-      faz: S.selFaz, adet, personel, notlar,
-      kaynak: S.selKaynak, tarih
+      faz: S.selFaz,
+      adet,
+      personel,
+      notlar,
+      kaynak: S.selKaynak,
+      tarih
     });
+
     const created = rr.data || {};
     S.records.unshift({
       record_id: created.record_id || ("tmp_" + Date.now()),
       school_id: school.school_id,
-      city: S.selSehir, district: S.selIlce,
+      city: S.selSehir,
+      district: S.selIlce,
       school_name: school.school_name,
       kurum_kodu: school.kurum_kodu || kurum,
-      faz: S.selFaz, adet, personel, notlar,
+      faz: S.selFaz,
+      adet,
+      personel,
+      notlar,
       kaynak: S.selKaynak,
       tarih: created.tarih || tarih,
       durum: created.durum || "bekliyor",
       toplam_teslim: created.toplam_teslim || 0,
       kalan_adet: created.kalan_adet ?? adet
     });
-    markFresh("records");
-    S.derived = null;
+    markFresh("records"); S.derived = null;
     rebuildDerived();
+
     toast(`Kayıt oluşturuldu ✓ — ${school.school_name}`, "success");
     resetKayitForm();
     if (pageIs("dashboard")) renderDashboard();
     if (pageIs("okullar")) renderOkullar();
+    if (pageIs("kayitlar")) renderKayitlar();
   } catch (e) {
     toast(e.message, "error");
     if (/şifre tanımlı değil|İlk kurulum/i.test(String(e.message || ""))) await checkBootstrapStatus();
@@ -1746,17 +1856,23 @@ async function submitTeslim() {
     const personel = String(S.personnel || "").trim();
     const notlar = qs("#teslim-not").value.trim();
     if (!personel) throw new Error("Personel seçin");
+
     btn.disabled = true; btn.textContent = "Kaydediliyor...";
     const res = await apiPost({
       action: "addDelivery",
       record_id: rec.record_id,
       school_id: rec.school_id,
       school_name: rec.school_name,
-      teslim_adet, personel, notlar
+      teslim_adet,
+      personel,
+      notlar
     });
+
     rec.toplam_teslim = Number(res.data?.toplamTeslim || 0);
     rec.kalan_adet = Math.max(0, Number(rec.adet || 0) - rec.toplam_teslim);
     rec.durum = res.data?.yeniDurum || (rec.kalan_adet > 0 ? "kismi" : "teslim");
+
+    // Yeni teslim kaydını local S.deliveries'e ekle — refresh olmadan anında görünsün
     if (res.data?.delivery_id) {
       S.deliveries.push({
         delivery_id: res.data.delivery_id,
@@ -1769,10 +1885,12 @@ async function submitTeslim() {
         notlar: notlar
       });
     }
-    markFresh("records");
-    S.derived = null;
+
+    markFresh("records"); S.derived = null;
     rebuildDerived();
+
     closeModal("teslimModal");
+    if (pageIs("kayitlar")) renderKayitlar();
     if (pageIs("dashboard")) renderDashboard();
     if (pageIs("okullar")) { renderOkullar(); refreshSchoolDetail(rec.school_id); }
     toast("Teslim kaydedildi", "success");
@@ -1785,17 +1903,29 @@ async function submitTeslim() {
   }
 }
 
+function openPersonnelModal() { renderPersonnelList(); openModal("personnelModal"); }
 function closeModal(id) { qs("#"+id)?.classList.remove("open"); }
 function openModal(id) { qs("#"+id)?.classList.add("open"); }
-
+function renderPersonnelList() {
+  const root = qs("#personnelList");
+  if (!S.personnelList.length) {
+    root.innerHTML = `<div class="empty"><div class="empty-s">Henüz personel yok.</div></div>`;
+    return;
+  }
+  root.innerHTML = S.personnelList.map(p => `<div class="school-card" onclick="selectPersonnel(${sq(p.isim)})">
+    <div class="sc-icon">${h(String(p.isim || "?").charAt(0).toUpperCase())}</div>
+    <div class="sc-info"><div class="sc-name">${h(p.isim)}</div></div>
+    ${p.isim === S.personnel ? '<span style="color:var(--green)">✓ Aktif</span>' : ''}
+  </div>`).join("");
+}
 function selectPersonnel(name, close = true) {
+  S.personnel = name;
   S.personnel = name;
   if (qs("#topName")) qs("#topName").textContent = name;
   if (qs("#topAvatar")) qs("#topAvatar").textContent = String(name).charAt(0).toUpperCase();
   if (qs("#inp-personel")) qs("#inp-personel").value = name;
   if (close) closeModal("personnelModal");
 }
-
 function renderPersonnelMgmt() {
   const root = qs("#personnelMgmtList");
   if (!S.personnelList.length) {
@@ -1816,6 +1946,7 @@ async function addNewPersonnel() {
     if (!isim) throw new Error("İsim girin");
     if (!password) throw new Error("İlk giriş şifresi girin");
     if (S.personnelList.some(p => String(p.isim || "").toLowerCase() === isim.toLowerCase())) throw new Error("Bu personel zaten var");
+
     const res = await apiPost({ action: "addPersonnel", isim, password });
     S.personnelList.push(res.data);
     S.personnelList.sort((a,b) => String(a.isim || "").localeCompare(String(b.isim || ""), "tr"));
@@ -1829,6 +1960,8 @@ async function addNewPersonnel() {
     toast(e.message, "error");
   }
 }
+
+
 function openResetPasswordModal(personnelId, isim) {
   qs("#reset-personnel-id").value = personnelId;
   qs("#reset-personnel-name").textContent = isim;
@@ -1870,16 +2003,20 @@ async function saveEditSchool() {
     const school_name = qs("#edit-school-name").value.trim();
     const kurum_kodu = qs("#edit-school-kurum").value.trim();
     if (!school_name) throw new Error("Okul adı boş olamaz");
+
     btn.disabled = true; btn.textContent = "Kaydediliyor...";
     await apiPost({ action:"updateSchool", school_id:sid, school_name, kurum_kodu });
+
     const school = S.schools.find(s => String(s.school_id) === String(sid));
     if (school) { school.school_name = school_name; school.kurum_kodu = kurum_kodu; }
     S.records.forEach(r => {
       if (String(r.school_id) === String(sid)) { r.school_name = school_name; r.kurum_kodu = kurum_kodu; }
     });
+
     rebuildDerived();
     closeModal("editSchoolModal");
     if (pageIs("okullar")) renderOkullar();
+    if (pageIs("kayitlar")) renderKayitlar();
     toast("Okul bilgileri güncellendi", "success");
   } catch (e) {
     toast("Hata: " + e.message, "error");
@@ -1891,9 +2028,11 @@ async function saveEditSchool() {
 
 let erFaz = null;
 let erKaynak = null;
+
 function openEditRecordModal(recordId) {
   const rec = S.records.find(r => String(r.record_id) === String(recordId));
   if (!rec) return toast("Kayıt bulunamadı", "error");
+
   erFaz = Number(rec.faz);
   erKaynak = rec.kaynak || null;
   qs("#er-record-id").value = rec.record_id;
@@ -1901,16 +2040,19 @@ function openEditRecordModal(recordId) {
   qs("#er-adet").value = rec.adet;
   qs("#er-personel").value = rec.personel || "";
   qs("#er-not").value = rec.notlar || "";
+
   [1,2,3].forEach(i => {
     const b = qs("#er-faz"+i);
     b.className = "faz-btn";
     if (i === erFaz) b.classList.add("a"+i);
   });
+
   const sinif = qs("#er-kaynak-sinif"), yedek = qs("#er-kaynak-yedek");
   sinif.className = "faz-btn"; sinif.removeAttribute("style");
   yedek.className = "faz-btn"; yedek.removeAttribute("style");
   if (erKaynak === "sinif") sinif.classList.add("a1");
   else if (erKaynak === "yedek") { yedek.style.borderColor="var(--orange)"; yedek.style.background="rgba(245,158,11,.14)"; yedek.style.color="var(--orange)"; }
+
   qs("#sd-er-p").innerHTML = S.personnelList.length
     ? S.personnelList.map(p => `<div class="sd-item" onclick="sdPick('er-p', ${sq(p.isim)})">${h(p.isim)}</div>`).join("")
     : `<div class="sd-empty">Personel yok</div>`;
@@ -1946,21 +2088,25 @@ async function saveEditRecord() {
     if (!erFaz) throw new Error("Faz seçin");
     if (!erKaynak) throw new Error("Kaynak seçin");
     if (!personel) throw new Error("Personel seçin");
+
     btn.disabled = true; btn.textContent = "Kaydediliyor...";
     await apiPost({ action:"updateRecord", record_id, faz:erFaz, adet, personel, notlar, kaynak:erKaynak });
+
     const rec = S.records.find(r => String(r.record_id) === String(record_id));
     if (rec) {
-      rec.faz = erFaz; rec.adet = adet;
-      rec.personel = personel; rec.notlar = notlar;
+      rec.faz = erFaz;
+      rec.adet = adet;
+      rec.personel = personel;
+      rec.notlar = notlar;
       rec.kaynak = erKaynak;
       const toplamTeslim = Number(rec.toplam_teslim || 0);
-      const capped = Math.min(toplamTeslim, adet);
-      rec.toplam_teslim = capped;
-      rec.kalan_adet = Math.max(0, adet - capped);
-      rec.durum = rec.kalan_adet === 0 && adet > 0 ? "teslim" : capped > 0 ? "kismi" : "bekliyor";
+      rec.kalan_adet = Math.max(0, adet - toplamTeslim);
+      rec.durum = rec.kalan_adet === 0 ? "teslim" : toplamTeslim > 0 ? "kismi" : "bekliyor";
     }
+
     rebuildDerived();
     closeModal("editRecordModal");
+    if (pageIs("kayitlar")) renderKayitlar();
     if (pageIs("dashboard")) renderDashboard();
     if (pageIs("okullar") && rec) { renderOkullar(); refreshSchoolDetail(rec.school_id); }
     toast("Kayıt güncellendi ✓", "success");
@@ -1986,11 +2132,14 @@ async function executeDeleteRecord() {
     const record_id = qs("#del-record-id").value;
     btn.disabled = true; btn.textContent = "Siliniyor...";
     await apiPost({ action: "deleteRecord", record_id });
+
     const rec = S.records.find(r => String(r.record_id) === String(record_id));
     S.records = S.records.filter(r => String(r.record_id) !== String(record_id));
     S.deliveries = S.deliveries.filter(d => String(d.record_id) !== String(record_id));
     rebuildDerived();
+
     closeModal("confirmDeleteModal");
+    if (pageIs("kayitlar")) renderKayitlar();
     if (pageIs("dashboard")) renderDashboard();
     if (pageIs("okullar")) { renderOkullar(); if (rec) refreshSchoolDetail(rec.school_id); }
     toast("Kayıt silindi", "success");
@@ -2002,12 +2151,14 @@ async function executeDeleteRecord() {
   }
 }
 
+
 function openSchoolTeslimSelector(sid) {
   const school = S.schools.find(s => String(s.school_id) === String(sid));
   if (!school) return;
   const recs = getMatchingRecordsForSchool(school).filter(r => calcRemaining(r) > 0);
   if (!recs.length) return toast("Bu okul için açık teslim kaydı yok.", "info");
   if (recs.length === 1) return openTeslimModal(recs[0].record_id);
+
   const root = qs("#deliverySelectList");
   root.innerHTML = recs.map(r => `
     <button class="school-card" style="width:100%;text-align:left" onclick="closeModal('deliverySelectModal');openTeslimModal(${sq(r.record_id)})">
@@ -2022,6 +2173,7 @@ function openSchoolTeslimSelector(sid) {
 }
 
 let activeDelivery = null;
+
 function edChangeAdet(d) {
   const inp = qs("#ed-teslim-adet");
   inp.value = Math.max(1, Math.min(parseInt(inp.max,10) || 999, (parseInt(inp.value,10) || 1) + d));
@@ -2031,10 +2183,12 @@ function openEditDeliveryModal(deliveryId) {
   if (!del) return toast("Teslim kaydı bulunamadı", "error");
   const rec = S.records.find(r => String(r.record_id) === String(del.record_id));
   if (!rec) return toast("Bağlı kayıt bulunamadı", "error");
+
   const otherSum = S.deliveries
     .filter(d => String(d.record_id) === String(del.record_id) && String(d.delivery_id) !== String(deliveryId))
     .reduce((s,d)=>s + Number(d.teslim_adet || 0), 0);
   const maxAllowed = Math.max(1, Number(rec.adet || 0) - otherSum);
+
   activeDelivery = { del, rec, maxAllowed };
   qs("#ed-delivery-id").value = del.delivery_id;
   qs("#ed-delivery-info").innerHTML = `<strong>${h(rec.school_name)}</strong> · FAZ ${h(rec.faz)} · Toplam ${h(rec.adet)} adet`;
@@ -2056,16 +2210,23 @@ async function saveEditDelivery() {
     if (!personel) throw new Error("Personel seçin");
     if (teslim_adet < 1) throw new Error("Teslim adedi en az 1 olmalı");
     if (teslim_adet > activeDelivery.maxAllowed) throw new Error("Teslim adedi izin verilen üst sınırı aşıyor");
+
     btn.disabled = true; btn.textContent = "Kaydediliyor...";
     const res = await apiPost({ action:"updateDelivery", delivery_id, teslim_adet, personel, notlar });
+
     const del = S.deliveries.find(d => String(d.delivery_id) === String(delivery_id));
-    if (del) { del.teslim_adet = teslim_adet; del.personel = personel; del.notlar = notlar; }
+    if (del) {
+      del.teslim_adet = teslim_adet;
+      del.personel = personel;
+      del.notlar = notlar;
+    }
     const rec = S.records.find(r => String(r.record_id) === String(activeDelivery.rec.record_id));
     if (rec && res.data) {
       rec.toplam_teslim = Number(res.data.toplamTeslim || 0);
       rec.kalan_adet = Number(res.data.kalan_adet || 0);
       rec.durum = String(res.data.yeniDurum || rec.durum);
     }
+
     rebuildDerived();
     closeModal("editDeliveryModal");
     if (pageIs("dashboard")) renderDashboard();
@@ -2094,8 +2255,10 @@ async function executeDeleteDelivery() {
     const delivery_id = qs("#del-delivery-id").value;
     const del = S.deliveries.find(d => String(d.delivery_id) === String(delivery_id));
     if (!del) throw new Error("Teslim kaydı bulunamadı");
+
     btn.disabled = true; btn.textContent = "Siliniyor...";
     const res = await apiPost({ action:"deleteDelivery", delivery_id });
+
     S.deliveries = S.deliveries.filter(d => String(d.delivery_id) !== String(delivery_id));
     const rec = S.records.find(r => String(r.record_id) === String(del.record_id));
     if (rec && res.data) {
@@ -2103,6 +2266,7 @@ async function executeDeleteDelivery() {
       rec.kalan_adet = Number(res.data.kalan_adet || 0);
       rec.durum = String(res.data.yeniDurum || rec.durum);
     }
+
     rebuildDerived();
     closeModal("confirmDeleteDeliveryModal");
     if (pageIs("dashboard")) renderDashboard();
@@ -2116,6 +2280,7 @@ async function executeDeleteDelivery() {
     btn.textContent = "🗑️ Evet, Sil";
   }
 }
+
 
 function durumBadge(d) {
   if (d === "teslim") return `<span class="badge b-done">✓ Teslim</span>`;
@@ -2133,8 +2298,10 @@ qsa(".modal-ov").forEach(ov => ov.addEventListener("click", e => {
 
 (async function init() {
   buildCityTabs("#okulCityTabs", "setOkulCity", S.okulCity);
+  buildCityTabs("#recCityTabs", "setRecCity", S.recCity);
   renderSessionUI();
   if (qs("#inp-tarih")) qs("#inp-tarih").value = toDateTimeLocalValue();
+
   try {
     showLoader("Giriş hazırlanıyor...");
     await checkBootstrapStatus();
@@ -2154,6 +2321,7 @@ qsa(".modal-ov").forEach(ov => ov.addEventListener("click", e => {
     hideLoader();
   }
 })();
+
 </script>
 </body>
 </html>
