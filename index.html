@@ -720,7 +720,7 @@ tr:hover td{background:rgba(255,255,255,.018)}
 
 <script>
 
-const CACHE_TTL = { dashboard: 30000, schools: 180000, personnel: 180000, records: 60000, deliveries: 60000 };
+const CACHE_TTL = { dashboard: 30000, schools: 600000, personnel: 600000, records: 90000, deliveries: 90000, allData: 90000 };
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpZXE4OxOawYB8XlDF6HpRMkBP1F3Zka80MUqoKFz5GTHMn0YrKEqr2wsOHeIth-UE/exec";
 const FRONTEND_VERSION = "v1.43";
 
@@ -742,7 +742,7 @@ const S = {
   schools: [],
   records: [],
   cacheAt: { dashboard:0, schools:0, personnel:0, records:0, deliveries:0 },
-  pending: { schools:null, personnel:null, records:null, deliveries:null },
+  pending: { schools:null, personnel:null, records:null, deliveries:null, allData:null },
   deliveries: [],  // tüm teslim kayıtları
   derived: null,
   selFaz: null,
@@ -1165,6 +1165,30 @@ function rebuildDerived() {
   };
 }
 
+async function loadAllData(force = false) {
+  // Tek API çağrısıyla tüm veriyi çek — 4 round-trip yerine 1
+  if (!force && isFresh("allData") && S.records.length) return;
+  if (S.pending.allData) return S.pending.allData;
+  S.pending.allData = api({ action: "getAllData" }).then(r => {
+    const d = r.data || {};
+    S.personnelList = Array.isArray(d.personnel) ? d.personnel.slice().sort((a,b)=>String(a.isim||"").localeCompare(String(b.isim||""),"tr")) : S.personnelList;
+    S.schools       = Array.isArray(d.schools)   ? d.schools   : S.schools;
+    S.records       = Array.isArray(d.records)   ? d.records   : S.records;
+    S.deliveries    = Array.isArray(d.deliveries) ? d.deliveries : S.deliveries;
+    S.derived = null;
+    markFresh("allData"); markFresh("personnel"); markFresh("schools");
+    markFresh("records"); markFresh("deliveries");
+    rebuildDerived();
+    fillPersonnelDropdowns();
+    if (pageIs("ayarlar")) renderPersonnelMgmt();
+    return d;
+  }).catch(async (e) => {
+    // Fallback: eski ayrı çağrılar
+    console.warn("getAllData başarısız, fallback:", e.message);
+    await Promise.all([loadPersonnel(true), loadSchools(true), loadRecords(true), loadDeliveries(true)]);
+  }).finally(() => { S.pending.allData = null; });
+  return S.pending.allData;
+}
 async function loadPersonnel(force = false) {
   if (!force && isFresh("personnel") && S.personnelList.length) return S.personnelList;
   if (S.pending.personnel) return S.pending.personnel;
@@ -1438,7 +1462,7 @@ async function loadOkullar(force = false) {
   try {
     if (force || !S.schools.length || !isFresh("schools") || !S.records.length || !isFresh("records")) {
       showLoader("Okullar yükleniyor...");
-      await Promise.all([loadSchools(force), loadRecords(force), loadDeliveries(force)]);
+      await loadAllData(force);
     }
     renderOkullar();
   } catch (e) {
@@ -1487,35 +1511,32 @@ function renderOkullar() {
     return;
   }
 
+  // ── Sıralama için aggregate'leri bir kerede hesapla ──
+  const aggMap = new Map();
+  for (const s of schools) {
+    aggMap.set(s.school_id, getSchoolAggregate(s));
+  }
+
   schools.sort((a, b) => {
-    const sa = getSchoolAggregate(a);
-    const sb = getSchoolAggregate(b);
-    const newestA = Math.max(0, ...sa.recs.map(r => parseTRDate(r.tarih)?.getTime() || 0));
-    const newestB = Math.max(0, ...sb.recs.map(r => parseTRDate(r.tarih)?.getTime() || 0));
-    const oldestA = sa.recs.length ? Math.min(...sa.recs.map(r => parseTRDate(r.tarih)?.getTime() || 0).filter(Boolean)) : 0;
-    const oldestB = sb.recs.length ? Math.min(...sb.recs.map(r => parseTRDate(r.tarih)?.getTime() || 0).filter(Boolean)) : 0;
+    const sa = aggMap.get(a.school_id) || {};
+    const sb = aggMap.get(b.school_id) || {};
     switch (S.schoolSort) {
-      case "debt_asc":
-        return (sa.kalan || 0) - (sb.kalan || 0) || (a.school_name||"").localeCompare(b.school_name||"", "tr");
-      case "newest":
-        return newestB - newestA || (a.school_name||"").localeCompare(b.school_name||"", "tr");
-      case "oldest":
-        return oldestA - oldestB || (a.school_name||"").localeCompare(b.school_name||"", "tr");
-      case "name_asc":
-        return (a.school_name||"").localeCompare(b.school_name||"", "tr");
-      case "name_desc":
-        return (b.school_name||"").localeCompare(a.school_name||"", "tr");
-      case "city_asc":
-        return (a.city||"").localeCompare(b.city||"", "tr") || (a.school_name||"").localeCompare(b.school_name||"", "tr");
+      case "debt_asc":  return (sa.kalan||0) - (sb.kalan||0) || (a.school_name||"").localeCompare(b.school_name||"","tr");
+      case "newest":    return (sb.newestTs||0) - (sa.newestTs||0) || (a.school_name||"").localeCompare(b.school_name||"","tr");
+      case "oldest":    return (sa.oldestTs||0) - (sb.oldestTs||0) || (a.school_name||"").localeCompare(b.school_name||"","tr");
+      case "name_asc":  return (a.school_name||"").localeCompare(b.school_name||"","tr");
+      case "name_desc": return (b.school_name||"").localeCompare(a.school_name||"","tr");
+      case "city_asc":  return (a.city||"").localeCompare(b.city||"","tr") || (a.school_name||"").localeCompare(b.school_name||"","tr");
       case "debt_desc":
-      default:
-        return (sb.kalan || 0) - (sa.kalan || 0) || (a.school_name||"").localeCompare(b.school_name||"", "tr");
+      default:          return (sb.kalan||0) - (sa.kalan||0) || (a.school_name||"").localeCompare(b.school_name||"","tr");
     }
   });
 
-  root.innerHTML = schools.map(s => {
-    const st = getSchoolAggregate(s);
-    const hasBorç = st.kalan > 0;
+  // ── Lazy render: ilk 30 hemen, geri kalanlar requestIdleCallback ile ──
+  const BATCH = 30;
+  function makeCard(s) {
+    const st = aggMap.get(s.school_id) || {};
+    const hasBorç = (st.kalan||0) > 0;
     return `<div class="school-card ${hasBorç ? "school-card-borç" : "school-card-clean"}" id="sc-${s.school_id}" data-sid="${s.school_id}" onclick="handleSchoolClick(event)">
       <div class="sc-icon">${hasBorç ? "🏫" : "✅"}</div>
       <div class="sc-info">
@@ -1529,7 +1550,26 @@ function renderOkullar() {
       </div>
       <span id="sc-arr-${s.school_id}" style="color:var(--text3);font-size:16px">›</span>
     </div><div class="school-detail" id="scd-${s.school_id}"></div>`;
-  }).join("");
+  }
+
+  // İlk batch hemen render et
+  const first = schools.slice(0, BATCH);
+  const rest  = schools.slice(BATCH);
+  root.innerHTML = first.map(makeCard).join("");
+
+  // Geri kalanları boşta render et
+  if (rest.length) {
+    const idle = typeof requestIdleCallback !== "undefined" ? requestIdleCallback : (fn => setTimeout(fn, 50));
+    let i = 0;
+    function renderNextBatch(deadline) {
+      while (i < rest.length && (!deadline || deadline.timeRemaining() > 4)) {
+        root.insertAdjacentHTML("beforeend", makeCard(rest[i]));
+        i++;
+      }
+      if (i < rest.length) idle(renderNextBatch);
+    }
+    idle(renderNextBatch);
+  }
 }
 
 function refreshSchoolDetail(sid) {
@@ -2306,7 +2346,7 @@ qsa(".modal-ov").forEach(ov => ov.addEventListener("click", e => {
     showLoader("Giriş hazırlanıyor...");
     await checkBootstrapStatus();
     if (S.authToken) {
-      await Promise.all([loadPersonnel(true), loadSchools(true), loadRecords(true), loadDeliveries(true)]);
+      await loadAllData(true);
       closeLoginScreen();
       fillPersonnelDropdowns();
       renderDashboard();
